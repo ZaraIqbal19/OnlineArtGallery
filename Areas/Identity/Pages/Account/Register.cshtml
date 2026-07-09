@@ -2,66 +2,2203 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
+    Layout = null;
 }
 
-<h1>@ViewData["Title"]</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@@1.11.3/font/bootstrap-icons.min.css" />
+
+    <style>
+        /* ===== RESET & ROOT ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #88d200;
+            --primary-dark: #6fa800;
+            --primary-light: #d4f09b;
+            --primary-ultra-light: #f0fae6;
+            --primary-glow: rgba(136, 210, 0, 0.18);
+            --accent-1: #ff6b6b;
+            --neutral-1: #f8fafc;
+            --neutral-2: #e9edf4;
+            --neutral-3: #cbd5e1;
+            --neutral-4: #94a3b8;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --radius: 24px;
+            --shadow-sm: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 24px 60px rgba(136, 210, 0, 0.14);
+            --transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ===== BODY ===== */
+        body.register-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            background-image: radial-gradient(ellipse at 10% 20%, rgba(136, 210, 0, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 90% 80%, rgba(106, 168, 0, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(212, 240, 155, 0.04) 0%, transparent 70%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            margin: 0;
+            position: relative;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* ===== ANIMATED BACKGROUND PARTICLES ===== */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0.10;
+            animation: floatParticle 22s infinite alternate ease-in-out;
+        }
+
+            .particle:nth-child(1) {
+                width: 6px;
+                height: 6px;
+                left: 8%;
+                animation-duration: 18s;
+                animation-delay: 0s;
+            }
+
+            .particle:nth-child(2) {
+                width: 10px;
+                height: 10px;
+                left: 18%;
+                animation-duration: 24s;
+                animation-delay: 2s;
+                opacity: 0.07;
+            }
+
+            .particle:nth-child(3) {
+                width: 5px;
+                height: 5px;
+                left: 28%;
+                animation-duration: 20s;
+                animation-delay: 4s;
+            }
+
+            .particle:nth-child(4) {
+                width: 8px;
+                height: 8px;
+                left: 38%;
+                animation-duration: 26s;
+                animation-delay: 1s;
+            }
+
+            .particle:nth-child(5) {
+                width: 4px;
+                height: 4px;
+                left: 48%;
+                animation-duration: 16s;
+                animation-delay: 3s;
+            }
+
+            .particle:nth-child(6) {
+                width: 7px;
+                height: 7px;
+                left: 58%;
+                animation-duration: 22s;
+                animation-delay: 5s;
+            }
+
+            .particle:nth-child(7) {
+                width: 5px;
+                height: 5px;
+                left: 68%;
+                animation-duration: 19s;
+                animation-delay: 2s;
+            }
+
+            .particle:nth-child(8) {
+                width: 9px;
+                height: 9px;
+                left: 78%;
+                animation-duration: 25s;
+                animation-delay: 4s;
+                opacity: 0.06;
+            }
+
+            .particle:nth-child(9) {
+                width: 4px;
+                height: 4px;
+                left: 88%;
+                animation-duration: 21s;
+                animation-delay: 0.5s;
+            }
+
+            .particle:nth-child(10) {
+                width: 7px;
+                height: 7px;
+                left: 15%;
+                animation-duration: 28s;
+                animation-delay: 6s;
+            }
+
+        @@-webkit-keyframes floatParticle {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: translateY(-140px) rotate(180deg) scale(1.6);
+                opacity: 0.20;
+            }
+
+            100% {
+                transform: translateY(-50px) rotate(360deg) scale(0.9);
+                opacity: 0.08;
+            }
+        }
+
+        @@keyframes floatParticle {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: translateY(-140px) rotate(180deg) scale(1.6);
+                opacity: 0.20;
+            }
+
+            100% {
+                transform: translateY(-50px) rotate(360deg) scale(0.9);
+                opacity: 0.08;
+            }
+        }
+
+        /* ===== WRAPPER ===== */
+        .register-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0.5rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        @@-webkit-keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(36px) scale(0.97);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @@keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(36px) scale(0.97);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== GLASS CARD ===== */
+        .register-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            padding: 3.2rem 3rem;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .register-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200);
+                background-size: 300% 100%;
+                animation: shimmer 4s linear infinite;
+                z-index: 2;
+            }
+
+        @@-webkit-keyframes shimmer {
+            0% {
+                background-position: -300% 0;
+            }
+
+            100% {
+                background-position: 300% 0;
+            }
+        }
+
+        @@keyframes shimmer {
+            0% {
+                background-position: -300% 0;
+            }
+
+            100% {
+                background-position: 300% 0;
+            }
+        }
+
+        .register-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-4px);
+            border-color: rgba(136, 210, 0, 0.15);
+        }
+
+        /* ===== TITLE ===== */
+        .page-title {
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 0.3rem;
+        }
+
+            .page-title::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: -6px;
+                width: 60px;
+                height: 4px;
+                background: var(--primary);
+                border-radius: 4px;
+                transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+        .register-card:hover .page-title::after {
+            width: 120px;
+        }
+
+        .sub-heading {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-top: 0.6rem;
+        }
+
+        /* ===== FORM PROGRESS ===== */
+        .form-progress-wrap {
+            margin-top: 1.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-progress-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-progress-caption {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .form-progress-count {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .form-progress-track {
+            height: 8px;
+            border-radius: 8px;
+            background: var(--neutral-2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .form-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+            .form-progress-fill.complete {
+                background: linear-gradient(90deg, var(--primary-dark), var(--primary), #4caf50, var(--primary));
+                background-size: 300% 100%;
+                animation: shimmer 2s linear infinite;
+            }
+
+        /* ===== ENHANCED FORM FLOATING ===== */
+        .register-page .form-floating {
+            position: relative;
+            margin-bottom: 1.6rem !important;
+            transition: var(--transition);
+        }
+
+            .register-page .form-floating .form-control,
+            .register-page .form-floating select.form-control {
+                border: 2px solid var(--neutral-2);
+                border-radius: 16px;
+                padding: 1rem 2.8rem 0.25rem 1.2rem;
+                height: 62px;
+                font-size: 0.95rem;
+                background: rgba(255, 255, 255, 0.6);
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
+                color: var(--text-primary);
+                will-change: transform, box-shadow;
+            }
+
+                .register-page .form-floating .form-control:hover,
+                .register-page .form-floating select.form-control:hover {
+                    border-color: var(--neutral-3);
+                    background: rgba(255, 255, 255, 0.85);
                 }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
+
+                .register-page .form-floating .form-control:focus,
+                .register-page .form-floating select.form-control:focus {
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 5px var(--primary-glow), inset 0 0 0 1px var(--primary);
+                    background: #ffffff;
+                    transform: scale(1.02) translateY(-2px);
+                    outline: none;
+                }
+
+            /* ===== SELECT BOX ===== */
+            .register-page .form-floating select.form-control {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2388d200' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 1.2rem center;
+                background-size: 18px;
+                padding-right: 3.2rem;
+                cursor: pointer;
+            }
+
+            /* ===== LABELS ===== */
+            .register-page .form-floating > label {
+                padding-left: 1.2rem;
+                color: var(--text-muted);
+                font-weight: 500;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                pointer-events: none;
+            }
+
+            .register-page .form-floating .form-control:focus ~ label,
+            .register-page .form-floating .form-control:not(:placeholder-shown) ~ label,
+            .register-page .form-floating select.form-control:focus ~ label,
+            .register-page .form-floating select.form-control:not(:placeholder-shown) ~ label {
+                color: var(--primary-dark);
+                font-weight: 600;
+                font-size: 0.8rem;
+                transform: scale(0.85) translateY(-0.6rem) translateX(0.2rem);
+                letter-spacing: 0.02em;
+            }
+
+            /* ===== VALIDATION STATES ===== */
+            .register-page .form-floating .form-control.is-valid,
+            .register-page .form-floating select.form-control.is-valid {
+                border-color: var(--primary);
+                background-color: var(--primary-ultra-light);
+                box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.08);
+            }
+
+            .register-page .form-floating .form-control.is-invalid,
+            .register-page .form-floating select.form-control.is-invalid {
+                border-color: var(--accent-1);
+                background-color: #fff6f6;
+                box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
+            }
+
+            .register-page .form-floating .form-control,
+            .register-page .form-floating select.form-control {
+                border-color: var(--neutral-2);
+            }
+
+        .register-page .text-danger {
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            display: block;
+            font-weight: 500;
+            color: var(--accent-1);
+            animation: slideDown 0.25s ease;
+        }
+
+        .register-page .text-success {
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            display: block;
+            font-weight: 500;
+            color: var(--primary-dark);
+            animation: slideDown 0.25s ease;
+        }
+
+        .register-page .app-error-banner {
+            background: linear-gradient(135deg, #fff6f6, #fff0f0);
+            border: 1px solid rgba(255, 107, 107, 0.25);
+            border-left: 4px solid var(--accent-1);
+            padding: 0.95rem 1.1rem 0.95rem 1.2rem;
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            font-size: 0.88rem;
+            color: #a94442;
+            display: none;
+            align-items: flex-start;
+            gap: 0.7rem;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.08);
+        }
+
+            .register-page .app-error-banner.show {
+                display: flex;
+                animation: slideDown 0.35s ease, errorShake 0.5s ease 0.1s;
+            }
+
+            .register-page .app-error-banner .error-icon {
+                font-size: 1.2rem;
+                color: var(--accent-1);
+                flex-shrink: 0;
+                margin-top: 0.1rem;
+            }
+
+            .register-page .app-error-banner .error-body {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .register-page .app-error-banner .error-title {
+                font-weight: 700;
+                color: #8a2f2f;
+                font-size: 0.88rem;
+                margin-bottom: 0.15rem;
+                display: block;
+            }
+
+            .register-page .app-error-banner .error-detail {
+                color: #a94442;
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+
+                .register-page .app-error-banner .error-detail a {
+                    color: #8a2f2f;
+                    font-weight: 700;
+                    text-decoration: underline;
+                }
+
+            .register-page .app-error-banner .error-close {
+                background: none;
+                border: none;
+                color: #c98a8a;
+                font-size: 1rem;
+                cursor: pointer;
+                padding: 0.2rem;
+                line-height: 1;
+                flex-shrink: 0;
+                border-radius: 50%;
+                transition: all 0.2s ease;
+                margin-top: -0.1rem;
+            }
+
+                .register-page .app-error-banner .error-close:hover {
+                    background: rgba(255, 107, 107, 0.15);
+                    color: #8a2f2f;
+                    transform: rotate(90deg);
+                }
+
+        @@-webkit-keyframes errorShake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-8px);
+            }
+
+            40% {
+                transform: translateX(7px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+
+            80% {
+                transform: translateX(3px);
+            }
+        }
+
+        @@keyframes errorShake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-8px);
+            }
+
+            40% {
+                transform: translateX(7px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+
+            80% {
+                transform: translateX(3px);
+            }
+        }
+
+        .form-floating.field-shake {
+            animation: errorShake 0.5s ease;
+        }
+
+        .register-page .form-floating .form-control.is-invalid.field-flash {
+            animation: fieldFlash 1.4s ease;
+        }
+
+        @@-webkit-keyframes fieldFlash {
+            0%, 100% {
+                box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
+            }
+
+            30% {
+                box-shadow: 0 0 0 7px rgba(255, 107, 107, 0.22);
+            }
+        }
+
+        @@keyframes fieldFlash {
+            0%, 100% {
+                box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
+            }
+
+            30% {
+                box-shadow: 0 0 0 7px rgba(255, 107, 107, 0.22);
+            }
+        }
+
+        @@-webkit-keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== PASSWORD TOGGLE ===== */
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--neutral-4);
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.25s ease;
+            z-index: 5;
+            font-size: 1.15rem;
+            cursor: pointer;
+        }
+
+            .password-toggle:hover {
+                color: var(--primary);
+                background: var(--primary-light);
+                transform: translateY(-50%) scale(1.1);
+            }
+
+        /* ===== PASSWORD STRENGTH ===== */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 6px;
+            border-radius: 6px;
+            background: var(--neutral-2);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+            .password-strength-bar.weak {
+                width: 25%;
+                background: linear-gradient(90deg, #e67e7e, #f1aeb5);
+            }
+
+            .password-strength-bar.fair {
+                width: 50%;
+                background: linear-gradient(90deg, #f5b86e, #f5d06e);
+            }
+
+            .password-strength-bar.good {
+                width: 75%;
+                background: linear-gradient(90deg, #b8d96e, var(--primary));
+            }
+
+            .password-strength-bar.strong {
+                width: 100%;
+                background: linear-gradient(90deg, var(--primary-dark), var(--primary), #4caf50, var(--primary));
+                background-size: 300% 100%;
+                animation: shimmer 2s linear infinite, pulse 1.2s ease infinite;
+            }
+
+        @@-webkit-keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .password-strength-text {
+            font-size: 0.75rem;
+            margin-top: 0.2rem;
+            display: block;
+            font-weight: 600;
+        }
+
+            .password-strength-text.weak {
+                color: var(--accent-1);
+            }
+
+            .password-strength-text.fair {
+                color: #f5a623;
+            }
+
+            .password-strength-text.good {
+                color: #7cb342;
+            }
+
+            .password-strength-text.strong {
+                color: var(--primary-dark);
+            }
+
+        .password-requirements {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .password-requirement {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.15rem 0.8rem;
+            border-radius: 30px;
+            background: var(--neutral-1);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+            .password-requirement.met {
+                color: var(--primary-dark);
+                background: var(--primary-ultra-light);
+                transform: scale(1.04);
+            }
+
+        /* ===== REGISTER BUTTON ===== */
+        .btn-register {
+            background: linear-gradient(135deg, #7bc000, var(--primary-dark), #5a8a00);
+            background-size: 200% 100%;
+            border: none;
+            border-radius: 60px;
+            padding: 0.95rem 2.2rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
+            width: 100%;
+            margin-top: 0.6rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.02em;
+        }
+
+            .btn-register:hover:not(:disabled) {
+                background-position: 100% 0;
+                transform: translateY(-4px) scale(1.02);
+                box-shadow: 0 18px 44px rgba(136, 210, 0, 0.35);
+            }
+
+            .btn-register:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: var(--neutral-3);
+                box-shadow: none;
+                transform: none !important;
+            }
+
+            .btn-register .spinner {
+                display: none;
+                width: 22px;
+                height: 22px;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto;
+            }
+
+            .btn-register.loading .spinner {
+                display: inline-block;
+            }
+
+            .btn-register.loading .btn-text {
+                display: none;
+            }
+
+            .btn-register.loading i {
+                display: none;
+            }
+
+        @@-webkit-keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @@keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            animation: rippleEffect 0.7s ease forwards;
+        }
+
+        @@-webkit-keyframes rippleEffect {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes rippleEffect {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* ===== EXTERNAL LOGINS ===== */
+        .external-section {
+            padding-left: 2rem;
+            border-left: 2px dashed rgba(136, 210, 0, 0.15);
+        }
+
+            .external-section h3 {
+                font-weight: 700;
+                color: var(--text-primary);
+                font-size: 1.2rem;
+            }
+
+        .btn-external {
+            background: #ffffff;
+            border: 2px solid var(--neutral-2);
+            border-radius: 40px;
+            padding: 0.5rem 1.6rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .btn-external:hover {
+                border-color: var(--primary);
+                background: var(--primary-ultra-light);
+                color: var(--primary-dark);
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 10px 28px rgba(136, 210, 0, 0.12);
+            }
+
+        .external-note {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            background: var(--neutral-1);
+            padding: 1rem 1.4rem;
+            border-radius: 18px;
+            border: 1px solid var(--neutral-2);
+            transition: var(--transition);
+        }
+
+            .external-note a {
+                color: var(--primary-dark);
+                font-weight: 600;
+                text-decoration: none;
+                border-bottom: 2px solid transparent;
+                transition: var(--transition);
+            }
+
+                .external-note a:hover {
+                    border-bottom-color: var(--primary);
+                }
+
+        /* ===== FEATURE BADGES ===== */
+        .feature-badge {
+            background: var(--primary-ultra-light);
+            color: var(--primary-dark);
+            padding: 0.35rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+
+        /* ===== TERMS CHECKBOX ===== */
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin: 0.8rem 0 1.2rem 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid var(--neutral-3);
+            border-radius: 6px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+            margin-top: 1px;
+            background: white;
+        }
+
+            .custom-checkbox:checked {
+                background: var(--primary);
+                border-color: var(--primary);
+            }
+
+                .custom-checkbox:checked::after {
+                    content: '✓';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-weight: 700;
+                    font-size: 13px;
+                }
+
+            .custom-checkbox:hover {
+                border-color: var(--primary);
+                transform: scale(1.08);
+            }
+
+            .custom-checkbox.pulse-check {
+                animation: checkPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+        @@-webkit-keyframes checkPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.35);
+                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
+            }
+        }
+
+        @@keyframes checkPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.35);
+                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
+            }
+        }
+
+        .terms-checkbox label a {
+            color: var(--primary-dark);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+            .terms-checkbox label a:hover {
+                border-bottom-color: var(--primary);
+            }
+
+        /* ===== SUCCESS OVERLAY ===== */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 30, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+            .success-overlay.active {
+                display: flex;
+                animation: fadeUp 0.5s ease;
+            }
+
+        .success-modal {
+            background: white;
+            border-radius: var(--radius);
+            padding: 3.5rem 3rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .success-modal::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+                background-size: 200% 100%;
+                animation: shimmer 2s linear infinite;
+            }
+
+        @@-webkit-keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotate(-4deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        @@keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotate(-4deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .confetti-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            top: -20px;
+            animation: confettiDrop linear forwards;
+            border-radius: 2px;
+        }
+
+            .confetti:nth-child(1) {
+                left: 5%;
+                background: #88d200;
+                animation-duration: 2.6s;
+                animation-delay: 0.1s;
+            }
+
+            .confetti:nth-child(2) {
+                left: 12%;
+                background: #ff6b6b;
+                animation-duration: 3s;
+                animation-delay: 0.3s;
+            }
+
+            .confetti:nth-child(3) {
+                left: 19%;
+                background: #f5a623;
+                animation-duration: 2.9s;
+                animation-delay: 0.2s;
+            }
+
+            .confetti:nth-child(4) {
+                left: 26%;
+                background: #4ecdc4;
+                animation-duration: 3.2s;
+                animation-delay: 0.5s;
+            }
+
+            .confetti:nth-child(5) {
+                left: 33%;
+                background: #4a90d9;
+                animation-duration: 2.7s;
+                animation-delay: 0.4s;
+            }
+
+            .confetti:nth-child(6) {
+                left: 40%;
+                background: #9b59b6;
+                animation-duration: 2.8s;
+                animation-delay: 0.6s;
+            }
+
+            .confetti:nth-child(7) {
+                left: 47%;
+                background: #88d200;
+                animation-duration: 3.1s;
+                animation-delay: 0.2s;
+            }
+
+            .confetti:nth-child(8) {
+                left: 54%;
+                background: #e67e22;
+                animation-duration: 2.5s;
+                animation-delay: 0.7s;
+            }
+
+            .confetti:nth-child(9) {
+                left: 61%;
+                background: #1abc9c;
+                animation-duration: 2.9s;
+                animation-delay: 0.3s;
+            }
+
+            .confetti:nth-child(10) {
+                left: 68%;
+                background: #ff6b6b;
+                animation-duration: 3.3s;
+                animation-delay: 0.5s;
+            }
+
+            .confetti:nth-child(11) {
+                left: 75%;
+                background: #f1c40f;
+                animation-duration: 2.4s;
+                animation-delay: 0.8s;
+            }
+
+            .confetti:nth-child(12) {
+                left: 82%;
+                background: #4ecdc4;
+                animation-duration: 2.6s;
+                animation-delay: 0.4s;
+            }
+
+            .confetti:nth-child(13) {
+                left: 89%;
+                background: #4a90d9;
+                animation-duration: 3s;
+                animation-delay: 0.6s;
+            }
+
+            .confetti:nth-child(14) {
+                left: 96%;
+                background: #9b59b6;
+                animation-duration: 2.7s;
+                animation-delay: 0.9s;
+            }
+
+            .confetti:nth-child(15) {
+                left: 50%;
+                background: #88d200;
+                animation-duration: 2.8s;
+                animation-delay: 0.1s;
+            }
+
+        @@-webkit-keyframes confettiDrop {
+            0% {
+                opacity: 1;
+                transform: translateY(-60px) rotate(0deg) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(480px) rotate(720deg) scale(0.3);
+            }
+        }
+
+        @@keyframes confettiDrop {
+            0% {
+                opacity: 1;
+                transform: translateY(-60px) rotate(0deg) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(480px) rotate(720deg) scale(0.3);
+            }
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            color: var(--primary);
+            animation: floatIcon 2.6s ease-in-out infinite;
+            display: inline-block;
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        @@-webkit-keyframes floatIcon {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-14px) rotate(6deg);
+            }
+        }
+
+        @@keyframes floatIcon {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-14px) rotate(6deg);
+            }
+        }
+
+        .success-title {
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-subtitle {
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-message {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-loading {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+            .success-loading .dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: var(--primary);
+                animation: pulse 1.2s ease infinite;
+            }
+
+                .success-loading .dot:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .success-loading .dot:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+        .redirect-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+            animation: pulse 1.8s infinite;
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container {
+            z-index: 99999;
+        }
+
+        .toast-custom {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            padding: 0.75rem 1rem;
+        }
+
+            .toast-custom .toast-body {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-weight: 500;
+            }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 992px) {
+            .register-card {
+                padding: 2.5rem 2rem;
+            }
+
+            .external-section {
+                padding-left: 1.5rem;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .register-card {
+                padding: 1.8rem 1.2rem;
+                border-radius: 20px;
+            }
+
+            .external-section {
+                padding-left: 0;
+                border-left: none;
+                border-top: 2px dashed rgba(136, 210, 0, 0.12);
+                padding-top: 2rem;
+                margin-top: 2rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                text-align: center;
+            }
+
+                .page-title::after {
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
+
+            .sub-heading {
+                text-align: center;
+            }
+
+            .success-modal {
+                padding: 2.5rem 1.5rem;
+                margin: 1rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .register-wrapper {
+                padding: 0.2rem;
+            }
+
+            .register-card {
+                padding: 1.2rem 0.9rem;
+                border-radius: 16px;
+            }
+
+            .register-page .form-floating .form-control,
+            .register-page .form-floating select.form-control {
+                height: 54px;
+                font-size: 0.85rem;
+                padding: 0.75rem 2.5rem 0.2rem 1rem;
+            }
+
+            .btn-register {
+                font-size: 0.95rem;
+                padding: 0.75rem 1.2rem;
+            }
+
+            .success-icon {
+                font-size: 3.5rem;
+            }
+
+            .success-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* ===== REDUCED MOTION ===== */
+        @@media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            body.register-page {
+                animation: none;
+            }
+
+            .register-card::before {
+                animation: none;
+            }
+
+            .register-card:hover {
+                transform: none !important;
+            }
+
+            .btn-register:hover:not(:disabled) {
+                transform: none !important;
+            }
+
+            .success-modal {
+                animation: none;
+            }
+
+            .confetti {
+                animation: none !important;
+                opacity: 0.3;
+            }
+        }
+    </style>
+</head>
+
+<body class="register-page">
+    <!-- Floating Particles -->
+    <div class="particles" aria-hidden="true">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- ===== SUCCESS OVERLAY ===== -->
+    <div class="success-overlay" id="successOverlay" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+        <div class="success-modal">
+            <div class="confetti-container" aria-hidden="true">
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+            </div>
+            <div class="success-icon" aria-hidden="true">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h2 class="success-title" id="successTitle">🎉 Welcome!</h2>
+            <p class="success-subtitle">You're now part of the Art Gallery</p>
+            <p class="success-message">Your account is ready. Redirecting to your dashboard …</p>
+            <div class="success-loading" aria-hidden="true">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <p class="redirect-text">
+                <i class="bi bi-arrow-right me-1"></i> Redirecting to Home Page
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="errorToast" class="toast toast-custom align-items-center text-white border-0 bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="toastMessage">Registration failed. Please try again.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="register-wrapper">
+        <div class="register-card">
+            <div class="row g-4">
+                <!-- ===== LEFT: Registration Form ===== -->
+                <div class="col-md-7 col-lg-6">
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                    <p class="sub-heading">Start your journey — it only takes a minute.</p>
+
+                    <div class="form-progress-wrap">
+                        <div class="form-progress-labels">
+                            <span class="form-progress-caption">Profile completeness</span>
+                            <span class="form-progress-count" id="progressCount">0 / 7</span>
+                        </div>
+                        <div class="form-progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressTrack">
+                            <div class="form-progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="mt-4" novalidate>
+                        @Html.AntiForgeryToken()
+
+                        <div class="app-error-banner" id="errorSummary" role="alert" aria-live="assertive">
+                            <i class="bi bi-exclamation-octagon-fill error-icon" aria-hidden="true"></i>
+                            <div class="error-body">
+                                <span class="error-title">We couldn't create your account</span>
+                                <div class="error-detail" id="errorDetail"></div>
+                            </div>
+                            <button type="button" class="error-close" id="errorClose" aria-label="Dismiss error">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div asp-validation-summary="ModelOnly" style="display:none;"></div>
+
+                        <!-- Email -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@@example.com" id="Input_Email" />
+                            <label asp-for="Input.Email"><i class="bi bi-envelope me-1"></i> Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            <span class="text-success email-success" style="display:none;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Valid email
+                            </span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_Password" />
+                            <label asp-for="Input.Password"><i class="bi bi-lock me-1"></i> Password</label>
+                            <button type="button" class="password-toggle" onclick="togglePassword('Input_Password', this)" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+                            <div class="password-strength" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                            </div>
+                            <span class="password-strength-text" id="passwordStrengthText"></span>
+
+                            <div class="password-requirements" id="passwordRequirements" role="list">
+                                <span class="password-requirement" id="req-length" role="listitem">
+                                    <i class="bi bi-circle"></i> 8+ chars
+                                </span>
+                                <span class="password-requirement" id="req-uppercase" role="listitem">
+                                    <i class="bi bi-circle"></i> Uppercase
+                                </span>
+                                <span class="password-requirement" id="req-lowercase" role="listitem">
+                                    <i class="bi bi-circle"></i> Lowercase
+                                </span>
+                                <span class="password-requirement" id="req-number" role="listitem">
+                                    <i class="bi bi-circle"></i> Number
+                                </span>
+                                <span class="password-requirement" id="req-special" role="listitem">
+                                    <i class="bi bi-circle"></i> Special
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-floating">
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_ConfirmPassword" />
+                            <label asp-for="Input.ConfirmPassword"><i class="bi bi-shield-lock me-1"></i> Confirm Password</label>
+                            <button type="button" class="password-toggle" onclick="togglePassword('Input_ConfirmPassword', this)" aria-label="Toggle confirm password visibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                            <span class="text-success confirm-success" style="display:none;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Passwords match
+                            </span>
+                        </div>
+
+                        <!-- Gender -->
+                        <div class="form-floating">
+                            <select asp-for="Input.Gender" class="form-control" id="Input_Gender" aria-required="true">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <label asp-for="Input.Gender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
+                            <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Address" class="form-control" placeholder="Street, city, country" id="Input_Address" />
+                            <label asp-for="Input.Address"><i class="bi bi-house-door me-1"></i> Address</label>
+                            <span asp-validation-for="Input.Address" class="text-danger"></span>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Age" type="number" class="form-control" placeholder="18" min="1" max="120" id="Input_Age" />
+                            <label asp-for="Input.Age"><i class="bi bi-calendar2 me-1"></i> Age</label>
+                            <span asp-validation-for="Input.Age" class="text-danger"></span>
+                        </div>
+
+                        <!-- Terms Checkbox -->
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="termsCheckbox" class="custom-checkbox" required />
+                            <label for="termsCheckbox">
+                                I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="btn-register" disabled>
+                            <i class="bi bi-person-plus"></i>
+                            <span class="btn-text">Create Account</span>
+                            <span class="spinner"></span>
+                        </button>
+
+                        <div class="mt-3 text-center" style="font-size:0.8rem; color: var(--text-muted);">
+                            <i class="bi bi-shield-check me-1" style="color: var(--primary);"></i> Secure & encrypted
                         </div>
                     </form>
+                </div>
+
+                <!-- ===== RIGHT: External Logins ===== -->
+                <div class="col-md-5 col-lg-6 external-section">
+                    <h3><i class="bi bi-share me-2" style="color: var(--primary);"></i>Connect with</h3>
+                    <hr style="border-color: rgba(136, 210, 0, 0.12);" />
+
+                    @{
+                        if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                        {
+                            <div class="external-note">
+                                <i class="bi bi-info-circle me-2" style="color: var(--primary);"></i>
+                                No external services configured. See the
+                                <a href="https://go.microsoft.com/fwlink/?LinkID=532715" target="_blank">setup guide</a>.
+                            </div>
+                        }
+                        else
+                        {
+                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var provider in Model.ExternalLogins!)
+                                    {
+                                        <button type="submit" class="btn-external" name="provider" value="@provider.Name" title="Log in using @provider.DisplayName">
+                                            <i class="bi bi-@provider.Name.ToLower()"></i> @provider.DisplayName
+                                        </button>
+                                    }
+                                </div>
+                            </form>
+                        }
+                    }
+
+                    <div class="mt-4" style="font-size:0.9rem; color: var(--text-muted);">
+                        <i class="bi bi-check-circle-fill me-1" style="color: var(--primary);"></i>
+                        Already have an account?
+                        <a href="/Login" style="color: var(--primary-dark); font-weight:600; text-decoration:none; border-bottom: 2px solid transparent; transition: var(--transition);">
+                            Sign in
+                        </a>
+                    </div>
+
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <span class="feature-badge"><i class="bi bi-shield-check"></i> Secure</span>
+                        <span class="feature-badge"><i class="bi bi-clock"></i> Quick</span>
+                        <span class="feature-badge"><i class="bi bi-heart"></i> Free</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ===== TOGGLE PASSWORD =====
+        function togglePassword(id, btn) {
+            const inp = document.getElementById(id);
+            const icon = btn.querySelector('i');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                inp.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // ===== PASSWORD STRENGTH =====
+        function checkStrength(pw) {
+            const req = {
+                length: pw.length >= 8,
+                uppercase: /[A-Z]/.test(pw),
+                lowercase: /[a-z]/.test(pw),
+                number: /\d/.test(pw),
+                special: /[!@@#$%^&*(),.?":{}|<>]/.test(pw)
+            };
+            const fulfilled = Object.values(req).filter(Boolean).length;
+
+            document.getElementById('req-length').className = 'password-requirement' + (req.length ? ' met' : '');
+            document.getElementById('req-uppercase').className = 'password-requirement' + (req.uppercase ? ' met' : '');
+            document.getElementById('req-lowercase').className = 'password-requirement' + (req.lowercase ? ' met' : '');
+            document.getElementById('req-number').className = 'password-requirement' + (req.number ? ' met' : '');
+            document.getElementById('req-special').className = 'password-requirement' + (req.special ? ' met' : '');
+
+            document.querySelectorAll('.password-requirement').forEach(el => {
+                el.querySelector('i').className = el.classList.contains('met') ? 'bi bi-check-circle-fill' : 'bi bi-circle';
+            });
+
+            const bar = document.getElementById('passwordStrengthBar');
+            const text = document.getElementById('passwordStrengthText');
+
+            if (!pw) {
+                bar.className = 'password-strength-bar';
+                bar.style.width = '0%';
+                text.textContent = '';
+                text.className = 'password-strength-text';
+                bar.parentElement.setAttribute('aria-valuenow', '0');
+                return { strength: 0, req };
+            }
+
+            const pct = (fulfilled / 5) * 100;
+            bar.parentElement.setAttribute('aria-valuenow', pct);
+
+            if (fulfilled <= 2) {
+                bar.className = 'password-strength-bar weak';
+                text.textContent = '⚠️ Weak';
+                text.className = 'password-strength-text weak';
+            } else if (fulfilled <= 3) {
+                bar.className = 'password-strength-bar fair';
+                text.textContent = '🔶 Fair';
+                text.className = 'password-strength-text fair';
+            } else if (fulfilled <= 4) {
+                bar.className = 'password-strength-bar good';
+                text.textContent = '✅ Good';
+                text.className = 'password-strength-text good';
+            } else {
+                bar.className = 'password-strength-bar strong';
+                text.textContent = '💪 Strong!';
+                text.className = 'password-strength-text strong';
+            }
+            return { strength: fulfilled, req };
+        }
+
+        // ===== VALIDATE FORM =====
+        function validateForm() {
+            const email = document.getElementById('Input_Email');
+            const password = document.getElementById('Input_Password');
+            const confirm = document.getElementById('Input_ConfirmPassword');
+            const gender = document.getElementById('Input_Gender');
+            const address = document.getElementById('Input_Address');
+            const age = document.getElementById('Input_Age');
+            const terms = document.getElementById('termsCheckbox');
+            const submitBtn = document.getElementById('registerSubmit');
+
+            let valid = true;
+
+            // Email
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (email.value && emailRegex.test(email.value)) {
+                email.classList.add('is-valid');
+                email.classList.remove('is-invalid');
+                document.querySelector('.email-success').style.display = 'block';
+            } else if (email.value) {
+                email.classList.add('is-invalid');
+                email.classList.remove('is-valid');
+                document.querySelector('.email-success').style.display = 'none';
+                valid = false;
+            } else {
+                email.classList.remove('is-valid', 'is-invalid');
+                document.querySelector('.email-success').style.display = 'none';
+                valid = false;
+            }
+
+            // Password
+            const st = checkStrength(password.value);
+            if (password.value && st.strength >= 3) {
+                password.classList.add('is-valid');
+                password.classList.remove('is-invalid');
+            } else if (password.value) {
+                password.classList.add('is-invalid');
+                password.classList.remove('is-valid');
+                valid = false;
+            } else {
+                password.classList.remove('is-valid', 'is-invalid');
+                valid = false;
+            }
+
+            // Confirm
+            if (confirm.value && confirm.value === password.value) {
+                confirm.classList.add('is-valid');
+                confirm.classList.remove('is-invalid');
+                document.querySelector('.confirm-success').style.display = 'block';
+            } else if (confirm.value) {
+                confirm.classList.add('is-invalid');
+                confirm.classList.remove('is-valid');
+                document.querySelector('.confirm-success').style.display = 'none';
+                valid = false;
+            } else {
+                confirm.classList.remove('is-valid', 'is-invalid');
+                document.querySelector('.confirm-success').style.display = 'none';
+                valid = false;
+            }
+
+            // Gender
+            if (gender.value) {
+                gender.classList.add('is-valid');
+                gender.classList.remove('is-invalid');
+            } else if (gender.dataset.touched === 'true') {
+                gender.classList.remove('is-valid');
+                gender.classList.add('is-invalid');
+                valid = false;
+            } else {
+                gender.classList.remove('is-valid', 'is-invalid');
+            }
+
+            // Address
+            if (address.value && address.value.trim().length >= 3) {
+                address.classList.add('is-valid');
+                address.classList.remove('is-invalid');
+            } else if (address.value) {
+                address.classList.add('is-invalid');
+                address.classList.remove('is-valid');
+                valid = false;
+            } else {
+                address.classList.remove('is-valid', 'is-invalid');
+                valid = false;
+            }
+
+            // Age
+            if (age.value && age.value >= 1 && age.value <= 120) {
+                age.classList.add('is-valid');
+                age.classList.remove('is-invalid');
+            } else if (age.value) {
+                age.classList.add('is-invalid');
+                age.classList.remove('is-valid');
+                valid = false;
+            } else {
+                age.classList.remove('is-valid', 'is-invalid');
+                valid = false;
+            }
+
+            // Terms
+            if (terms.checked) {
+                terms.classList.add('is-valid');
+                terms.classList.remove('is-invalid');
+            } else if (terms.dataset.touched === 'true') {
+                terms.classList.remove('is-valid');
+                terms.classList.add('is-invalid');
+                valid = false;
+            } else {
+                terms.classList.remove('is-valid', 'is-invalid');
+            }
+
+            submitBtn.disabled = !valid;
+            updateProgress();
+            return valid;
+        }
+
+        // ===== PROGRESS INDICATOR =====
+        function updateProgress() {
+            const fields = [
+                document.getElementById('Input_Email').classList.contains('is-valid'),
+                document.getElementById('Input_Password').classList.contains('is-valid'),
+                document.getElementById('Input_ConfirmPassword').classList.contains('is-valid'),
+                document.getElementById('Input_Gender').classList.contains('is-valid'),
+                document.getElementById('Input_Address').classList.contains('is-valid'),
+                document.getElementById('Input_Age').classList.contains('is-valid'),
+                document.getElementById('termsCheckbox').checked
+            ];
+            const done = fields.filter(Boolean).length;
+            const total = fields.length;
+            const pct = (done / total) * 100;
+
+            const fill = document.getElementById('progressFill');
+            const count = document.getElementById('progressCount');
+            const track = document.getElementById('progressTrack');
+
+            fill.style.width = pct + '%';
+            fill.classList.toggle('complete', done === total);
+            count.textContent = `${done} / ${total}`;
+            track.setAttribute('aria-valuenow', pct);
+        }
+
+        // ===== SHAKE A FIELD WRAPPER =====
+        function shakeField(inputEl) {
+            const wrapper = inputEl.closest('.form-floating');
+            if (!wrapper) return;
+            wrapper.classList.remove('field-shake');
+            inputEl.classList.remove('field-flash');
+            void wrapper.offsetWidth;
+            wrapper.classList.add('field-shake');
+            inputEl.classList.add('field-flash');
+            setTimeout(() => {
+                wrapper.classList.remove('field-shake');
+                inputEl.classList.remove('field-flash');
+            }, 1500);
+        }
+
+        // ===== SHOW THE INLINE ERROR SUMMARY =====
+        function showErrorSummary(message, focusFieldId) {
+            const errDiv = document.getElementById('errorSummary');
+            const errDetail = document.getElementById('errorDetail');
+
+            errDiv.classList.remove('show');
+            void errDiv.offsetWidth;
+            errDetail.innerHTML = message;
+            errDiv.classList.add('show');
+
+            errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            if (focusFieldId) {
+                const field = document.getElementById(focusFieldId);
+                if (field) {
+                    shakeField(field);
+                    setTimeout(() => field.focus({ preventScroll: true }), 350);
                 }
             }
-        </section>
-    </div>
-</div>
+        }
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+        function hideErrorSummary() {
+            const errDiv = document.getElementById('errorSummary');
+            errDiv.classList.remove('show');
+        }
+
+        // ===== FOCUS THE FIRST INVALID FIELD =====
+        function focusFirstInvalidField() {
+            const order = ['Input_Email', 'Input_Password', 'Input_ConfirmPassword', 'Input_Gender', 'Input_Address', 'Input_Age'];
+            for (const id of order) {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('is-valid')) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    shakeField(el);
+                    setTimeout(() => el.focus({ preventScroll: true }), 350);
+                    return;
+                }
+            }
+            const terms = document.getElementById('termsCheckbox');
+            if (terms && !terms.checked) {
+                terms.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                terms.focus({ preventScroll: true });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const gender = document.getElementById('Input_Gender');
+            const terms = document.getElementById('termsCheckbox');
+
+            gender.addEventListener('blur', function() {
+                this.dataset.touched = 'true';
+                validateForm();
+            });
+
+            gender.addEventListener('change', function() {
+                this.dataset.touched = 'true';
+                validateForm();
+            });
+
+            terms.addEventListener('change', function() {
+                this.dataset.touched = 'true';
+                validateForm();
+            });
+        });
+
+        // ===== RIPPLE EFFECT =====
+        function createRipple(e, btn) {
+            const rect = btn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.cssText = `
+                width: ${size}px;
+                height: ${size}px;
+                top: ${e.clientY - rect.top - size/2}px;
+                left: ${e.clientX - rect.left - size/2}px;
+            `;
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 700);
+        }
+
+        // ===== SHOW TOAST =====
+        function showToast(message, type = 'danger') {
+            const toastEl = document.getElementById('errorToast');
+            const messageEl = document.getElementById('toastMessage');
+            messageEl.textContent = message;
+            toastEl.className = `toast toast-custom align-items-center text-white border-0 bg-${type}`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // ===== DOM READY =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Live validation
+            const inputs = document.querySelectorAll('#registerForm .form-control');
+            inputs.forEach(inp => {
+                inp.addEventListener('input', validateForm);
+                inp.addEventListener('blur', function() {
+                    if (this.id === 'Input_Gender') {
+                        this.dataset.touched = 'true';
+                    }
+                    validateForm();
+                });
+            });
+
+            // Password strength on input
+            document.getElementById('Input_Password').addEventListener('input', function() {
+                checkStrength(this.value);
+                validateForm();
+            });
+
+            // Terms checkbox
+            document.getElementById('termsCheckbox').addEventListener('change', function() {
+                this.dataset.touched = 'true';
+                if (this.checked) {
+                    this.classList.remove('pulse-check');
+                    void this.offsetWidth;
+                    this.classList.add('pulse-check');
+                }
+                validateForm();
+            });
+
+            // Initial validation
+            validateForm();
+
+            // Dismiss the inline error summary
+            document.getElementById('errorClose').addEventListener('click', hideErrorSummary);
+
+            // ===== FORM SUBMIT =====
+            const form = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('registerSubmit');
+            let submitting = false;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Mark all fields as touched for validation
+                document.querySelectorAll('#registerForm .form-control').forEach(el => {
+                    el.dataset.touched = 'true';
+                });
+                document.getElementById('termsCheckbox').dataset.touched = 'true';
+
+                // Validate terms
+                const terms = document.getElementById('termsCheckbox');
+                if (!terms.checked) {
+                    terms.classList.add('is-invalid');
+                    showErrorSummary('Please accept the Terms of Service and Privacy Policy to continue.');
+                    terms.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    showToast('Please accept the Terms of Service and Privacy Policy.', 'warning');
+                    return;
+                }
+
+                if (!validateForm()) {
+                    form.classList.add('was-validated');
+                    showErrorSummary('A few fields still need your attention before we can create your account.');
+                    focusFirstInvalidField();
+                    showToast('Please fix the errors before submitting.', 'warning');
+                    return;
+                }
+
+                hideErrorSummary();
+
+                if (submitting) return;
+
+                // Ripple
+                createRipple(e, submitBtn);
+
+                // Loading state
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+                submitting = true;
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                })
+                .then(async res => {
+                    const text = await res.text();
+
+                    const wasRedirected = res.redirected && !/\/Register(\?|$)/i.test(res.url);
+
+                    const errorMatch = text.match(/<div class="validation-summary-errors"[^>]*>([\s\S]*?)<\/div>/i);
+                    const errorText = errorMatch ? errorMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+                    const hasServerErrors = errorText.length > 0;
+
+                    const looksLikeDuplicate = /already taken|duplicate/i.test(text);
+
+                    const isRealSuccess = res.ok && wasRedirected && !hasServerErrors && !looksLikeDuplicate;
+
+                    if (isRealSuccess) {
+                        hideErrorSummary();
+                        document.getElementById('successOverlay').classList.add('active');
+                        form.style.display = 'none';
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 2200);
+                    } else {
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                        submitting = false;
+
+                        if (looksLikeDuplicate) {
+                            const emailField = document.getElementById('Input_Email');
+                            emailField.classList.add('is-invalid');
+                            emailField.classList.remove('is-valid');
+                            document.querySelector('.email-success').style.display = 'none';
+
+                            showErrorSummary(
+                                'The email address <strong>' + (emailField.value || '') + '</strong> is already registered. ' +
+                                'Try <a href="/Login">signing in</a> instead, or use a different email.',
+                                'Input_Email'
+                            );
+                            showToast('This email is already registered.', 'danger');
+                        } else if (hasServerErrors) {
+                            showErrorSummary(errorText, null);
+                            showToast('Registration failed. Please check your input.', 'danger');
+                        } else {
+                            showErrorSummary('Something went wrong while creating your account. Please try again.', null);
+                            showToast('Registration failed. Please try again.', 'danger');
+                        }
+                    }
+                })
+                .catch(() => {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                    submitting = false;
+                    showErrorSummary('We couldn\'t reach the server. Please check your connection and try again.', null);
+                    showToast('Network error. Please check your connection.', 'danger');
+                });
+            });
+
+            // ===== CLOSE SUCCESS OVERLAY =====
+            document.getElementById('successOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    window.location.href = '/';
+                }
+            });
+
+            // ===== KEYBOARD SHORTCUT =====
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    if (!submitBtn.disabled) {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                }
+                if (e.key === 'Escape') {
+                    const overlay = document.getElementById('successOverlay');
+                    if (overlay.classList.contains('active')) {
+                        overlay.classList.remove('active');
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

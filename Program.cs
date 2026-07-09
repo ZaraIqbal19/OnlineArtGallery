@@ -8,7 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("connection") ?
 builder.Services.AddDbContext<Art_GalleryContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddDefaultIdentity<Art_GalleryUser>(options =>
-    options.SignIn.RequireConfirmedAccount = true)
+    options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<Art_GalleryContext>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
