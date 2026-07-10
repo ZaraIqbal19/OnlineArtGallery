@@ -1,0 +1,136 @@
+@model IEnumerable<Art_Gallery.Models.Product>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image1)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image2)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image3)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.quantity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubCategoryId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubCategory)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AvailableForBid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BidStartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BidEndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BidPrice)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(model => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Description)
+            </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image1))
+                    {
+                        <img src="@item.Image1" alt="Image1" width="80" height="80" style="object-fit:cover;" />
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image2))
+                    {
+                        <img src="@item.Image2" alt="Image2" width="80" height="80" style="object-fit:cover;" />
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image3))
+                    {
+                        <img src="@item.Image3" alt="Image3" width="80" height="80" style="object-fit:cover;" />
+                    }
+                </td>
+            <td>
+                @Html.DisplayFor(model => item.price)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.SubCategoryId)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.SubCategory)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.UserId)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.User)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.AvailableForBid)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.BidStartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.BidEndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.BidPrice)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
