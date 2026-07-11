@@ -1,0 +1,60 @@
+@model Art_Gallery.Models.Payment_Details
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Message"]
+    </div>
+}
+
+
+<h1>Create</h1>
+
+
+<h4>Payment_Details</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post" asp-controller="user" asp-action="addpaymentdetailslogic">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="CardNumber" class="control-label"></label>
+                <input asp-for="CardNumber" class="form-control" />
+                <span asp-validation-for="CardNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CardTitle" class="control-label"></label>
+                <input asp-for="CardTitle" class="form-control" />
+                <span asp-validation-for="CardTitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CVVCode" class="control-label"></label>
+                <input asp-for="CVVCode" class="form-control" />
+                <span asp-validation-for="CVVCode" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DateofExpiry" class="control-label"></label>
+                <input type="date" asp-for="DateofExpiry" class="form-control" />
+                <span asp-validation-for="DateofExpiry" class="text-danger"></span>
+            </div>
+
+           
+         
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

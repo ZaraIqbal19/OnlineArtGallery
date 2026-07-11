@@ -120,5 +120,53 @@ namespace Art_Gallery.Controllers
         {
             return View(bridge.products.ToList()); 
                 }
+
+        public IActionResult Addpaymentdetails()
+        {
+            return View();
+        }
+
+        public IActionResult Addpaymentdetailslogic(int CardNumber, string CardTitle, int CVVCode, DateOnly DateofExpiry)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var paymentdetails = new Payment_Details()
+            {
+                CardNumber = CardNumber,
+                CardTitle = CardTitle,
+                CVVCode = CVVCode,
+                DateofExpiry = DateofExpiry,
+                UserId = userId
+
+            };
+            bridge.paymentDetails.Add(paymentdetails);
+            bridge.SaveChanges();
+            TempData["Message"] = "product added sucessfully ";
+
+            return RedirectToAction("Addpaymentdetails");
+        }
+
+        public IActionResult Addcontact()
+        {
+            return View();
+        }
+
+        public IActionResult Addcontactlogic(String Message)
+        {
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var contact = new Contact() { 
+            
+            Message= Message,
+            UserId=userId
+            
+            };
+            bridge.contacts.Add(contact);
+            bridge.SaveChanges();
+            TempData["Message"] = "message sucessfully sent to admin";
+
+            return RedirectToAction("Addcontact");
+        }
     }
 }
