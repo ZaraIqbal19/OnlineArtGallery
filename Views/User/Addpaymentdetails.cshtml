@@ -1,60 +1,1962 @@
-@model Art_Gallery.Models.Payment_Details
+﻿@model Art_Gallery.Models.Payment_Details
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Payment Details";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+    // ----- Success message content -----
+    // Falls back to a friendly default if the controller didn't set one,
+    // so the modal always has something meaningful to say.
+    var successMessage = TempData["Message"] as string
+        ?? "Your card has been added successfully and is ready to use for purchases.";
 }
 
-@if (TempData["Message"] != null)
+<!-- Font Awesome 6 (free) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+@if (TempData["Message"] != null || true)
 {
-    <div class="alert alert-success" role="alert">
-        @TempData["Message"]
+    <!-- Success Popup Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content success-modal-content">
+                <!-- Confetti burst -->
+                <div class="confetti-wrap" aria-hidden="true">
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                    <span class="confetti-piece"></span>
+                </div>
+
+                <div class="success-banner"></div>
+
+                <div class="modal-body text-center p-5 pt-4">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 90 90" class="success-check-svg">
+                            <circle class="success-check-circle" cx="45" cy="45" r="40" />
+                            <path class="success-check-path" d="M27 46l12 12 24-24" />
+                        </svg>
+                    </div>
+
+                    <h3 class="mt-4 mb-2 success-title">Payment Method Added!</h3>
+                    <p class="success-subtitle">@successMessage</p>
+
+                    <div class="success-detail-chip">
+                        <i class="fas fa-shield-alt"></i> Encrypted &amp; PCI DSS compliant
+                    </div>
+
+                    <!-- Fixed: was a plain <button type="button"> which only closed the modal and
+                         never navigated anywhere. Tag helpers like asp-controller/asp-action don't
+                         wire up navigation on a <button type="button">, so it looked "broken".
+                         Using an <a> styled as a button makes the click actually navigate. -->
+                    <a asp-controller="user" asp-action="Addpaymentdetails" class="btn-success-modal">
+                        <i class="fas fa-thumbs-up"></i> Got it
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
+<style>
+    /* ----- Color Theme Variables ----- */
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --deep-forest: #1a2e0e;
+        --accent-gold: #ffd700;
+        --shadow-sm: 0 2px 10px rgba(0,0,0,0.04);
+        --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+        --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+        --shadow-xl: 0 30px 80px rgba(111, 168, 0, 0.12);
+        --radius-sm: 12px;
+        --radius-md: 18px;
+        --radius-lg: 28px;
+        --radius-xl: 36px;
+    }
 
-<h1>Create</h1>
+    /* ----- Override Layout Styles ----- */
+    .payment-page-wrapper {
+        padding-top: 120px !important;
+        padding-bottom: 80px !important;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        margin-top: 0;
+        background: radial-gradient(circle at 15% 20%, rgba(136,210,0,0.05) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(111,168,0,0.05) 0%, transparent 45%);
+    }
 
+    /* ----- Page Layout ----- */
+    .payment-page {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        padding: 1rem 2rem;
+        margin-top: 20px;
+    }
 
-<h4>Payment_Details</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post" asp-controller="user" asp-action="addpaymentdetailslogic">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    /* Floating particles */
+    .particle {
+        position: absolute;
+        font-size: 2.5rem;
+        color: rgba(136, 210, 0, 0.05);
+        animation: particleFloat 30s linear infinite;
+        pointer-events: none;
+    }
 
-            <div class="form-group">
-                <label asp-for="CardNumber" class="control-label"></label>
-                <input asp-for="CardNumber" class="form-control" />
-                <span asp-validation-for="CardNumber" class="text-danger"></span>
+        .particle:nth-child(1) {
+            top: 8%;
+            left: 3%;
+            animation-delay: 0s;
+            font-size: 5rem;
+        }
+
+        .particle:nth-child(2) {
+            top: 55%;
+            right: 2%;
+            animation-delay: 6s;
+            font-size: 3.5rem;
+        }
+
+        .particle:nth-child(3) {
+            bottom: 15%;
+            left: 5%;
+            animation-delay: 12s;
+            font-size: 6rem;
+        }
+
+    @@keyframes particleFloat {
+        0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+
+        33% {
+            transform: translate(40px, -30px) rotate(120deg) scale(1.1);
+        }
+
+        66% {
+            transform: translate(-30px, 40px) rotate(240deg) scale(0.9);
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(360deg) scale(1);
+        }
+    }
+
+    /* ----- Trust ribbon above the whole page ----- */
+    .trust-ribbon {
+        max-width: 1050px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        color: var(--dark-green);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+        .trust-ribbon i {
+            color: var(--primary-green);
+        }
+
+    /* ----- Main Container ----- */
+    .payment-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1.1fr;
+        gap: 3rem;
+        max-width: 1050px;
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+        align-items: start;
+    }
+
+    /* ----- Left Side - Credit Card Preview ----- */
+    .card-preview-section {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .card-preview-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2.5px;
+        color: #8a9f7a;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+        .card-preview-label i {
+            color: var(--primary-green);
+            font-size: 0.9rem;
+        }
+
+        .card-preview-label .live-badge {
+            margin-left: auto;
+            background: var(--ultra-light-green);
+            padding: 0.2rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.6rem;
+            color: var(--dark-green);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+            .card-preview-label .live-badge .pulse-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--primary-green);
+                animation: pulseDot 1.6s ease-in-out infinite;
+            }
+
+    @@keyframes pulseDot {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(136,210,0,0.5);
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(136,210,0,0);
+        }
+    }
+
+    /* Card Security Features */
+    .card-security-features {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+        .card-security-features .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.65rem;
+            color: #7a8f6a;
+            background: rgba(255,255,255,0.7);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(136,210,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .card-security-features .feature-item:hover {
+                background: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(136,210,0,0.1);
+            }
+
+            .card-security-features .feature-item i {
+                color: var(--primary-green);
+                font-size: 0.7rem;
+            }
+
+    .credit-card-container {
+        perspective: 1300px;
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        cursor: pointer;
+    }
+
+    .credit-card {
+        width: 100%;
+        aspect-ratio: 1.586/1;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: cardHover 4s ease-in-out infinite;
+    }
+
+    @@keyframes cardHover {
+        0%, 100% {
+            transform: translateY(0) rotateY(0deg);
+        }
+
+        50% {
+            transform: translateY(-8px) rotateY(2deg);
+        }
+    }
+
+    .credit-card-container:hover .credit-card {
+        transform: rotateY(10deg) rotateX(5deg) scale(1.02);
+        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .credit-card.flipped {
+        transform: rotateY(180deg) !important;
+        animation: none;
+    }
+
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: var(--radius-md);
+        padding: 1.8rem 2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+        overflow: hidden;
+    }
+
+    /* Card Front - richer, more premium gradient + subtle animated sheen */
+    .card-front {
+        background: linear-gradient(150deg, #16280c 0%, #1f3a12 30%, #345c1e 65%, #4a7a2a 100%);
+        transform: rotateY(0deg);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+        .card-front .card-bg-pattern {
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 200%;
+            background: radial-gradient(circle at 70% 50%, rgba(255,255,255,0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+            .card-front .card-bg-pattern::after {
+                content: '';
+                position: absolute;
+                bottom: -30%;
+                left: -20%;
+                width: 60%;
+                height: 60%;
+                background: radial-gradient(circle, rgba(136,210,0,0.08) 0%, transparent 70%);
+                border-radius: 50%;
+            }
+
+        /* Faint geometric texture for a more "premium card" feel */
+        .card-front .card-texture {
+            position: absolute;
+            inset: 0;
+            opacity: 0.5;
+            background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 14px);
+            pointer-events: none;
+        }
+
+        .card-front .card-bg-shine {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            animation: shineMove 8s ease-in-out infinite;
+        }
+
+    @@keyframes shineMove {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(10%, 10%);
+        }
+    }
+
+    .card-front .card-chip-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .card-front .card-chip {
+        width: 48px;
+        height: 34px;
+        background: linear-gradient(135deg, #ffe9a0, var(--accent-gold), #d4a800);
+        border-radius: 6px;
+        box-shadow: 0 2px 16px rgba(255, 215, 0, 0.3);
+        position: relative;
+    }
+
+        .card-front .card-chip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 4px;
+            right: 4px;
+            height: 1px;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .card-front .card-chip::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            border-radius: 4px;
+        }
+
+    .card-front .card-type {
+        color: rgba(255,255,255,0.75);
+        font-size: 1.6rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+        .card-front .card-type i {
+            font-size: 1.7rem;
+        }
+
+        .card-front .card-type.placeholder {
+            color: rgba(255,255,255,0.15);
+            font-size: 2rem;
+            letter-spacing: 4px;
+        }
+
+    .card-front .card-number {
+        color: white;
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        font-family: 'Courier New', monospace;
+        margin: 0.5rem 0 1rem;
+        text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+        .card-front .card-number .num-group {
+            flex: 1;
+            min-width: 45px;
+            text-align: center;
+            background: rgba(255,255,255,0.04);
+            padding: 0.2rem 0;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+            .card-front .card-number .num-group.active {
+                background: rgba(136,210,0,0.18);
+                box-shadow: 0 0 20px rgba(136,210,0,0.12);
+            }
+
+    .card-front .card-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .card-front .card-holder {
+        color: rgba(255,255,255,0.4);
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+        .card-front .card-holder span {
+            display: block;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 3px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+    .card-front .card-expiry {
+        color: rgba(255,255,255,0.4);
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-align: right;
+    }
+
+        .card-front .card-expiry span {
+            display: block;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Card Back */
+    .card-back {
+        background: linear-gradient(150deg, #16240c 0%, #24371a 100%);
+        transform: rotateY(180deg);
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: 1.5rem 2rem;
+    }
+
+        .card-back .card-stripe {
+            background: #0a0a0a;
+            height: 38px;
+            margin: 0.5rem -2rem 1rem;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .card-back .card-cvv-section {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .card-back .card-cvv-label {
+            color: rgba(255,255,255,0.25);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .card-back .card-cvv {
+            background: rgba(255,255,255,0.95);
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #1a1a1a;
+            min-width: 60px;
+            text-align: right;
+            letter-spacing: 3px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .card-back .card-back-text {
+            color: rgba(255,255,255,0.08);
+            font-size: 0.45rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 1.8rem;
+            text-align: center;
+        }
+
+    .flip-hint {
+        text-align: center;
+        font-size: 0.65rem;
+        color: #a3b895;
+        margin-top: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+
+        .flip-hint i {
+            color: var(--primary-green);
+            font-size: 0.6rem;
+            animation: rotateHint 3s linear infinite;
+        }
+
+    @@keyframes rotateHint {
+        0%, 100% {
+            transform: rotateY(0deg);
+        }
+
+        50% {
+            transform: rotateY(180deg);
+        }
+    }
+
+    /* ----- Right Side - Form ----- */
+    .form-section {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(24px);
+        border-radius: var(--radius-lg);
+        padding: 2.8rem;
+        box-shadow: var(--shadow-xl), var(--shadow-md);
+        border: 1px solid rgba(255,255,255,0.6);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .form-section:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl), 0 16px 50px rgba(136,210,0,0.06);
+        }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        margin-bottom: 2.2rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 2px solid rgba(136,210,0,0.08);
+    }
+
+        .form-header .header-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--ultra-light-green), var(--light-green));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-size: 1.5rem;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 16px rgba(136,210,0,0.12);
+        }
+
+        .form-header:hover .header-icon {
+            transform: scale(1.06) rotate(-6deg);
+            box-shadow: 0 6px 24px rgba(136,210,0,0.2);
+        }
+
+        .form-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-green);
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+            .form-header h2 small {
+                display: block;
+                font-size: 0.75rem;
+                font-weight: 400;
+                color: #8a9f7a;
+                letter-spacing: 0.5px;
+                margin-top: 2px;
+            }
+
+        .form-header .secure-badge {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark-green);
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: var(--ultra-light-green);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 1px solid rgba(136,210,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .form-header .secure-badge i {
+                color: var(--primary-green);
+                font-size: 0.7rem;
+            }
+
+            .form-header .secure-badge:hover {
+                background: var(--light-green);
+                transform: scale(1.02);
+            }
+
+    /* Progress indicator - shows how much of the form is complete */
+    .form-progress {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .form-progress-track {
+        flex: 1;
+        height: 6px;
+        border-radius: 50px;
+        background: var(--ultra-light-green);
+        overflow: hidden;
+    }
+
+    .form-progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 50px;
+        background: linear-gradient(90deg, var(--primary-green), var(--dark-green));
+        transition: width 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+
+    .form-progress-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--dark-green);
+        min-width: 34px;
+        text-align: right;
+    }
+
+    /* ----- Premium Input Fields ----- */
+    .input-group-modern {
+        position: relative;
+        margin-bottom: 1.8rem;
+    }
+
+        .input-group-modern .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b0c0a0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            z-index: 2;
+            pointer-events: none;
+            width: 20px;
+            text-align: center;
+        }
+
+        .input-group-modern:focus-within .input-icon {
+            color: var(--primary-green);
+            transform: translateY(-50%) scale(1.15);
+        }
+
+        .input-group-modern .form-control {
+            border: 2px solid #eaf0e2;
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem 0.75rem 3.2rem;
+            background: #fafff8;
+            transition: all 0.35s ease;
+            font-size: 0.95rem;
+            width: 100%;
+            height: 56px;
+            color: #1a2a0e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            font-weight: 500;
+        }
+
+            .input-group-modern .form-control::placeholder {
+                color: #b8c8a8;
+                font-size: 0.9rem;
+                font-weight: 400;
+            }
+
+            .input-group-modern .form-control:focus {
+                border-color: var(--primary-green);
+                box-shadow: 0 0 0 6px rgba(136,210,0,0.06), 0 4px 16px rgba(0,0,0,0.02);
+                outline: none;
+                background: white;
+                transform: translateY(-1px);
+            }
+
+            .input-group-modern .form-control:hover {
+                border-color: var(--light-green);
+                background: #fcfff8;
+            }
+
+        /* Check mark shown once a field is validated */
+        .input-group-modern .valid-check {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.5);
+            color: var(--primary-green);
+            font-size: 1rem;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .input-group-modern .form-control.input-valid ~ .valid-check {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Floating label for modern input */
+        .input-group-modern.floating .form-control {
+            padding-top: 1.3rem;
+            padding-bottom: 0.2rem;
+            height: 64px;
+        }
+
+        .input-group-modern.floating .floating-label {
+            position: absolute;
+            left: 3.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0b898;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+            background: transparent;
+            padding: 0 4px;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        /*
+               FIX: the label used to only float up based on the CSS-only
+               `:not(:placeholder-shown)` trick. That breaks for the date input
+               (browsers don't treat its native placeholder consistently) and can
+               lag when JavaScript rewrites .val() programmatically (e.g. while
+               auto-inserting spaces in the card number). We now also toggle a
+               `.has-value` class from JS on every input/blur, and float the label
+               whenever EITHER condition is true - so the placeholder text always
+               gets out of the way the moment something is typed.
+            */
+        .input-group-modern.floating .form-control:focus + .floating-label,
+        .input-group-modern.floating .form-control:not(:placeholder-shown) + .floating-label,
+        .input-group-modern.floating .form-control.has-value + .floating-label {
+            top: 4px;
+            transform: translateY(0) scale(0.7);
+            color: var(--primary-green);
+            background: white;
+            padding: 0 8px;
+            left: 2.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group-modern.floating .form-control::placeholder {
+            color: transparent;
+        }
+
+        /* Validation states */
+        .input-group-modern .form-control.input-valid {
+            border-color: var(--primary-green);
+            background: #f7ffe8;
+            box-shadow: 0 0 0 4px rgba(136,210,0,0.04);
+        }
+
+        .input-group-modern .form-control.input-invalid {
+            border-color: #dc3545;
+            background: #fff6f6;
+            box-shadow: 0 0 0 4px rgba(220,53,69,0.04);
+            animation: shakeError 0.4s ease;
+        }
+
+    @@keyframes shakeError {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(-8px);
+        }
+
+        40% {
+            transform: translateX(8px);
+        }
+
+        60% {
+            transform: translateX(-4px);
+        }
+
+        80% {
+            transform: translateX(4px);
+        }
+    }
+
+    /* Error messages */
+    .text-danger, .field-validation-error {
+        color: #dc3545;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 0.4rem;
+        padding: 0.2rem 1rem;
+        border-radius: 50px;
+        background: #fff5f5;
+        border-left: 3px solid #dc3545;
+        transition: all 0.35s ease;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+
+        .text-danger.show-error, .field-validation-error.show-error {
+            max-height: 60px;
+            opacity: 1;
+            padding: 0.3rem 1rem;
+            animation: slideDown 0.35s ease;
+        }
+
+    @@keyframes slideDown {
+        0% {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        100% {
+            max-height: 60px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .text-danger i, .field-validation-error i {
+        font-size: 0.7rem;
+        color: #dc3545;
+    }
+
+    .text-danger:empty, .field-validation-error:empty {
+        display: none;
+    }
+
+    /* Validation summary */
+    .validation-summary-errors {
+        color: #dc3545;
+        background: #fff5f5;
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #dc3545;
+        font-size: 0.85rem;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 0.9rem 2.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        box-shadow: 0 8px 28px rgba(136,210,0,0.3);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        height: 56px;
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+            animation: shimmerBtn 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+    @@keyframes shimmerBtn {
+        0% {
+            transform: translateX(-100%) rotate(45deg);
+        }
+
+        100% {
+            transform: translateX(100%) rotate(45deg);
+        }
+    }
+
+    .btn-submit:hover:not(:disabled) {
+        background: linear-gradient(135deg, #7ac000, #5f9600);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(136,210,0,0.4);
+    }
+
+    .btn-submit:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+
+    .btn-submit:disabled {
+        background: #c0d8a8;
+        box-shadow: none;
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+        .btn-submit:disabled::after {
+            display: none;
+        }
+
+    .btn-submit i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-submit:hover:not(:disabled) i {
+        transform: translateX(4px);
+    }
+
+    .btn-submit .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2.5px solid rgba(255,255,255,0.25);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Back link */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 1.5rem;
+        color: var(--dark-green);
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+        padding: 0.3rem 0;
+        font-size: 0.85rem;
+    }
+
+        .back-link:hover {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+            transform: translateX(8px);
+            text-decoration: none;
+        }
+
+        .back-link i {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover i {
+            transform: translateX(-4px);
+        }
+
+    /* ===================== Success Modal (enhanced) ===================== */
+    .success-modal-content {
+        border-radius: var(--radius-xl);
+        border: none;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.16);
+        background: white;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .success-banner {
+        height: 96px;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green) 70%, #4c7a00);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .success-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.18) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.12) 0%, transparent 45%);
+        }
+
+    /* Confetti */
+    .confetti-wrap {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 5;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        top: -12px;
+        width: 8px;
+        height: 14px;
+        opacity: 0;
+        border-radius: 2px;
+    }
+
+        .confetti-piece:nth-child(1) {
+            left: 8%;
+            background: var(--primary-green);
+        }
+
+        .confetti-piece:nth-child(2) {
+            left: 18%;
+            background: var(--accent-gold);
+        }
+
+        .confetti-piece:nth-child(3) {
+            left: 28%;
+            background: var(--dark-green);
+        }
+
+        .confetti-piece:nth-child(4) {
+            left: 38%;
+            background: #ff9f6b;
+        }
+
+        .confetti-piece:nth-child(5) {
+            left: 48%;
+            background: var(--light-green);
+        }
+
+        .confetti-piece:nth-child(6) {
+            left: 58%;
+            background: var(--accent-gold);
+        }
+
+        .confetti-piece:nth-child(7) {
+            left: 68%;
+            background: var(--primary-green);
+        }
+
+        .confetti-piece:nth-child(8) {
+            left: 76%;
+            background: #ff9f6b;
+        }
+
+        .confetti-piece:nth-child(9) {
+            left: 84%;
+            background: var(--dark-green);
+        }
+
+        .confetti-piece:nth-child(10) {
+            left: 92%;
+            background: var(--light-green);
+        }
+
+        .confetti-piece:nth-child(11) {
+            left: 62%;
+            background: var(--accent-gold);
+        }
+
+        .confetti-piece:nth-child(12) {
+            left: 14%;
+            background: var(--dark-green);
+        }
+
+    .modal.show .confetti-piece {
+        animation: confettiFall 1.6s ease-in forwards;
+    }
+
+        .modal.show .confetti-piece:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .modal.show .confetti-piece:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .modal.show .confetti-piece:nth-child(3) {
+            animation-delay: 0.02s;
+        }
+
+        .modal.show .confetti-piece:nth-child(4) {
+            animation-delay: 0.22s;
+        }
+
+        .modal.show .confetti-piece:nth-child(5) {
+            animation-delay: 0.10s;
+        }
+
+        .modal.show .confetti-piece:nth-child(6) {
+            animation-delay: 0.30s;
+        }
+
+        .modal.show .confetti-piece:nth-child(7) {
+            animation-delay: 0.08s;
+        }
+
+        .modal.show .confetti-piece:nth-child(8) {
+            animation-delay: 0.25s;
+        }
+
+        .modal.show .confetti-piece:nth-child(9) {
+            animation-delay: 0.18s;
+        }
+
+        .modal.show .confetti-piece:nth-child(10) {
+            animation-delay: 0.12s;
+        }
+
+        .modal.show .confetti-piece:nth-child(11) {
+            animation-delay: 0.35s;
+        }
+
+        .modal.show .confetti-piece:nth-child(12) {
+            animation-delay: 0.28s;
+        }
+
+    @@keyframes confettiFall {
+        0% {
+            opacity: 0;
+            transform: translateY(0) rotate(0deg);
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(220px) rotate(360deg);
+        }
+    }
+
+    .success-modal-content .success-icon {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: -66px auto 0;
+        position: relative;
+        z-index: 6;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+    }
+
+    .success-check-svg {
+        width: 62px;
+        height: 62px;
+    }
+
+    .success-check-circle {
+        fill: none;
+        stroke: var(--ultra-light-green);
+        stroke-width: 5;
+    }
+
+    .success-check-path {
+        fill: none;
+        stroke: var(--primary-green);
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: drawCheck 0.5s 0.35s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    @@keyframes drawCheck {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    .success-title {
+        color: var(--deep-forest);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .success-subtitle {
+        color: #6b8a5a;
+        font-size: 0.95rem;
+        max-width: 340px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    .success-detail-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--ultra-light-green);
+        color: var(--dark-green);
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.45rem 1rem;
+        border-radius: 50px;
+        margin: 1.1rem 0 1.6rem;
+        border: 1px solid rgba(136,210,0,0.15);
+    }
+
+        .success-detail-chip i {
+            color: var(--primary-green);
+        }
+
+    .btn-success-modal {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        color: white;
+        font-weight: 700;
+        border-radius: 50px;
+        padding: 0.85rem 2.6rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 10px 26px rgba(136,210,0,0.32);
+        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .btn-success-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(136,210,0,0.4);
+            background: linear-gradient(135deg, #7ac000, #5f9600);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-success-modal:active {
+            transform: scale(0.97);
+        }
+
+        .btn-success-modal:focus {
+            color: white;
+        }
+
+    /* ----- Responsive ----- */
+    @@media (max-width: 968px) {
+        .payment-wrapper {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            max-width: 560px;
+        }
+
+        .card-preview-section {
+            position: relative;
+            top: 0;
+        }
+
+        .credit-card-container {
+            max-width: 360px;
+        }
+
+        .card-front .card-number {
+            font-size: 1.1rem;
+        }
+
+        .card-front {
+            padding: 1.5rem;
+        }
+
+        .form-section {
+            padding: 2rem;
+        }
+
+        .payment-page-wrapper {
+            padding-top: 100px !important;
+            padding-bottom: 60px !important;
+        }
+
+        .payment-page {
+            padding: 1rem 1.5rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .payment-page {
+            padding: 0.5rem 0.8rem;
+            margin-top: 10px;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .credit-card-container {
+            max-width: 300px;
+        }
+
+        .card-front .card-number {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+            .card-front .card-number .num-group {
+                min-width: 32px;
+            }
+
+        .card-front .card-chip {
+            width: 36px;
+            height: 26px;
+        }
+
+        .card-front {
+            padding: 1rem 1.2rem;
+        }
+
+            .card-front .card-details {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+            }
+
+            .card-front .card-expiry {
+                text-align: left;
+            }
+
+        .card-back {
+            padding: 1rem 1.2rem;
+        }
+
+            .card-back .card-stripe {
+                margin: 0.3rem -1.2rem 0.8rem;
+            }
+
+        .form-header {
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+            .form-header h2 {
+                font-size: 1.1rem;
+            }
+
+            .form-header .secure-badge {
+                display: none;
+            }
+
+            .form-header .header-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+            }
+
+        .input-group-modern .form-control {
+            height: 50px;
+            font-size: 0.9rem;
+            padding-left: 2.8rem;
+        }
+
+        .input-group-modern.floating .form-control {
+            height: 58px;
+        }
+
+        .input-group-modern .input-icon {
+            left: 14px;
+            font-size: 0.9rem;
+        }
+
+        .input-group-modern.floating .floating-label {
+            left: 2.8rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-submit {
+            height: 50px;
+            font-size: 0.9rem;
+            gap: 10px;
+        }
+
+        .payment-page-wrapper {
+            padding-top: 80px !important;
+            padding-bottom: 40px !important;
+        }
+
+        .card-security-features .feature-item {
+            font-size: 0.55rem;
+            padding: 0.2rem 0.6rem;
+        }
+
+        .card-security-features {
+            gap: 0.5rem;
+        }
+
+        .success-banner {
+            height: 76px;
+        }
+
+        .success-modal-content .success-icon {
+            width: 78px;
+            height: 78px;
+            margin-top: -54px;
+        }
+
+        .success-check-svg {
+            width: 50px;
+            height: 50px;
+        }
+    }
+</style>
+
+<div class="payment-page-wrapper">
+    <!-- Floating particles -->
+    <div class="particle"><i class="fas fa-credit-card"></i></div>
+    <div class="particle"><i class="fas fa-lock"></i></div>
+    <div class="particle"><i class="fas fa-shield-alt"></i></div>
+
+    <div class="payment-page">
+
+        <div class="trust-ribbon">
+            <i class="fas fa-lock"></i> All payment data is encrypted end-to-end and never stored in plain text
+        </div>
+
+        <div class="payment-wrapper">
+            <!-- Left Side - Credit Card Preview -->
+            <div class="card-preview-section">
+                <div class="card-preview-label">
+                    <i class="fas fa-credit-card"></i> Card Preview
+                    <span class="live-badge">
+                        <span class="pulse-dot"></span> Live
+                    </span>
+                </div>
+
+                <div class="credit-card-container" id="cardFlipTrigger">
+                    <div class="credit-card" id="creditCard">
+                        <!-- Front -->
+                        <div class="card-face card-front">
+                            <div class="card-bg-pattern"></div>
+                            <div class="card-texture"></div>
+                            <div class="card-bg-shine"></div>
+                            <div class="card-chip-container">
+                                <div class="card-chip"></div>
+                                <div class="card-type placeholder" id="cardBrandIcon">✦</div>
+                            </div>
+                            <div class="card-number" id="cardDisplayNumber">
+                                <span class="num-group">••••</span>
+                                <span class="num-group">••••</span>
+                                <span class="num-group">••••</span>
+                                <span class="num-group">••••</span>
+                            </div>
+                            <div class="card-details">
+                                <div class="card-holder">
+                                    Card Holder
+                                    <span id="cardDisplayName">YOUR NAME</span>
+                                </div>
+                                <div class="card-expiry">
+                                    Expires
+                                    <span id="cardDisplayExpiry">MM/YY</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Back -->
+                        <div class="card-face card-back">
+                            <div class="card-stripe"></div>
+                            <div class="card-cvv-section">
+                                <span class="card-cvv-label">CVV</span>
+                                <span class="card-cvv" id="cardDisplayCVV">•••</span>
+                            </div>
+                            <div class="card-back-text">Secure Payment System</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-hint"><i class="fas fa-sync-alt"></i> Tap the card to flip it</div>
+
+                <!-- Card Security Features -->
+                <div class="card-security-features">
+                    <span class="feature-item"><i class="fas fa-shield-alt"></i> 256-bit SSL</span>
+                    <span class="feature-item"><i class="fas fa-lock"></i> PCI Compliant</span>
+                    <span class="feature-item"><i class="fas fa-user-shield"></i> Fraud Protection</span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label asp-for="CardTitle" class="control-label"></label>
-                <input asp-for="CardTitle" class="form-control" />
-                <span asp-validation-for="CardTitle" class="text-danger"></span>
-            </div>
+            <!-- Right Side - Form -->
+            <div class="form-section">
+                <div class="form-header">
+                    <div class="header-icon"><i class="fas fa-lock"></i></div>
+                    <h2>
+                        Payment Details
+                        <small>Enter your card information securely</small>
+                    </h2>
+                    <div class="secure-badge"><i class="fas fa-shield-alt"></i> Secure</div>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="CVVCode" class="control-label"></label>
-                <input asp-for="CVVCode" class="form-control" />
-                <span asp-validation-for="CVVCode" class="text-danger"></span>
-            </div>
+                <div class="form-progress">
+                    <div class="form-progress-track">
+                        <div class="form-progress-fill" id="formProgressFill"></div>
+                    </div>
+                    <div class="form-progress-label" id="formProgressLabel">0%</div>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="DateofExpiry" class="control-label"></label>
-                <input type="date" asp-for="DateofExpiry" class="form-control" />
-                <span asp-validation-for="DateofExpiry" class="text-danger"></span>
-            </div>
+                <form method="post" asp-controller="user" asp-action="addpaymentdetailslogic" id="paymentForm" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:0.5rem;"></div>
 
-           
-         
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                    <!-- Card Number: displayed with auto-inserted spaces (1234 5678 9012 3456),
+                         the real 16-digit value is submitted via the hidden input below. -->
+                    <div class="input-group-modern floating">
+                        <i class="fas fa-credit-card input-icon"></i>
+                        <input type="text" class="form-control" id="CardNumberDisplay"
+                               maxlength="19" inputmode="numeric" autocomplete="cc-number"
+                               placeholder=" " />
+                        <label for="CardNumberDisplay" class="floating-label">Card Number</label>
+                        <i class="fas fa-check-circle valid-check"></i>
+                        <span class="text-danger" id="cardNumberError">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </span>
+                        <input asp-for="CardNumber" type="hidden" id="CardNumber" />
+                    </div>
+
+                    <!-- Card Holder Name -->
+                    <div class="input-group-modern floating">
+                        <i class="fas fa-user input-icon"></i>
+                        <input asp-for="CardTitle" class="form-control" id="CardTitle"
+                               maxlength="50" placeholder=" " />
+                        <label asp-for="CardTitle" class="floating-label">Card Holder Name</label>
+                        <i class="fas fa-check-circle valid-check"></i>
+                        <span asp-validation-for="CardTitle" class="text-danger" id="cardTitleError">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </span>
+                    </div>
+
+                    <!-- CVV & Expiry -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group-modern floating">
+                                <i class="fas fa-key input-icon"></i>
+                                <input asp-for="CVVCode" class="form-control" id="CVVCode"
+                                       maxlength="3" inputmode="numeric" placeholder=" " />
+                                <label asp-for="CVVCode" class="floating-label">CVV</label>
+                                <i class="fas fa-check-circle valid-check"></i>
+                                <span asp-validation-for="CVVCode" class="text-danger" id="cvvError">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group-modern floating">
+                                <i class="fas fa-calendar-alt input-icon"></i>
+                                <input type="date" asp-for="DateofExpiry" class="form-control" id="DateofExpiry" placeholder=" " />
+                                <i class="fas fa-check-circle valid-check"></i>
+                                <span asp-validation-for="DateofExpiry" class="text-danger" id="expiryError">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                            <i class="fas fa-save"></i>
+                            <span>Secure Payment</span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="spinner" id="submitSpinner"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Back link -->
+                <div>
+                    <a asp-action="Index" class="back-link">
+                        <i class="fas fa-chevron-left"></i> Back to List
+                    </a>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(function () {
+        // Show success modal
+        @if (TempData["Message"] != null)
+        {
+                        <text>
+                            var successModal = new bootstrap.Modal(document.getElementById('successModal'), {
+                                backdrop: 'static',
+                                keyboard: true
+                            });
+                            successModal.show();
+                        </text>
+        }
+
+        // ----- Helper: toggle the "has-value" class that drives the floating label -----
+        // This is the key fix for "placeholder text not going away when typing":
+        // instead of relying only on the CSS :placeholder-shown trick (which some
+        // browsers/input types like <input type="date"> don't handle well, and which
+        // can lag when we rewrite .val() from JS), we explicitly flag every field
+        // with .has-value the moment it has content, on every input/blur/change.
+        function syncFloatingLabel($input) {
+            const val = $input.val();
+            if (val && val.length > 0) {
+                $input.addClass('has-value');
+            } else {
+                $input.removeClass('has-value');
+            }
+        }
+
+        // ----- Card brand detection (Visa / Mastercard / Amex / Discover) -----
+        function detectCardBrand(digits) {
+            if (/^4/.test(digits)) return { icon: 'fa-cc-visa', label: 'Visa' };
+            if (/^(5[1-5]|2[2-7])/.test(digits)) return { icon: 'fa-cc-mastercard', label: 'Mastercard' };
+            if (/^3[47]/.test(digits)) return { icon: 'fa-cc-amex', label: 'Amex' };
+            if (/^6(011|5)/.test(digits)) return { icon: 'fa-cc-discover', label: 'Discover' };
+            return null;
+        }
+
+        function updateCardBrand(digits) {
+            const brand = detectCardBrand(digits);
+            const $el = $('#cardBrandIcon');
+            if (brand) {
+                $el.removeClass('placeholder').html('<i class="fab ' + brand.icon + '"></i>');
+            } else {
+                $el.addClass('placeholder').text('✦');
+            }
+        }
+
+        // Groups raw digits into "1234 5678 9012 3456" style spacing
+        function formatCardNumber(digits) {
+            const groups = digits.match(/.{1,4}/g) || [];
+            return groups.join(' ');
+        }
+
+        // ----- Live card preview with grouped display -----
+        function updateCardPreview() {
+            let clean = ($('#CardNumber').val() || '');
+            let groups = clean.match(/.{1,4}/g) || ['••••', '••••', '••••', '••••'];
+            while (groups.length < 4) groups.push('••••');
+            $('.card-number .num-group').each(function (i) {
+                $(this).text(groups[i] || '••••');
+            });
+
+            updateCardBrand(clean);
+
+            let name = $('#CardTitle').val() || 'YOUR NAME';
+            $('#cardDisplayName').text(name.toUpperCase() || 'YOUR NAME');
+
+            let cvv = $('#CVVCode').val() || '•••';
+            $('#cardDisplayCVV').text(cvv.padEnd(3, '•'));
+
+            let expiry = $('#DateofExpiry').val() || '';
+            if (expiry) {
+                let parts = expiry.split('-');
+                let month = parts[1] || 'MM';
+                let year = parts[0] ? parts[0].slice(2) : 'YY';
+                $('#cardDisplayExpiry').text(month + '/' + year);
+            } else {
+                $('#cardDisplayExpiry').text('MM/YY');
+            }
+        }
+
+        // ----- Card flip on click/tap -----
+        $('#cardFlipTrigger').on('click', function () {
+            $('#creditCard').toggleClass('flipped');
+        });
+        // Auto-flip to show CVV while typing it, then flip back
+        $('#CVVCode').on('focus', function () { $('#creditCard').addClass('flipped'); });
+        $('#CVVCode').on('blur', function () { $('#creditCard').removeClass('flipped'); });
+
+        // ----- Validation functions -----
+        function validateCardNumber(value) {
+            const cleaned = (value || '').replace(/\s/g, '');
+            if (cleaned.length === 0) return { valid: false, msg: 'Card number is required.' };
+            if (!/^\d+$/.test(cleaned)) return { valid: false, msg: 'Only digits allowed.' };
+            if (cleaned.length !== 16) return { valid: false, msg: 'Must be exactly 16 digits.' };
+            return { valid: true, msg: '' };
+        }
+
+        function validateCardTitle(value) {
+            if (!value || value.trim().length === 0) return { valid: false, msg: 'Card holder name is required.' };
+            if (!/^[A-Za-z\s]+$/.test(value)) return { valid: false, msg: 'Only letters and spaces allowed.' };
+            if (value.length < 3 || value.length > 50) return { valid: false, msg: 'Must be 3 to 50 characters.' };
+            return { valid: true, msg: '' };
+        }
+
+        function validateCVV(value) {
+            if (!value || value.length === 0) return { valid: false, msg: 'CVV is required.' };
+            if (!/^\d+$/.test(value)) return { valid: false, msg: 'Only digits allowed.' };
+            if (value.length !== 3) return { valid: false, msg: 'Must be exactly 3 digits.' };
+            return { valid: true, msg: '' };
+        }
+
+        function validateExpiry(value) {
+            if (!value) return { valid: false, msg: 'Expiry date is required.' };
+            const selected = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selected < today) return { valid: false, msg: 'Date must be today or a future date.' };
+            return { valid: true, msg: '' };
+        }
+
+        function updateProgress() {
+            const cardNum = $('#CardNumber').val() || '';
+            const cardTitle = $('#CardTitle').val() || '';
+            const cvv = $('#CVVCode').val() || '';
+            const expiry = $('#DateofExpiry').val() || '';
+
+            let done = 0;
+            if (validateCardNumber(cardNum).valid) done++;
+            if (validateCardTitle(cardTitle).valid) done++;
+            if (validateCVV(cvv).valid) done++;
+            if (validateExpiry(expiry).valid) done++;
+
+            const pct = Math.round((done / 4) * 100);
+            $('#formProgressFill').css('width', pct + '%');
+            $('#formProgressLabel').text(pct + '%');
+        }
+
+        function updateSubmitButton() {
+            const cardNum = $('#CardNumber').val() || '';
+            const cardTitle = $('#CardTitle').val() || '';
+            const cvv = $('#CVVCode').val() || '';
+            const expiry = $('#DateofExpiry').val() || '';
+
+            const allValid = validateCardNumber(cardNum).valid &&
+                             validateCardTitle(cardTitle).valid &&
+                             validateCVV(cvv).valid &&
+                             validateExpiry(expiry).valid;
+            $('#submitBtn').prop('disabled', !allValid);
+            updateProgress();
+        }
+
+        function showError(errorSpan, message) {
+            if (message) {
+                errorSpan.html('<i class="fas fa-exclamation-circle"></i> ' + message).addClass('show-error');
+            } else {
+                errorSpan.html('<i class="fas fa-exclamation-circle"></i>').removeClass('show-error');
+            }
+        }
+
+        function setFieldValidity(input, isValid, errorSpan, message) {
+            const $input = $(input);
+            if (isValid) {
+                $input.removeClass('input-invalid').addClass('input-valid');
+                showError(errorSpan, null);
+            } else {
+                $input.removeClass('input-valid').addClass('input-invalid');
+                showError(errorSpan, message);
+            }
+        }
+
+        // ----- Card Number: type in #CardNumberDisplay (spaced), keep raw digits in
+        // hidden #CardNumber (the one actually submitted to the server) -----
+        $('#CardNumberDisplay').on('input', function () {
+            const caretWasAtEnd = this.selectionStart === this.value.length;
+            let raw = ($(this).val() || '').replace(/\D/g, '').slice(0, 16);
+            const formatted = formatCardNumber(raw);
+
+            $(this).val(formatted);
+            $('#CardNumber').val(raw);
+            syncFloatingLabel($(this));
+
+            if (caretWasAtEnd) {
+                this.setSelectionRange(this.value.length, this.value.length);
+            }
+
+            const result = validateCardNumber(raw);
+            const errorSpan = $('#cardNumberError');
+            if ($(this).is(':focus')) {
+                if (!result.valid && raw.length > 0) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else if (result.valid) { setFieldValidity(this, true, errorSpan, null); }
+                else { $(this).removeClass('input-valid input-invalid'); showError(errorSpan, null); }
+            } else {
+                if (!result.valid) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else { setFieldValidity(this, true, errorSpan, null); }
+            }
+            updateSubmitButton();
+            updateCardPreview();
+        });
+
+        $('#CardNumberDisplay').on('blur', function () {
+            const raw = $('#CardNumber').val() || '';
+            const result = validateCardNumber(raw);
+            const errorSpan = $('#cardNumberError');
+            if (!result.valid) { setFieldValidity(this, false, errorSpan, result.msg); }
+            else { setFieldValidity(this, true, errorSpan, null); }
+        });
+
+        $('#CardTitle').on('blur input', function () {
+            let value = $(this).val() || '';
+            const filtered = value.replace(/[^A-Za-z\s]/g, '');
+            if (filtered !== value) { $(this).val(filtered); value = filtered; }
+            if (value.length > 50) { $(this).val(value.slice(0, 50)); value = value.slice(0, 50); }
+            syncFloatingLabel($(this));
+            const result = validateCardTitle(value);
+            const errorSpan = $('#cardTitleError');
+            if ($(this).is(':focus')) {
+                if (!result.valid && value.length > 0) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else if (result.valid) { setFieldValidity(this, true, errorSpan, null); }
+            } else {
+                if (!result.valid) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else { setFieldValidity(this, true, errorSpan, null); }
+            }
+            updateSubmitButton();
+            updateCardPreview();
+        });
+
+        $('#CVVCode').on('blur input', function () {
+            let value = $(this).val() || '';
+            const digitsOnly = value.replace(/\D/g, '');
+            if (digitsOnly !== value) { $(this).val(digitsOnly); value = digitsOnly; }
+            if (value.length > 3) { $(this).val(value.slice(0, 3)); value = value.slice(0, 3); }
+            syncFloatingLabel($(this));
+            const result = validateCVV(value);
+            const errorSpan = $('#cvvError');
+            if ($(this).is(':focus')) {
+                if (!result.valid && value.length > 0) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else if (result.valid) { setFieldValidity(this, true, errorSpan, null); }
+            } else {
+                if (!result.valid) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else { setFieldValidity(this, true, errorSpan, null); }
+            }
+            updateSubmitButton();
+            updateCardPreview();
+        });
+
+        $('#DateofExpiry').on('blur input change', function () {
+            const value = $(this).val() || '';
+            syncFloatingLabel($(this));
+            const result = validateExpiry(value);
+            const errorSpan = $('#expiryError');
+            if ($(this).is(':focus')) {
+                if (!result.valid && value.length > 0) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else if (result.valid) { setFieldValidity(this, true, errorSpan, null); }
+            } else {
+                if (!result.valid) { setFieldValidity(this, false, errorSpan, result.msg); }
+                else { setFieldValidity(this, true, errorSpan, null); }
+            }
+            updateSubmitButton();
+            updateCardPreview();
+        });
+
+        // Initial state
+        $('#submitBtn').prop('disabled', true);
+        updateProgress();
+        updateCardPreview();
+
+        // Form submit
+        $('#paymentForm').on('submit', function (e) {
+            $('#CardNumberDisplay').trigger('blur');
+            $('#CardTitle').trigger('blur');
+            $('#CVVCode').trigger('blur');
+            $('#DateofExpiry').trigger('blur');
+            updateSubmitButton();
+
+            if ($('#submitBtn').prop('disabled')) {
+                e.preventDefault();
+                $('.input-invalid').first().focus();
+                return false;
+            }
+
+            // Show spinner
+            const $btn = $('#submitBtn');
+            $btn.find('i.fa-save, i.fa-arrow-right, span:not(.spinner)').hide();
+            $btn.find('.spinner').show();
+            $btn.prop('disabled', true);
+            return true;
+        });
+    });
+</script>

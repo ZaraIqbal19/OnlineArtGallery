@@ -118,8 +118,8 @@ namespace Art_Gallery.Controllers
         }
         public IActionResult Allproducts()
         {
-            return View(bridge.products.ToList()); 
-                }
+            return View(bridge.products.ToList());
+        }
 
         public IActionResult Addpaymentdetails()
         {
@@ -156,17 +156,63 @@ namespace Art_Gallery.Controllers
 
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var contact = new Contact() { 
-            
-            Message= Message,
-            UserId=userId
-            
+            var contact = new Contact()
+            {
+
+                Message = Message,
+                UserId = userId
+
             };
             bridge.contacts.Add(contact);
             bridge.SaveChanges();
             TempData["Message"] = "message sucessfully sent to admin";
 
             return RedirectToAction("Addcontact");
+        }
+        [Authorize]
+        public IActionResult MyProducts()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var products = bridge.products.Include(p => p.SubCategory).Include(p => p.User)
+            .Where(p => p.UserId == userId).ToList();
+            return View(products);
+        }
+
+        public IActionResult Edit(int Id)
+        {
+
+            return View(bridge.products.Find(Id));
+        }
+
+        public IActionResult Editlogic(int Id, Product pro)
+        {
+            var Prod = bridge.products.Find(Id);
+            Prod.Name = pro.Name;
+            Prod.Description = pro.Description;
+            Prod.Image1 = pro.Image1;
+            Prod.Image2 = pro.Image2;
+            Prod.Image3 = pro.Image3;
+            Prod.price = pro.price;
+            Prod.quantity = pro.quantity;
+            Prod.BidPrice = pro.BidPrice;
+            Prod.BidStartDate = pro.BidStartDate;
+            Prod.BidEndDate = pro.BidEndDate;
+            bridge.SaveChanges();
+            TempData["Message"] = "Product Updated Successfully";
+            return RedirectToAction("Allproducts");
+        }
+
+        public IActionResult Delete(int Id)
+        {
+            return View(bridge.products.Find(Id));
+        }
+        public IActionResult Deletelogic(int Id)
+        {
+            var Pro = bridge.products.Find(Id);
+            bridge.products.Remove(Pro);
+            bridge.SaveChanges();
+            TempData["Message"] = "Product deleted Successfully";
+            return RedirectToAction("Addproduct", "User");
         }
     }
 }
