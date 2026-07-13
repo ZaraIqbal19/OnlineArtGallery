@@ -214,5 +214,18 @@ namespace Art_Gallery.Controllers
             TempData["Message"] = "Product deleted Successfully";
             return RedirectToAction("Addproduct", "User");
         }
+
+
+        public IActionResult Allcategories()
+        {
+
+            ViewBag.Categories = bridge.categories.ToList();
+            ViewBag.SubCategories = bridge.subCategories.ToList();
+
+            return View(ViewBag.Categories);
+        }
+
+
+
     }
 }
