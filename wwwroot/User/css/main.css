@@ -1876,13 +1876,14 @@ h1, h2, h3, h4, h5, h6 {
 # Header
 --------------------------------------------------------------*/
 #header {
-  padding: 0px 0px 14px 0;
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  transition: all 0.5s;
-  z-index: 997;
+    padding: 0px 0px 14px 0;
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    transition: all 0.5s;
+    z-index: 997;
+    background: rgba(0, 0, 0, 0.85);
 }
 
 #header hr {
@@ -1926,9 +1927,30 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #header.header-scrolled {
-  background: rgba(0, 0, 0, 0.8);
-  transition: all 0.5s;
+    background: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.5s;
+    color:white;
 }
+
+    #header.header-scrolled #logo h1 a,
+    #header.header-scrolled #logo h1 a:hover {
+        color: #ffffff;
+        border-left-color: #88d200;
+    }
+
+    #header.header-scrolled .nav-menu a {
+        color: #ffffff;
+    }
+
+#header.header-scrolled .nav-menu a:hover {
+  color: #88d200;
+}
+
+    #header.header-scrolled .top-head-left a,
+    #header.header-scrolled .top-head-right a {
+        color: #ffffff;
+    }
 
 @media (max-width: 673px) {
   #logo {

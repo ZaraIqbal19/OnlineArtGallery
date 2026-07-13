@@ -1,50 +1,1085 @@
 @model IEnumerable<Art_Gallery.Models.Category>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categories";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-success" role="alert">
-        @TempData["Message"]
-    </div>
-}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    /* ---------- GREEN & WHITE THEME · ENHANCED (matches Create Category) ---------- */
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --card-shadow: 0 20px 60px rgba(136, 210, 0, 0.12);
+        --border-radius-lg: 32px;
+        --border-radius-md: 24px;
+        --border-radius-sm: 20px;
+        --error-color: #dc3545;
+        --error-bg: #fff5f5;
+        --success-color: #28a745;
+        --success-bg: #e6f4ea;
+    }
 
+    ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+    }
 
+    * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
 
-<h1>Index</h1>
+    .create-page-wrapper {
+        padding: 20px 0;
+        animation: fadeInUp 0.6s ease;
+        overflow: hidden;
+    }
 
-<p>
-    <a asp-action="Create" class="btn btn-success">Create New Category</a>
-</p>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
 
-<h1>Add Subcategory</h1>
-<div class="row">
-    <div class="col-md-4">
-        <form asp-controller="Admin" asp-action="Addsubcategorylogic" method="post">
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-            <div class="form-group mb-3">
-                <label for="Name" class="control-label">Subcategory Name</label>
-                <input type="text" name="Name" class="form-control" required />
+    /* ===== CARD ===== */
+    .card-green-white {
+        background: #ffffff;
+        border: none;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--card-shadow);
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .card-green-white::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-green), var(--dark-green), var(--primary-green));
+            background-size: 200% 100%;
+            animation: shimmerGreen 4s infinite;
+            z-index: 2;
+        }
+
+    @@keyframes shimmerGreen {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .card-green-white:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 28px 70px rgba(136, 210, 0, 0.18);
+    }
+
+    .text-green-accent {
+        color: var(--primary-green);
+    }
+
+    .bg-green-soft {
+        background: var(--ultra-light-green);
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-green {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        color: white;
+        padding: 14px 36px;
+        border-radius: 60px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 8px 30px rgba(136, 210, 0, 0.35);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-green:hover {
+            background: linear-gradient(135deg, #7abe00, #5a8f00);
+            transform: scale(1.04) translateY(-3px);
+            box-shadow: 0 14px 40px rgba(136, 210, 0, 0.50);
+            color: #fff;
+        }
+
+        .btn-green:active {
+            transform: scale(0.96);
+        }
+
+        .btn-green i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-green:hover i {
+            transform: rotate(6deg) scale(1.1);
+        }
+
+    .btn-outline-green {
+        background: transparent;
+        border: 2px solid var(--primary-green);
+        color: var(--dark-green);
+        padding: 12px 30px;
+        border-radius: 60px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-outline-green:hover {
+            background: var(--ultra-light-green);
+            transform: scale(1.03) translateY(-2px);
+            color: var(--dark-green);
+            border-color: var(--dark-green);
+        }
+
+    /* ===== FORM INPUTS ===== */
+    .form-control-green {
+        border: 2px solid #e2e8e0;
+        border-radius: var(--border-radius-sm);
+        padding: 14px 20px;
+        transition: all 0.3s ease;
+        background: #fefcfc;
+        font-weight: 450;
+        font-size: 1rem;
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        width: 100%;
+    }
+
+        .form-control-green:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 6px rgba(136, 210, 0, 0.12), inset 0 2px 8px rgba(0,0,0,0.02);
+            background: #ffffff;
+            outline: none;
+        }
+
+    select.form-control-green {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236fa800' viewBox='0 0 16 16'%3e%3cpath d='M8 11.5 3 6.5h10z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 18px center;
+        padding-right: 44px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #2d3d24;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-label i {
+            color: var(--primary-green);
+            width: 20px;
+            text-align: center;
+        }
+
+    /* ===== VALIDATION STATES ===== */
+    .form-control-green.is-valid {
+        border-color: var(--success-color);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='20 6 9 17 4 12'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 22px;
+        padding-right: 50px;
+    }
+
+    select.form-control-green.is-valid {
+        background-position: right 44px center, right 16px center;
+    }
+
+    .form-control-green.is-invalid {
+        border-color: var(--error-color);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%23dc3545' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='12' cy='12' r='10'%3e%3c/circle%3e%3cline x1='15' y1='9' x2='9' y2='15'%3e%3c/line%3e%3cline x1='9' y1='9' x2='15' y2='15'%3e%3c/line%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 22px;
+        padding-right: 50px;
+        animation: invalidShake 0.5s ease;
+    }
+
+    @@keyframes invalidShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+
+    .invalid-feedback, .valid-feedback {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .invalid-feedback {
+        color: var(--error-color);
+    }
+
+    .valid-feedback {
+        color: var(--success-color);
+    }
+
+    .input-group-icon {
+        position: relative;
+    }
+
+        .input-group-icon .form-control-green {
+            padding-left: 48px;
+        }
+
+        .input-group-icon .input-icon-left {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            transition: all 0.3s ease;
+            z-index: 3;
+            font-size: 1rem;
+        }
+
+        .input-group-icon:focus-within .input-icon-left {
+            color: var(--primary-green);
+        }
+
+    /* ===== SCOPED VALIDATION ALERT (won't be forced open by global .alert rules) ===== */
+    .validation-alert-custom {
+        display: none !important;
+        align-items: center;
+        gap: 10px;
+        background: var(--error-bg);
+        color: var(--error-color);
+        border: 1px solid rgba(220, 53, 69, 0.25);
+        border-radius: var(--border-radius-sm);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease;
+    }
+
+        .validation-alert-custom.show {
+            display: flex !important;
+        }
+
+        .validation-alert-custom i {
+            font-size: 1rem;
+        }
+
+    /* ===== SECTION DIVIDER ===== */
+    .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 8px 0 24px;
+    }
+
+        .section-divider .line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--light-green), transparent);
+        }
+
+        .section-divider .divider-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(136,210,0,0.3);
+            font-size: 1.1rem;
+        }
+
+    /* ===== PAGE HERO ===== */
+    .page-hero {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border-radius: var(--border-radius-lg);
+        padding: 32px 40px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        box-shadow: 0 20px 50px rgba(136,210,0,0.25);
+    }
+
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -10%;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .page-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -5%;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .page-hero h2 {
+            font-weight: 800;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-hero p {
+            opacity: 0.9;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+            font-size: 0.95rem;
+        }
+
+        .page-hero .hero-stats {
+            display: flex;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+
+        .page-hero .hero-stat {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 16px;
+            padding: 10px 18px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+            .page-hero .hero-stat .num {
+                font-size: 1.4rem;
+                font-weight: 800;
+                display: block;
+                line-height: 1.1;
+            }
+
+            .page-hero .hero-stat .label {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                opacity: 0.85;
+            }
+
+    @@media (max-width: 768px) {
+        .page-hero {
+            padding: 24px;
+            text-align: center;
+        }
+
+            .page-hero .hero-stats {
+                justify-content: center;
+                margin-top: 14px;
+            }
+    }
+
+    .breadcrumb-custom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #7a8a7a;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background: var(--ultra-light-green);
+        border-radius: 50px;
+        border: 1px solid var(--light-green);
+        width: fit-content;
+    }
+
+        .breadcrumb-custom i {
+            color: var(--primary-green);
+        }
+
+        .breadcrumb-custom .separator {
+            color: #c0d0c0;
+        }
+
+        .breadcrumb-custom .current {
+            color: var(--dark-green);
+            font-weight: 600;
+        }
+
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        background: var(--ultra-light-green);
+        border-radius: 50px;
+        font-size: 0.75rem;
+        color: var(--dark-green);
+        border: 1px solid var(--light-green);
+    }
+
+    /* ===== CATEGORY GRID ===== */
+    .category-pill-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .category-pill {
+        background: var(--ultra-light-green);
+        border: 1px solid var(--light-green);
+        border-radius: var(--border-radius-sm);
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+    }
+
+        .category-pill:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(136, 210, 0, 0.18);
+            border-color: var(--primary-green);
+        }
+
+        .category-pill .cat-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            box-shadow: 0 6px 16px rgba(136,210,0,0.3);
+        }
+
+        .category-pill .cat-name {
+            font-weight: 700;
+            color: #2d3d24;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex: 1;
+            gap: 8px;
+        }
+
+            .category-pill .cat-name .cat-arrow {
+                font-size: 0.7rem;
+                color: var(--light-green);
+                opacity: 0;
+                transform: translateX(-4px);
+                transition: all 0.3s ease;
+            }
+
+        .category-pill:hover .cat-name .cat-arrow {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--primary-green);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #7a8a7a;
+    }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            color: var(--light-green);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+    /* ===== SUCCESS POPUP ===== */
+    .success-popup-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 9999;
+        animation: overlayFadeIn 0.4s ease;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+        .success-popup-overlay.show {
+            display: flex;
+        }
+
+    @@keyframes overlayFadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .success-popup {
+        background: linear-gradient(145deg, #ffffff, #f8fbf8);
+        border-radius: var(--border-radius-lg);
+        padding: 50px 45px 40px;
+        max-width: 480px;
+        width: 100%;
+        position: relative;
+        animation: popupBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(136, 210, 0, 0.1);
+        text-align: center;
+        overflow: hidden;
+    }
+
+    @@keyframes popupBounce {
+        0% {
+            opacity: 0;
+            transform: scale(0.3) translateY(-80px) rotate(-10deg);
+        }
+
+        50% {
+            transform: scale(1.05) translateY(10px) rotate(2deg);
+        }
+
+        70% {
+            transform: scale(0.95) translateY(-5px) rotate(-1deg);
+        }
+
+        85% {
+            transform: scale(1.01) translateY(2px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0) rotate(0deg);
+        }
+    }
+
+    .success-popup .popup-icon {
+        width: 110px;
+        height: 110px;
+        background: linear-gradient(135deg, #e6f4ea, #d4edda);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        position: relative;
+        animation: popupIconPulse 3s ease-in-out infinite;
+    }
+
+    @@keyframes popupIconPulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.2);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 26px rgba(40, 167, 69, 0);
+        }
+    }
+
+    .success-popup .popup-icon i {
+        font-size: 4rem;
+        color: var(--success-color);
+        animation: popupCheck 1s ease;
+    }
+
+    @@keyframes popupCheck {
+        0% {
+            transform: scale(0) rotate(-180deg);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.3) rotate(10deg);
+            opacity: 1;
+        }
+
+        70% {
+            transform: scale(0.9) rotate(-5deg);
+        }
+
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    .success-popup .popup-title {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #1a3324;
+        margin-bottom: 6px;
+    }
+
+        .success-popup .popup-title .highlight {
+            background: linear-gradient(135deg, var(--primary-green), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+    .success-popup .popup-message {
+        color: #6a8a7a;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .success-popup .popup-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+        .success-popup .popup-actions .btn-popup-primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border: none;
+            color: white;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(136, 210, 0, 0.35);
+        }
+
+            .success-popup .popup-actions .btn-popup-primary:hover {
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 12px 40px rgba(136, 210, 0, 0.45);
+            }
+
+    .success-popup .popup-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(0, 0, 0, 0.04);
+        border: none;
+        color: #a0b0a0;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .success-popup .popup-close:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: #4a6a5a;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+    @@media (max-width: 576px) {
+        .card-green-white {
+            padding: 1.6rem !important;
+        }
+
+        .btn-green, .btn-outline-green {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .success-popup {
+            padding: 32px 20px 28px;
+        }
+
+            .success-popup .popup-title {
+                font-size: 1.5rem;
+            }
+    }
+</style>
+
+<div class="create-page-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-11">
+
+            <!-- ===== PAGE HERO ===== -->
+            <div class="page-hero">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h2><i class="fa-solid fa-layer-group me-2"></i>Category Manager</h2>
+                        <p>Organize your gallery with categories and subcategories</p>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="num">@Model.Count()</span>
+                            <span class="label">Categories</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label for="CategoryId">Category</label>
-                <select name="CategoryId" class="form-control" required>
-                    <option value="">-- Select a Category --</option>
-                    @foreach (var item in Model)
+            <!-- ===== CATEGORY LIST CARD ===== -->
+            <div class="card card-green-white p-4 p-md-5 position-relative mb-4">
+
+                <div class="breadcrumb-custom">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                    <span class="separator">/</span>
+                    <span class="current"><i class="fas fa-folder-open me-1"></i>Categories</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-green-soft p-3 rounded-4 shadow-sm">
+                            <i class="fa fa-layer-group fa-2x text-green-accent"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0" style="color: #1d2d1a;">
+                                Categories
+                                <span class="stats-badge ms-2">
+                                    <i class="fa-regular fa-folder"></i> @Model.Count() Total
+                                </span>
+                            </h3>
+                            <p class="text-muted small mb-0">Browse and manage your artwork categories</p>
+                        </div>
+                    </div>
+                    <a asp-action="Create" class="btn btn-green">
+                        <i class="fa fa-plus me-2"></i> Create New Category
+                    </a>
+                </div>
+
+                @{
+                    // Cycled Font Awesome icons so each category card looks visually distinct
+                    string[] categoryIcons = new[]
                     {
-                        <option value="@item.Id">@item.Name</option>
-                    }
-                </select>
+                                "fa-palette", "fa-image", "fa-paintbrush", "fa-gem", "fa-camera-retro",
+                                "fa-shapes", "fa-star", "fa-landmark", "fa-brush", "fa-vector-square",
+                                "fa-scroll", "fa-crown"
+                                };
+                }
+                @if (Model != null && Model.Any())
+                {
+                    <div class="category-pill-grid">
+                        @{
+                            int iconIdx = 0;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            var icon = categoryIcons[iconIdx % categoryIcons.Length];
+                            iconIdx++;
+                            <div class="category-pill">
+                                <div class="cat-icon"><i class="fa @icon"></i></div>
+                                <div class="cat-name">
+                                    @item.Name
+                                    <i class="fa-solid fa-chevron-right cat-arrow"></i>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <p class="mb-0">No categories yet. Create your first one above.</p>
+                    </div>
+                }
             </div>
 
-            <div class="form-group mt-2">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <!-- ===== SECTION DIVIDER ===== -->
+            <div class="section-divider">
+                <div class="line"></div>
+                <div class="divider-icon"><i class="fa-solid fa-sitemap"></i></div>
+                <div class="line"></div>
             </div>
 
-        </form>
+            <!-- ===== ADD SUBCATEGORY CARD ===== -->
+            <div class="card card-green-white p-4 p-md-5 position-relative">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-green-soft p-3 rounded-4 shadow-sm">
+                        <i class="fa fa-sitemap fa-2x text-green-accent"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0" style="color: #1d2d1a;">
+                            Add Subcategory
+                            <span class="stats-badge ms-2">
+                                <i class="fa-regular fa-clock"></i> New Entry
+                            </span>
+                        </h3>
+                        <p class="text-muted small mb-0">Nest a subcategory under an existing category</p>
+                    </div>
+                </div>
+
+                <form asp-controller="Admin" asp-action="Addsubcategorylogic" method="post" id="subcategoryForm" novalidate>
+
+                    <div class="validation-alert-custom" id="subValidationSummary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span></span>
+                    </div>
+
+                    <div class="row">
+                        <!-- Subcategory Name -->
+                        <div class="col-md-6 mb-4">
+                            <label for="Name" class="form-label">
+                                <i class="fa-regular fa-tag"></i> Subcategory Name <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group-icon">
+                                <span class="input-icon-left"><i class="fa-regular fa-folder-open"></i></span>
+                                <input type="text" name="Name" id="subNameInput" class="form-control form-control-green"
+                                       placeholder="e.g., Watercolor, Sculpture..." maxlength="50" required />
+                            </div>
+                            <div class="invalid-feedback" id="subNameInvalid" style="display:none;">
+                                <i class="fa-regular fa-circle-exclamation"></i> <span id="subNameInvalidText">Subcategory name is required.</span>
+                            </div>
+                            <div class="valid-feedback" id="subNameValid" style="display:none;">
+                                <i class="fa-regular fa-check-circle"></i> Looks good!
+                            </div>
+                        </div>
+
+                        <!-- Category Select -->
+                        <div class="col-md-6 mb-4">
+                            <label for="CategoryId" class="form-label">
+                                <i class="fa-regular fa-folder"></i> Parent Category <span class="text-danger">*</span>
+                            </label>
+                            <select name="CategoryId" id="categorySelect" class="form-control form-control-green" required>
+                                <option value="">-- Select a Category --</option>
+                                @foreach (var item in Model)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                            <div class="invalid-feedback" id="categoryInvalid" style="display:none;">
+                                <i class="fa-regular fa-circle-exclamation"></i> Please select a parent category.
+                            </div>
+                            <div class="valid-feedback" id="categoryValid" style="display:none;">
+                                <i class="fa-regular fa-check-circle"></i> Category selected!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+                        <button class="btn btn-green px-5 py-3" type="submit" id="subSubmitBtn">
+                            <i class="fa fa-plus me-2"></i> <span id="subSubmitText">Create Subcategory</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
     </div>
 </div>
 
+<!-- ===== SUCCESS POPUP ===== -->
+<div class="success-popup-overlay" id="successPopup">
+    <div class="success-popup">
+        <button class="popup-close" onclick="closeSuccessPopup()">
+            <i class="fa-regular fa-times"></i>
+        </button>
+        <div class="popup-icon">
+            <i class="fa-regular fa-circle-check"></i>
+        </div>
+        <h3 class="popup-title"><span class="highlight">Success!</span></h3>
+        <p class="popup-message" id="popupMessage">@TempData["Message"]</p>
+        <div class="popup-actions">
+            <button class="btn-popup-primary" onclick="closeSuccessPopup()">
+                <i class="fa-regular fa-check me-2"></i> Got it!
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        'use strict';
+
+        const subNameInput = document.getElementById('subNameInput');
+        const subNameInvalid = document.getElementById('subNameInvalid');
+        const subNameInvalidText = document.getElementById('subNameInvalidText');
+        const subNameValid = document.getElementById('subNameValid');
+        const categorySelect = document.getElementById('categorySelect');
+        const categoryInvalid = document.getElementById('categoryInvalid');
+        const categoryValid = document.getElementById('categoryValid');
+        const subForm = document.getElementById('subcategoryForm');
+        const subSubmitBtn = document.getElementById('subSubmitBtn');
+        const successPopup = document.getElementById('successPopup');
+
+        const minLength = 3;
+        const maxLength = 50;
+
+        function validateName(value) {
+            if (!value || value.trim().length === 0) {
+                return { valid: false, message: 'Subcategory name is required.' };
+            }
+            if (value.trim().length < minLength) {
+                return { valid: false, message: 'Must be at least ' + minLength + ' characters.' };
+            }
+            if (value.trim().length > maxLength) {
+                return { valid: false, message: 'Maximum ' + maxLength + ' characters allowed.' };
+            }
+            if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+                return { valid: false, message: 'Only letters and spaces are allowed.' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        subNameInput.addEventListener('input', function () {
+            const result = validateName(this.value);
+            if (!result.valid && this.value.length > 0) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameValid.style.display = 'none';
+                subNameInvalidText.textContent = result.message;
+            } else if (result.valid) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                subNameInvalid.style.display = 'none';
+                subNameValid.style.display = 'flex';
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+                subNameInvalid.style.display = 'none';
+                subNameValid.style.display = 'none';
+            }
+        });
+
+        subNameInput.addEventListener('blur', function () {
+            const result = validateName(this.value);
+            if (!result.valid) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameValid.style.display = 'none';
+                subNameInvalidText.textContent = result.message;
+            }
+        });
+
+        categorySelect.addEventListener('change', function () {
+            if (!this.value) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                categoryInvalid.style.display = 'flex';
+                categoryValid.style.display = 'none';
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                categoryInvalid.style.display = 'none';
+                categoryValid.style.display = 'flex';
+            }
+        });
+
+        subForm.addEventListener('submit', function (event) {
+            let isValid = true;
+
+            const nameResult = validateName(subNameInput.value);
+            if (!nameResult.valid) {
+                subNameInput.classList.add('is-invalid');
+                subNameInput.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameInvalidText.textContent = nameResult.message;
+                isValid = false;
+            } else {
+                subNameInput.classList.remove('is-invalid');
+                subNameInput.classList.add('is-valid');
+                subNameInvalid.style.display = 'none';
+            }
+
+            if (!categorySelect.value) {
+                categorySelect.classList.add('is-invalid');
+                categorySelect.classList.remove('is-valid');
+                categoryInvalid.style.display = 'flex';
+                isValid = false;
+            } else {
+                categorySelect.classList.remove('is-invalid');
+                categorySelect.classList.add('is-valid');
+                categoryInvalid.style.display = 'none';
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+
+            subSubmitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Creating...';
+            subSubmitBtn.disabled = true;
+        });
+
+        // ===== SUCCESS POPUP =====
+        window.closeSuccessPopup = function () {
+            successPopup.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+
+        @if (TempData["Message"] != null)
+        {
+                <text>
+                    setTimeout(function () {
+                        successPopup.classList.add('show');
+                        document.body.style.overflow = 'hidden';
+                    }, 300);
+                </text>
+        }
+
+        successPopup.addEventListener('click', function (e) {
+            if (e.target === this) closeSuccessPopup();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && successPopup.classList.contains('show')) {
+                closeSuccessPopup();
+            }
+        });
+    })();
+</script>

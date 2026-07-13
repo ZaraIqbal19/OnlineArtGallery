@@ -1,0 +1,374 @@
+@model IEnumerable<Art_Gallery.Models.Product>
+@{
+    ViewData["Title"] = "Products";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+    }
+
+    .pi-content-wrap {
+        overflow-x: hidden;
+        padding-top: 40px;
+        display: block;
+    }
+
+    .pi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        animation: piFadeDown 0.4s ease;
+    }
+
+        .pi-header h1 {
+            color: var(--dark-green);
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+    .btn-pi-create {
+        background: var(--primary-green);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(136, 210, 0, 0.3);
+    }
+
+        .btn-pi-create:hover {
+            background: var(--dark-green);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(111, 168, 0, 0.35);
+        }
+
+        .btn-pi-create:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+    .pi-table-wrap {
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(111, 168, 0, 0.1);
+        border: 1px solid var(--light-green);
+        animation: piFadeUp 0.4s ease;
+    }
+
+    table.pi-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .pi-table thead th {
+        background: var(--ultra-light-green);
+        color: var(--dark-green);
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 14px 12px;
+        text-align: left;
+        border-bottom: 2px solid var(--light-green);
+    }
+
+    .pi-table tbody tr {
+        border-bottom: 1px solid var(--ultra-light-green);
+        transition: background 0.2s ease;
+        opacity: 0;
+        animation: piRowIn 0.35s ease forwards;
+    }
+
+        .pi-table tbody tr:hover {
+            background: var(--ultra-light-green);
+        }
+
+    .pi-table td {
+        padding: 12px;
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .pi-thumb-wrap {
+        overflow: hidden;
+        border-radius: 8px;
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--light-green);
+        display: inline-block;
+    }
+
+    .pi-thumb {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: var(--ultra-light-green);
+        transition: transform 0.3s ease;
+        display: block;
+    }
+
+    .pi-table tbody tr:hover .pi-thumb {
+        transform: scale(1.12);
+    }
+
+    .pi-name {
+        font-weight: 600;
+        color: #222;
+        transition: color 0.2s ease;
+    }
+
+    .pi-table tbody tr:hover .pi-name {
+        color: var(--dark-green);
+    }
+
+    .pi-desc {
+        color: #777;
+        font-size: 0.82rem;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pi-price {
+        color: var(--dark-green);
+        font-weight: 700;
+    }
+
+    .pi-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--ultra-light-green);
+        color: var(--dark-green);
+        transition: transform 0.15s ease;
+    }
+
+    .pi-table tbody tr:hover .pi-badge {
+        transform: scale(1.06);
+    }
+
+    .pi-badge-bid {
+        background: var(--light-green);
+        color: var(--dark-green);
+    }
+
+    .pi-badge-nobid {
+        background: #f1f1f1;
+        color: #999;
+    }
+
+    .pi-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-width: 210px;
+    }
+
+        .pi-actions a {
+            border-radius: 6px;
+            padding: 7px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+    .pi-btn-edit {
+        background: var(--primary-green);
+        color: #fff;
+    }
+
+        .pi-btn-edit:hover {
+            background: var(--dark-green);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(111, 168, 0, 0.3);
+        }
+
+    .pi-btn-details {
+        background: var(--ultra-light-green);
+        color: var(--dark-green);
+        border-color: var(--light-green);
+    }
+
+        .pi-btn-details:hover {
+            background: var(--light-green);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(212, 240, 155, 0.5);
+        }
+
+    .pi-btn-delete {
+        background: #fff5f5;
+        color: #d64545;
+        border-color: #f3b8b8;
+    }
+
+        .pi-btn-delete:hover {
+            background: #d64545;
+            color: #fff;
+            border-color: #d64545;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(214, 69, 69, 0.35);
+        }
+
+    .pi-actions a:active {
+        transform: translateY(0) scale(0.96);
+    }
+
+    .pi-empty {
+        text-align: center;
+        padding: 50px 20px;
+        color: #888;
+        animation: piFadeUp 0.4s ease;
+    }
+
+    @@keyframes piFadeDown {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes piFadeUp {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes piRowIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .pi-table tbody tr:nth-child(1) {
+        animation-delay: 0.02s;
+    }
+
+    .pi-table tbody tr:nth-child(2) {
+        animation-delay: 0.06s;
+    }
+
+    .pi-table tbody tr:nth-child(3) {
+        animation-delay: 0.10s;
+    }
+
+    .pi-table tbody tr:nth-child(4) {
+        animation-delay: 0.14s;
+    }
+
+    .pi-table tbody tr:nth-child(5) {
+        animation-delay: 0.18s;
+    }
+
+    .pi-table tbody tr:nth-child(n+6) {
+        animation-delay: 0.20s;
+    }
+</style>
+
+<div class="pi-content-wrap">
+    <div class="pi-header">
+        <h1>Products</h1>
+        <a asp-action="Create" class="btn-pi-create">+ Create New</a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="pi-table-wrap">
+            <div class="pi-empty">No products found.</div>
+        </div>
+    }
+    else
+    {
+        <div class="pi-table-wrap">
+            <table class="pi-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Owner</th>
+                        <th>Status</th>
+                        <th>Bidding</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var img = !string.IsNullOrEmpty(item.Image1) ? item.Image1 : "/images/no-image.png";
+                        bool isBid = string.Equals(item.AvailableForBid, "Yes", StringComparison.OrdinalIgnoreCase);
+                        <tr>
+                            <td>
+                                <span class="pi-thumb-wrap">
+                                    <img src="@img" class="pi-thumb" alt="@item.Name" />
+                                </span>
+                            </td>
+                            <td>
+                                <div class="pi-name">@item.Name</div>
+                                <div class="pi-desc">@item.Description</div>
+                            </td>
+                            <td>@item.SubCategory?.Name</td>
+                            <td class="pi-price">Rs. @item.price</td>
+                            <td>@item.quantity</td>
+                            <td>@item.User?.UserName</td>
+                            <td><span class="pi-badge">@item.Status</span></td>
+                            <td>
+                                @if (isBid)
+                                {
+                                    <span class="pi-badge pi-badge-bid">Rs. @item.BidPrice</span>
+                                }
+                                else
+                                {
+                                    <span class="pi-badge pi-badge-nobid">No</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="pi-actions">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="pi-btn-edit">? Edit</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="pi-btn-details">Details</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="pi-btn-delete">?? Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

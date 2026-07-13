@@ -5,30 +5,684 @@
     Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-    /* ─── Page Container ─── */
-    .page-wrapper {
-        max-width: 560px;
-        margin: 2.5rem auto;
-        padding: 0 1.25rem;
+    /* ─── Reset / scrollbar fix ─── */
+    html,
+    body {
+        overflow-x: hidden;
     }
 
-    /* ─── Card ─── */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    .gallery-contact-scope {
+        font-family: 'Inter', sans-serif;
+        background: #fbfdf7;
+    }
+
+        .gallery-contact-scope h1,
+        .gallery-contact-scope h2,
+        .gallery-contact-scope h3,
+        .gallery-contact-scope .display-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+    /* ─── Page Container ─── */
+    .page-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 6.5rem 1.5rem 4rem;
+        width: 100%;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 3.25rem;
+        align-items: start;
+        width: 100%;
+    }
+
+    /* Defensive fix: grid items default to min-width:auto which can force
+                       a track to overflow its content and squeeze/hide the sibling column.
+                       min-width:0 lets both columns shrink properly instead. */
+    .info-panel,
+    .form-column {
+        min-width: 0;
+    }
+
+    @@keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #6fa800;
+        background: #f0fae6;
+        padding: 0.35rem 0.9rem;
+        border-radius: 20px;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+        .reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    /* ═══════════════════════════════════════
+                   LEFT COLUMN
+                ═══════════════════════════════════════ */
+    .info-panel {
+        padding-top: 0.25rem;
+        animation: fadeSlideUp 0.7s ease both;
+        width: 100%;
+    }
+
+        .info-panel .info-eyebrow {
+            margin-bottom: 1.2rem;
+        }
+
+        .info-panel h1 {
+            font-weight: 800;
+            font-size: 2.7rem;
+            color: #1a2a08;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+            margin: 0 0 1.1rem 0;
+        }
+
+            .info-panel h1 em {
+                font-style: italic;
+                color: #6fa800;
+            }
+
+        .info-panel > p.lead {
+            font-size: 1.02rem;
+            line-height: 1.75;
+            color: #4a6830;
+            max-width: 100%;
+            margin-bottom: 1.9rem;
+        }
+
+    /* ─── Curator spotlight card ─── */
+    .curator-card {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 20px;
+        padding: 1.4rem 1.5rem;
+        margin-bottom: 1.6rem;
+        transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        width: 100%;
+    }
+
+        .curator-card:hover {
+            border-color: #88d200;
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(104, 168, 0, 0.12);
+        }
+
+    .curator-avatar {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: #ffffff;
+        font-family: 'Playfair Display', serif;
+        font-weight: 800;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(104, 168, 0, 0.25);
+    }
+
+    .curator-info h3 {
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: #1a2a08;
+        margin: 0 0 2px 0;
+    }
+
+    .curator-info .role {
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #6fa800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .curator-info p {
+        font-size: 0.83rem;
+        color: #63805a;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .curator-badge {
+        margin-left: auto;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-align: center;
+        background: #f0fae6;
+        border-radius: 12px;
+        padding: 0.5rem 0.7rem;
+    }
+
+        .curator-badge i {
+            color: #6fa800;
+            font-size: 0.95rem;
+        }
+
+        .curator-badge span {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #4a6830;
+        }
+
+    /* ─── Inline stat bar ─── */
+    .stat-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.6rem 0;
+        font-size: 0.85rem;
+        color: #4a6830;
+        font-weight: 600;
+        margin-bottom: 1.9rem;
+        padding: 0 0.2rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+        .stat-bar b {
+            font-family: 'Playfair Display', serif;
+            color: #1a2a08;
+            font-weight: 800;
+        }
+
+        .stat-bar .sep {
+            margin: 0 0.7rem;
+            color: #c3dba0;
+        }
+
+    /* ─── Category tiles ─── */
+    .category-tiles {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.9rem;
+        width: 100%;
+    }
+
+    .category-tile {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        min-width: 0;
+    }
+
+        .category-tile:hover {
+            background: linear-gradient(135deg, #88d200, #6fa800);
+            border-color: transparent;
+            transform: translateY(-4px);
+            box-shadow: 0 14px 26px rgba(104, 168, 0, 0.2);
+        }
+
+        .category-tile .ct-icon {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #f0fae6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .category-tile:hover .ct-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .category-tile .ct-text {
+            min-width: 0;
+        }
+
+            .category-tile .ct-text strong {
+                display: block;
+                font-size: 0.88rem;
+                color: #1a2a08;
+                transition: color 0.3s ease;
+            }
+
+            .category-tile .ct-text span {
+                font-size: 0.72rem;
+                color: #8fae6a;
+                transition: color 0.3s ease;
+            }
+
+        .category-tile:hover .ct-text strong,
+        .category-tile:hover .ct-text span {
+            color: #ffffff;
+        }
+
+    /* ─── Vertical timeline ─── */
+    .process-list {
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 18px;
+        padding: 1.6rem 1.7rem 1.7rem;
+        margin-bottom: 1.9rem;
+        width: 100%;
+    }
+
+        .process-list h4 {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6fa800;
+            margin: 0 0 1.2rem 0;
+        }
+
+    .timeline {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .timeline-step {
+        position: relative;
+        padding-left: 2.9rem;
+        padding-bottom: 1.6rem;
+    }
+
+        .timeline-step:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-step::after {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: -2px;
+            width: 2px;
+            background: #dbe9c0;
+        }
+
+        .timeline-step:last-child::after {
+            display: none;
+        }
+
+        .timeline-step .step-num {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f0fae6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            font-family: 'Playfair Display', serif;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .timeline-step:hover .step-num {
+            background: linear-gradient(135deg, #88d200, #6fa800);
+            color: #fff;
+            transform: scale(1.12);
+        }
+
+        .timeline-step h5 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a2a08;
+            margin: 0 0 0.15rem 0;
+        }
+
+        .timeline-step p {
+            font-size: 0.81rem;
+            color: #63805a;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+    /* ─── Two-column layout for bottom sections ─── */
+    .bottom-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.9rem;
+        margin-bottom: 1.9rem;
+        width: 100%;
+    }
+
+        .bottom-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+    /* ─── Upcoming Events / Exhibitions ─── */
+    .event-teaser {
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem;
+        transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        height: 100%;
+    }
+
+        .event-teaser:hover {
+            border-color: #88d200;
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(104, 168, 0, 0.08);
+        }
+
+        .event-teaser .event-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+            .event-teaser .event-header i {
+                color: #6fa800;
+                font-size: 1.1rem;
+            }
+
+            .event-teaser .event-header h4 {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #1a2a08;
+                margin: 0;
+            }
+
+        .event-teaser p {
+            font-size: 0.85rem;
+            color: #4a6830;
+            margin: 0 0 0.25rem 0;
+            line-height: 1.5;
+        }
+
+        .event-teaser .event-date {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #6fa800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    /* ─── Newsletter Signup ─── */
+    .newsletter-mini {
+        background: linear-gradient(135deg, #f4ffe6, #eef7dc);
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem;
+        border: 1px solid #d4e9b0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .newsletter-mini .ns-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.4rem;
+        }
+
+            .newsletter-mini .ns-header i {
+                color: #6fa800;
+                font-size: 1.2rem;
+            }
+
+            .newsletter-mini .ns-header h4 {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: #1a2a08;
+                margin: 0;
+            }
+
+        .newsletter-mini p {
+            font-size: 0.82rem;
+            color: #4a6830;
+            margin: 0 0 0.9rem 0;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .newsletter-mini .ns-form {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+            .newsletter-mini .ns-form input {
+                flex: 1;
+                min-width: 120px;
+                padding: 0.6rem 1rem;
+                border: 2px solid #d4e9b0;
+                border-radius: 10px;
+                font-size: 0.85rem;
+                font-family: inherit;
+                background: #ffffff;
+                transition: border-color 0.3s ease;
+                outline: none;
+            }
+
+                .newsletter-mini .ns-form input:focus {
+                    border-color: #88d200;
+                }
+
+            .newsletter-mini .ns-form button {
+                background: linear-gradient(135deg, #88d200, #6fa800);
+                border: none;
+                padding: 0.6rem 1.2rem;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 0.8rem;
+                color: #1a2a08;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-family: inherit;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+                .newsletter-mini .ns-form button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 16px rgba(104, 168, 0, 0.2);
+                }
+
+                .newsletter-mini .ns-form button i {
+                    font-size: 0.7rem;
+                }
+
+    /* ─── Quote block ─── */
+    .gallery-quote {
+        position: relative;
+        border-radius: 18px;
+        padding: 1.7rem 1.9rem;
+        background: linear-gradient(135deg, #1a2a08, #35480f);
+        color: #eef7dc;
+        overflow: hidden;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+        .gallery-quote::before {
+            content: '\f10d';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: -10px;
+            left: 14px;
+            font-size: 3.2rem;
+            color: rgba(136, 210, 0, 0.18);
+        }
+
+        .gallery-quote p {
+            position: relative;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.03rem;
+            line-height: 1.6;
+            margin: 0 0 0.7rem 0;
+        }
+
+        .gallery-quote .attribution {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+            color: #b7e07a;
+            font-weight: 600;
+        }
+
+            .gallery-quote .attribution .line {
+                width: 22px;
+                height: 2px;
+                background: #88d200;
+            }
+
+    /* ─── Quick Links / Services ─── */
+    .quick-links {
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem;
+        transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        height: 100%;
+    }
+
+        .quick-links:hover {
+            border-color: #88d200;
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(104, 168, 0, 0.08);
+        }
+
+        .quick-links .ql-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+            .quick-links .ql-header i {
+                color: #6fa800;
+                font-size: 1.1rem;
+            }
+
+            .quick-links .ql-header h4 {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #1a2a08;
+                margin: 0;
+            }
+
+        .quick-links ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .quick-links ul li {
+                padding: 0.35rem 0;
+                font-size: 0.85rem;
+                color: #4a6830;
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                border-bottom: 1px solid #f0f6e8;
+            }
+
+                .quick-links ul li:last-child {
+                    border-bottom: none;
+                }
+
+                .quick-links ul li i {
+                    color: #6fa800;
+                    font-size: 0.7rem;
+                    width: 16px;
+                }
+
+    /* ═══════════════════════════════════════
+                   RIGHT COLUMN — FORM
+                ═══════════════════════════════════════ */
+    .form-column {
+        width: 100%;
+    }
+
     .form-card {
         background: #ffffff;
         border-radius: 24px;
-        padding: 2.5rem 2.8rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 8px 32px rgba(104, 168, 0, 0.06);
-        border: 1px solid rgba(136, 210, 0, 0.06);
+        padding: 2.5rem 2.6rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 8px 32px rgba(104, 168, 0, 0.08);
+        border: 1px solid rgba(136, 210, 0, 0.08);
         transition: box-shadow 0.3s ease;
+        opacity: 0;
+        animation: fadeSlideUp 0.7s ease forwards;
+        animation-delay: 0.2s;
     }
 
-    .form-card:hover {
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 12px 48px rgba(104, 168, 0, 0.08);
-    }
+        .form-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 14px 48px rgba(104, 168, 0, 0.1);
+        }
 
-    /* ─── Header ─── */
     .form-header {
         display: flex;
         align-items: center;
@@ -36,36 +690,37 @@
         margin-bottom: 0.25rem;
     }
 
-    .form-header .icon-box {
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
-        background: #f0fae6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.4rem;
-        color: #6fa800;
-        transition: all 0.3s ease;
-    }
+        .form-header .icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: #f0fae6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #6fa800;
+            transition: all 0.3s ease;
+        }
 
     .form-card:hover .icon-box {
         background: linear-gradient(135deg, #88d200, #6fa800);
         color: #ffffff;
-        transform: scale(1.02);
+        transform: scale(1.05) rotate(-4deg);
     }
 
     .form-header h1 {
-        font-size: 1.85rem;
+        font-size: 1.7rem;
         font-weight: 700;
         color: #1a2a08;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
         margin: 0;
     }
 
-    .form-header h1 span {
-        color: #6fa800;
-    }
+        .form-header h1 em {
+            font-style: italic;
+            color: #6fa800;
+        }
 
     .form-subtitle {
         display: flex;
@@ -75,32 +730,40 @@
         padding-left: 4px;
     }
 
-    .form-subtitle .badge {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #4a6830;
-        background: #f0fae6;
-        padding: 0.2rem 1rem;
-        border-radius: 20px;
-    }
+        .form-subtitle .badge {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #4a6830;
+            background: #f0fae6;
+            padding: 0.2rem 1rem;
+            border-radius: 20px;
+        }
 
-    .form-subtitle .badge i {
-        color: #88d200;
-        margin-right: 6px;
-    }
+            .form-subtitle .badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
 
-    .form-subtitle .dot {
-        width: 6px;
-        height: 6px;
-        background: #88d200;
-        border-radius: 50%;
-        display: inline-block;
-        animation: pulse-dot 2s ease-in-out infinite;
-    }
+        .form-subtitle .dot {
+            width: 6px;
+            height: 6px;
+            background: #88d200;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
 
     @@keyframes pulse-dot {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.3; transform: scale(0.6); }
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.3;
+            transform: scale(0.6);
+        }
     }
 
     .divider {
@@ -112,7 +775,7 @@
         opacity: 0.4;
     }
 
-    /* ─── Success Modal / Popup ─── */
+    /* ─── Success Modal ─── */
     .success-overlay {
         position: fixed;
         inset: 0;
@@ -126,13 +789,18 @@
         animation: fadeIn 0.3s ease;
     }
 
-    .success-overlay.active {
-        display: flex;
-    }
+        .success-overlay.active {
+            display: flex;
+        }
 
     @@keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     .success-modal {
@@ -148,21 +816,28 @@
         overflow: hidden;
     }
 
-    .success-modal::before {
-        content: '';
-        position: absolute;
-        top: -60px;
-        right: -60px;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(212, 240, 155, 0.15) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
+        .success-modal::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(212, 240, 155, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
     @@keyframes popIn {
-        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
+        0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
     }
 
     .success-modal .modal-icon {
@@ -181,10 +856,21 @@
     }
 
     @@keyframes bounce {
-        0% { transform: scale(0); }
-        50% { transform: scale(1.2); }
-        70% { transform: scale(0.9); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 
     .success-modal h2 {
@@ -214,33 +900,33 @@
         box-shadow: 0 4px 16px rgba(136, 210, 0, 0.15);
     }
 
-    .success-modal .btn-close-modal:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 28px rgba(104, 168, 0, 0.2);
-    }
+        .success-modal .btn-close-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(104, 168, 0, 0.2);
+        }
 
-    .success-modal .btn-close-modal i {
-        margin-right: 8px;
-    }
+        .success-modal .btn-close-modal i {
+            margin-right: 8px;
+        }
 
-    /* ─── Form ─── */
+    /* ─── Form fields ─── */
     .form-group {
         margin-bottom: 1.5rem;
     }
 
-    .form-group label {
-        display: block;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #2f421a;
-        margin-bottom: 6px;
-    }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #2f421a;
+            margin-bottom: 6px;
+        }
 
-    .form-group label i {
-        color: #88d200;
-        margin-right: 6px;
-        width: 18px;
-    }
+            .form-group label i {
+                color: #88d200;
+                margin-right: 6px;
+                width: 18px;
+            }
 
     .input-group {
         position: relative;
@@ -253,59 +939,58 @@
         padding: 0 16px;
     }
 
-    .input-group .input-icon {
-        color: #8fae6a;
-        font-size: 0.9rem;
-        transition: 0.25s;
-        margin-right: 10px;
-        flex-shrink: 0;
-    }
+        .input-group .input-icon {
+            color: #8fae6a;
+            font-size: 0.9rem;
+            transition: 0.25s;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
 
-    .input-group input {
-        width: 100%;
-        border: none;
-        background: transparent;
-        padding: 13px 0;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #1a2a08;
-        outline: none;
-        font-family: inherit;
-    }
+        .input-group input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 13px 0;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1a2a08;
+            outline: none;
+            font-family: inherit;
+        }
 
-    .input-group input::placeholder {
-        color: #bccfa5;
-        font-weight: 400;
-    }
+            .input-group input::placeholder {
+                color: #bccfa5;
+                font-weight: 400;
+            }
 
-    .input-group:focus-within {
-        border-color: #88d200;
-        background: #ffffff;
-        box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.06);
-    }
+        .input-group:focus-within {
+            border-color: #88d200;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.06);
+        }
 
-    .input-group:focus-within .input-icon {
-        color: #88d200;
-    }
+            .input-group:focus-within .input-icon {
+                color: #88d200;
+            }
 
-    /* Validation */
-    .input-group.is-valid {
-        border-color: #88d200;
-        background: #f4ffe6;
-    }
+        .input-group.is-valid {
+            border-color: #88d200;
+            background: #f4ffe6;
+        }
 
-    .input-group.is-valid .input-icon {
-        color: #88d200;
-    }
+            .input-group.is-valid .input-icon {
+                color: #88d200;
+            }
 
-    .input-group.is-invalid {
-        border-color: #e74c3c;
-        background: #fef6f5;
-    }
+        .input-group.is-invalid {
+            border-color: #e74c3c;
+            background: #fef6f5;
+        }
 
-    .input-group.is-invalid .input-icon {
-        color: #e74c3c;
-    }
+            .input-group.is-invalid .input-icon {
+                color: #e74c3c;
+            }
 
     .validation-msg {
         display: flex;
@@ -318,21 +1003,21 @@
         min-height: 1.4rem;
     }
 
-    .validation-msg.text-danger {
-        color: #c0392b;
-    }
+        .validation-msg.text-danger {
+            color: #c0392b;
+        }
 
-    .validation-msg.text-success {
-        color: #6fa800;
-    }
+        .validation-msg.text-success {
+            color: #6fa800;
+        }
 
-    .validation-msg.text-muted {
-        color: #b0c79a;
-    }
+        .validation-msg.text-muted {
+            color: #b0c79a;
+        }
 
-    .validation-msg i {
-        font-size: 0.8rem;
-    }
+        .validation-msg i {
+            font-size: 0.8rem;
+        }
 
     .char-counter {
         text-align: right;
@@ -343,15 +1028,14 @@
         padding-right: 4px;
     }
 
-    .char-counter.warning {
-        color: #e67e22;
-    }
+        .char-counter.warning {
+            color: #e67e22;
+        }
 
-    .char-counter.danger {
-        color: #e74c3c;
-    }
+        .char-counter.danger {
+            color: #e74c3c;
+        }
 
-    /* ─── Button ─── */
     .btn-submit {
         width: 100%;
         padding: 15px 24px;
@@ -371,47 +1055,46 @@
         font-family: inherit;
     }
 
-    .btn-submit:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 28px rgba(104, 168, 0, 0.2);
-    }
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(104, 168, 0, 0.2);
+        }
 
-    .btn-submit:active:not(:disabled) {
-        transform: scale(0.97);
-    }
+        .btn-submit:active:not(:disabled) {
+            transform: scale(0.97);
+        }
 
-    .btn-submit:disabled {
-        background: #dce8cc;
-        color: #7a9460;
-        box-shadow: none;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
+        .btn-submit:disabled {
+            background: #dce8cc;
+            color: #7a9460;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
 
-    .btn-submit i {
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
+        .btn-submit i {
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
 
-    .btn-submit:hover:not(:disabled) i {
-        transform: translateX(2px);
-    }
+        .btn-submit:hover:not(:disabled) i {
+            transform: translateX(2px);
+        }
 
-    .btn-submit .spinner {
-        display: none;
-    }
+        .btn-submit .spinner {
+            display: none;
+        }
 
-    .btn-submit.loading .btn-text {
-        display: none;
-    }
+        .btn-submit.loading .btn-text {
+            display: none;
+        }
 
-    .btn-submit.loading .spinner {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
+        .btn-submit.loading .spinner {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    /* ─── Back Link ─── */
     .back-link {
         display: inline-flex;
         align-items: center;
@@ -426,23 +1109,370 @@
         padding-bottom: 2px;
     }
 
-    .back-link i {
-        font-size: 0.8rem;
-        transition: 0.25s;
+        .back-link i {
+            font-size: 0.8rem;
+            transition: 0.25s;
+        }
+
+        .back-link:hover {
+            color: #6fa800;
+            border-bottom-color: #88d200;
+            gap: 12px;
+        }
+
+            .back-link:hover i {
+                transform: translateX(-4px);
+            }
+
+    /* ─── Content moved into the right column, below the form ─── */
+    .form-column-extra {
+        margin-top: 2.5rem;
     }
 
-    .back-link:hover {
-        color: #6fa800;
-        border-bottom-color: #88d200;
-        gap: 12px;
+        .form-column-extra > * {
+            margin-bottom: 1.9rem;
+        }
+
+            .form-column-extra > *:last-child {
+                margin-bottom: 0;
+            }
+
+    /* ═══════════════════════════════════════
+                   BELOW-FORM SECTIONS
+                ═══════════════════════════════════════ */
+    .more-sections {
+        margin-top: 4.5rem;
     }
 
-    .back-link:hover i {
-        transform: translateX(-4px);
+    .section-heading {
+        text-align: center;
+        max-width: 560px;
+        margin: 0 auto 2.25rem;
     }
+
+        .section-heading .info-eyebrow {
+            margin-bottom: 0.9rem;
+        }
+
+        .section-heading h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a2a08;
+            margin: 0 0 0.6rem 0;
+        }
+
+            .section-heading h2 em {
+                font-style: italic;
+                color: #6fa800;
+            }
+
+        .section-heading p {
+            color: #4a6830;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+    /* ─── FAQ accordion ─── */
+    .faq-section {
+        margin-bottom: 4rem;
+    }
+
+    .faq-list {
+        max-width: 720px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .faq-item {
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 14px;
+        overflow: hidden;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .faq-item:hover {
+            border-color: #88d200;
+            box-shadow: 0 8px 24px rgba(104, 168, 0, 0.08);
+        }
+
+    .faq-question {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: transparent;
+        border: none;
+        text-align: left;
+        padding: 1.1rem 1.4rem;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1a2a08;
+        cursor: pointer;
+    }
+
+        .faq-question .chev {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f0fae6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease, color 0.25s ease;
+        }
+
+    .faq-item.open .faq-question .chev {
+        transform: rotate(135deg);
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: #fff;
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+    }
+
+        .faq-answer p {
+            margin: 0;
+            padding: 0 1.4rem 1.2rem;
+            font-size: 0.87rem;
+            line-height: 1.65;
+            color: #63805a;
+        }
+
+    /* ─── Testimonials ─── */
+    .testimonial-section {
+        margin-bottom: 4rem;
+    }
+
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.4rem;
+    }
+
+    .testimonial-card {
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 18px;
+        padding: 1.6rem 1.7rem;
+        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        min-width: 0;
+    }
+
+        .testimonial-card:hover {
+            transform: translateY(-6px);
+            border-color: #88d200;
+            box-shadow: 0 16px 34px rgba(104, 168, 0, 0.12);
+        }
+
+        .testimonial-card .stars {
+            color: #88d200;
+            font-size: 0.78rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .testimonial-card p.quote-text {
+            font-size: 0.86rem;
+            color: #3d5527;
+            line-height: 1.65;
+            margin: 0 0 1.1rem 0;
+        }
+
+    .testimonial-person {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+
+        .testimonial-person .tp-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f0fae6;
+            color: #6fa800;
+            font-weight: 700;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .testimonial-person strong {
+            display: block;
+            font-size: 0.83rem;
+            color: #1a2a08;
+        }
+
+        .testimonial-person span {
+            font-size: 0.72rem;
+            color: #8fae6a;
+        }
+
+    /* ─── Featured artists ─── */
+    .artists-section {
+        margin-bottom: 4rem;
+    }
+
+    .artists-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.1rem;
+    }
+
+    .artist-card {
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 18px;
+        padding: 1.6rem 1rem;
+        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        min-width: 0;
+    }
+
+        .artist-card:hover {
+            transform: translateY(-6px);
+            border-color: #88d200;
+            box-shadow: 0 16px 32px rgba(104, 168, 0, 0.14);
+        }
+
+    .artist-avatar {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        margin: 0 auto 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: 'Playfair Display', serif;
+        font-weight: 800;
+        font-size: 1.15rem;
+        transition: transform 0.35s ease;
+    }
+
+    .artist-card:hover .artist-avatar {
+        transform: scale(1.08) rotate(-4deg);
+    }
+
+    .artist-1 {
+        background: linear-gradient(135deg, #88d200, #6fa800);
+    }
+
+    .artist-2 {
+        background: linear-gradient(135deg, #b8a85c, #8a7a3a);
+    }
+
+    .artist-3 {
+        background: linear-gradient(135deg, #47611c, #1a2a08);
+    }
+
+    .artist-4 {
+        background: linear-gradient(135deg, #a9c96b, #6fa800);
+    }
+
+    .artist-card h3 {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1a2a08;
+        margin: 0 0 0.2rem 0;
+    }
+
+    .artist-card span {
+        font-size: 0.74rem;
+        color: #7a9460;
+        font-weight: 600;
+    }
+
+    /* ─── Payment methods ─── */
+    .payment-section {
+        margin-bottom: 1rem;
+    }
+
+    .payment-strip {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .payment-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #ffffff;
+        border: 1px solid #e4efd4;
+        border-radius: 14px;
+        padding: 0.9rem 1.3rem;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #2f421a;
+        transition: all 0.3s ease;
+    }
+
+        .payment-chip:hover {
+            border-color: #88d200;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(104, 168, 0, 0.1);
+        }
+
+        .payment-chip i {
+            color: #6fa800;
+            font-size: 1.15rem;
+        }
 
     /* ─── Responsive ─── */
+    @@media (max-width: 900px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        .form-column {
+            order: -1;
+        }
+
+        .info-panel h1 {
+            font-size: 2.1rem;
+        }
+
+        .testimonial-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .artists-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .bottom-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .newsletter-mini .ns-form {
+            flex-direction: column;
+        }
+
+            .newsletter-mini .ns-form button {
+                justify-content: center;
+            }
+    }
+
     @@media (max-width: 540px) {
+        .page-wrapper {
+            padding-top: 5rem;
+        }
+
         .form-card {
             padding: 1.5rem;
             border-radius: 20px;
@@ -467,11 +1497,37 @@
             padding: 1.8rem 1.5rem;
         }
 
-        .success-modal .modal-icon {
-            width: 60px;
-            height: 60px;
-            font-size: 1.8rem;
+            .success-modal .modal-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+
+        .section-heading h2 {
+            font-size: 1.6rem;
         }
+
+        .category-tiles {
+            grid-template-columns: 1fr;
+        }
+
+        .curator-card {
+            flex-wrap: wrap;
+        }
+
+        .curator-badge {
+            margin-left: 0;
+        }
+
+        .stat-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.3rem;
+        }
+
+            .stat-bar .sep {
+                display: none;
+            }
     }
 
     @@media (max-width: 400px) {
@@ -482,69 +1538,440 @@
     }
 </style>
 
-<div class="page-wrapper">
-    <div class="form-card">
+<div class="gallery-contact-scope">
+    <div class="page-wrapper">
+        <div class="contact-grid">
 
-        <!-- Header -->
-        <div class="form-header">
-            <div class="icon-box">
-                <i class="fas fa-pen-fancy"></i>
+            <!-- ═══════════════════════════════════
+                 LEFT COLUMN
+            ═══════════════════════════════════ -->
+            <div class="info-panel">
+                <span class="info-eyebrow"><i class="fas fa-palette"></i> Contact The Gallery</span>
+                <h1>Let's start a conversation about <em>art</em></h1>
+                <p class="lead">
+                    Whether you're searching for a piece that speaks to you, curious about a listing,
+                    or looking to sell a piece from your own collection, our curators read every
+                    message personally.
+                </p>
+
+                <!-- Curator spotlight -->
+                <div class="curator-card">
+                    <div class="curator-avatar">AM</div>
+                    <div class="curator-info">
+                        <span class="role">Lead Curator</span>
+                        <h3>Aisha Malik</h3>
+                        <p>Usually the first to read your message.</p>
+                    </div>
+                    <div class="curator-badge">
+                        <i class="fas fa-bolt"></i>
+                        <span>~1 day reply</span>
+                    </div>
+                </div>
+
+                <!-- Inline stats -->
+                <div class="stat-bar">
+                    <span><b>3.2k</b> Artworks Sold</span>
+                    <span class="sep">&bull;</span>
+                    <span><b>480+</b> Artists</span>
+                    <span class="sep">&bull;</span>
+                    <span><b>12</b> Years Curating</span>
+                </div>
+
+                <!-- Category tiles -->
+                <div class="category-tiles">
+                    <a href="#" class="category-tile">
+                        <div class="ct-icon"><i class="fas fa-image"></i></div>
+                        <div class="ct-text"><strong>Paintings</strong><span>128 pieces</span></div>
+                    </a>
+                    <a href="#" class="category-tile">
+                        <div class="ct-icon"><i class="fas fa-cube"></i></div>
+                        <div class="ct-text"><strong>Sculpture</strong><span>64 pieces</span></div>
+                    </a>
+                    <a href="#" class="category-tile">
+                        <div class="ct-icon"><i class="fas fa-camera"></i></div>
+                        <div class="ct-text"><strong>Photography</strong><span>96 pieces</span></div>
+                    </a>
+                    <a href="#" class="category-tile">
+                        <div class="ct-icon"><i class="fas fa-layer-group"></i></div>
+                        <div class="ct-text"><strong>Prints</strong><span>140 pieces</span></div>
+                    </a>
+                </div>
+
+                <!-- Vertical timeline -->
+                <div class="process-list">
+                    <h4>What Happens Next</h4>
+                    <ol class="timeline">
+                        <li class="timeline-step">
+                            <div class="step-num">1</div>
+                            <h5>Send your message</h5>
+                            <p>Tell us what you're looking for, buying or selling.</p>
+                        </li>
+                        <li class="timeline-step">
+                            <div class="step-num">2</div>
+                            <h5>A curator reviews it</h5>
+                            <p>We reply within one business day with next steps.</p>
+                        </li>
+                        <li class="timeline-step">
+                            <div class="step-num">3</div>
+                            <h5>We follow up online</h5>
+                            <p>Everything from enquiry to purchase happens right here.</p>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Two-column grid for bottom sections -->
+                <div class="bottom-grid">
+                    <!-- Upcoming Events / Exhibitions -->
+                    <div class="event-teaser">
+                        <div class="event-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h4>Upcoming Exhibition</h4>
+                        </div>
+                        <p><strong>"Reflections of Nature"</strong> – A group show featuring new works by Noor Ahmed, Maya Khan, and Jamal Tariq.</p>
+                        <span class="event-date"><i class="fas fa-clock"></i> Opening: 15 March 2025</span>
+                    </div>
+
+                    <!-- Newsletter Signup Mini -->
+                    <div class="newsletter-mini">
+                        <div class="ns-header">
+                            <i class="fas fa-envelope-open-text"></i>
+                            <h4>Stay in the loop</h4>
+                        </div>
+                        <p>Get early access to new collections, private viewings, and curator's picks.</p>
+                        <form class="ns-form" onsubmit="event.preventDefault(); alert('You\'re subscribed!');">
+                            <input type="email" placeholder="Enter your email" required>
+                            <button type="submit"><i class="fas fa-arrow-right"></i> Subscribe</button>
+                        </form>
+                    </div>
+
+                    <!-- Quick Links / Services (Full width) -->
+                    <div class="quick-links full-width">
+                        <div class="ql-header">
+                            <i class="fas fa-concierge-bell"></i>
+                            <h4>Our Services</h4>
+                        </div>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Artwork Appraisals & Valuations</li>
+                            <li><i class="fas fa-check-circle"></i> Private Collection Consultancy</li>
+                            <li><i class="fas fa-check-circle"></i> Art Installation & Hanging Services</li>
+                            <li><i class="fas fa-check-circle"></i> Commissioned Artwork Requests</li>
+                            <li><i class="fas fa-check-circle"></i> Corporate Art Leasing Programs</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Quote -->
+                <div class="gallery-quote">
+                    <p>Every canvas tells a story — let us help you find yours, or help the world discover the one you've already created.</p>
+                    <div class="attribution"><span class="line"></span> The Gallery Curatorial Team</div>
+                </div>
             </div>
-            <h1>Create <span>Contact</span></h1>
+
+            <!-- ═══════════════════════════════════
+                 RIGHT COLUMN — FORM + MOVED CONTENT
+            ═══════════════════════════════════ -->
+            <div class="form-column">
+                <div class="form-card">
+
+                    <div class="form-header">
+                        <div class="icon-box">
+                            <i class="fas fa-pen-fancy"></i>
+                        </div>
+                        <h1>Send A <em>Message</em></h1>
+                    </div>
+                    <div class="form-subtitle">
+                        <span class="badge">
+                            <i class="fas fa-address-card"></i> New Enquiry
+                        </span>
+                        <span class="dot"></span>
+                    </div>
+                    <hr class="divider" />
+
+                    <form asp-controller="user" asp-action="Addcontactlogic" method="post" id="contactForm" novalidate>
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger" style="display:none;"></div>
+
+                        <div class="form-group">
+                            <label for="MessageInput">
+                                <i class="fas fa-comment-dots"></i> Message
+                            </label>
+                            <div class="input-group" id="messageWrapper">
+                                <i class="fas fa-pencil-alt input-icon"></i>
+                                <input id="MessageInput"
+                                       asp-for="Message"
+                                       placeholder="Tell us about the piece, listing, or enquiry..."
+                                       required
+                                       minlength="3"
+                                       maxlength="200"
+                                       autocomplete="off" />
+                            </div>
+                            <div class="validation-msg text-muted" id="validationMsg">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Minimum 3 characters</span>
+                            </div>
+                            <div class="char-counter" id="charCounter">
+                                <span id="charCount">0</span> / 200
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                                <span class="btn-text">
+                                    <i class="fas fa-paper-plane"></i> Send Message
+                                </span>
+                                <span class="spinner">
+                                    <i class="fas fa-spinner fa-pulse"></i> Sending...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <a asp-action="Index" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+
+                </div>
+
+                <!-- ── Content filling the space beneath the form ── -->
+                <div class="form-column-extra">
+
+                    <!-- Inline stats -->
+                    <div class="stat-bar">
+                        <span><b>98%</b> Client Satisfaction</span>
+                        <span class="sep">&bull;</span>
+                        <span><b>45+</b> Countries Shipped</span>
+                        <span class="sep">&bull;</span>
+                        <span><b>24/7</b> Curator Support</span>
+                    </div>
+
+                    <!-- Category tiles -->
+                    <div class="category-tiles">
+                        <a href="#" class="category-tile">
+                            <div class="ct-icon"><i class="fas fa-shapes"></i></div>
+                            <div class="ct-text"><strong>Abstract</strong><span>72 pieces</span></div>
+                        </a>
+                        <a href="#" class="category-tile">
+                            <div class="ct-icon"><i class="fas fa-mountain-sun"></i></div>
+                            <div class="ct-text"><strong>Landscapes</strong><span>91 pieces</span></div>
+                        </a>
+                        <a href="#" class="category-tile">
+                            <div class="ct-icon"><i class="fas fa-user"></i></div>
+                            <div class="ct-text"><strong>Portraits</strong><span>58 pieces</span></div>
+                        </a>
+                        <a href="#" class="category-tile">
+                            <div class="ct-icon"><i class="fas fa-fire"></i></div>
+                            <div class="ct-text"><strong>Ceramics</strong><span>37 pieces</span></div>
+                        </a>
+                    </div>
+
+                    <!-- Vertical timeline -->
+                    <div class="process-list">
+                        <h4>Why Collectors Trust Us</h4>
+                        <ol class="timeline">
+                            <li class="timeline-step">
+                                <div class="step-num">1</div>
+                                <h5>Verified provenance</h5>
+                                <p>Every piece is authenticated and comes with full ownership history.</p>
+                            </li>
+                            <li class="timeline-step">
+                                <div class="step-num">2</div>
+                                <h5>Insured shipping</h5>
+                                <p>White-glove crating and full-value insurance on every delivery.</p>
+                            </li>
+                            <li class="timeline-step">
+                                <div class="step-num">3</div>
+                                <h5>30-day returns</h5>
+                                <p>Not the right fit for your space? Send it back, no questions asked.</p>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- Two-column grid for bottom sections -->
+                    <div class="bottom-grid">
+                        <!-- New Arrivals -->
+                        <div class="event-teaser">
+                            <div class="event-header">
+                                <i class="fas fa-star"></i>
+                                <h4>New Arrivals</h4>
+                            </div>
+                            <p>12 new pieces just landed this week from emerging artists across three continents.</p>
+                            <span class="event-date"><i class="fas fa-clock"></i> Updated: 10 July 2026</span>
+                        </div>
+
+                        <!-- Refer a Friend -->
+                        <div class="newsletter-mini">
+                            <div class="ns-header">
+                                <i class="fas fa-user-plus"></i>
+                                <h4>Refer a friend</h4>
+                            </div>
+                            <p>Invite a fellow collector and you'll both receive 10% off your next purchase.</p>
+                            <form class="ns-form" onsubmit="event.preventDefault(); alert('Invite sent!');">
+                                <input type="email" placeholder="Friend's email" required>
+                                <button type="submit"><i class="fas fa-arrow-right"></i> Invite</button>
+                            </form>
+                        </div>
+
+                        <!-- Visit In Person (Full width) -->
+                        <div class="quick-links full-width">
+                            <div class="ql-header">
+                                <i class="fas fa-location-dot"></i>
+                                <h4>Visit In Person</h4>
+                            </div>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> Open Tuesday–Sunday, 10am–6pm</li>
+                                <li><i class="fas fa-check-circle"></i> Free on-site parking for visitors</li>
+                                <li><i class="fas fa-check-circle"></i> Fully wheelchair accessible</li>
+                                <li><i class="fas fa-check-circle"></i> Private viewings by appointment</li>
+                                <li><i class="fas fa-check-circle"></i> Guided tours every Saturday</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="gallery-quote">
+                        <p>I walked in looking for one piece and left with a collection — and a curator who actually remembered what I loved.</p>
+                        <div class="attribution"><span class="line"></span> Ravi Kumar, Collector</div>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
-        <div class="form-subtitle">
-            <span class="badge">
-                <i class="fas fa-address-card"></i> New Entry
-            </span>
-            <span class="dot"></span>
+
+        <!-- ═══════════════════════════════════
+             BELOW-FORM SECTIONS
+        ═══════════════════════════════════ -->
+        <div class="more-sections">
+
+            <!-- FAQ -->
+            <div class="faq-section reveal">
+                <div class="section-heading">
+                    <span class="info-eyebrow"><i class="fas fa-circle-question"></i> FAQ</span>
+                    <h2>Common <em>questions</em></h2>
+                    <p>A few things people usually ask us before reaching out.</p>
+                </div>
+                <div class="faq-list" id="faqList">
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            <span>Do you ship artwork internationally?</span>
+                            <span class="chev"><i class="fas fa-plus"></i></span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes. Every piece is professionally packed and insured, and we handle customs paperwork for international collectors.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            <span>How long until I hear back?</span>
+                            <span class="chev"><i class="fas fa-plus"></i></span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Our curators reply to every enquiry within one business day, usually much sooner during the week.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            <span>How do I consign a piece for sale?</span>
+                            <span class="chev"><i class="fas fa-plus"></i></span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Send us details and photos of the work through this form. A curator will follow up with valuation and consignment terms.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            <span>Do you offer payment plans?</span>
+                            <span class="chev"><i class="fas fa-plus"></i></span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, flexible installment plans are available on select pieces. Mention it in your message and we'll walk you through the options.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonials -->
+            <div class="testimonial-section reveal">
+                <div class="section-heading">
+                    <span class="info-eyebrow"><i class="fas fa-quote-left"></i> Testimonials</span>
+                    <h2>What <em>collectors</em> say</h2>
+                    <p>A few words from people who found their piece through the gallery.</p>
+                </div>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="quote-text">The curator understood exactly what I was looking for after one message. The piece arrived perfectly packed.</p>
+                        <div class="testimonial-person">
+                            <div class="tp-avatar">RK</div>
+                            <div><strong>Ravi Kumar</strong><span>Collector, Karachi</span></div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="quote-text">Consigning my paintings here was effortless. Clear communication from enquiry to final sale.</p>
+                        <div class="testimonial-person">
+                            <div class="tp-avatar">SF</div>
+                            <div><strong>Sana Farooq</strong><span>Artist</span></div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="quote-text">Replies came fast and the whole buying process happened right through the website. Would order again.</p>
+                        <div class="testimonial-person">
+                            <div class="tp-avatar">DL</div>
+                            <div><strong>Daniel Lee</strong><span>First-time buyer</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Artists -->
+            <div class="artists-section reveal">
+                <div class="section-heading">
+                    <span class="info-eyebrow"><i class="fas fa-signature"></i> Featured Artists</span>
+                    <h2>Meet the <em>artists</em></h2>
+                    <p>A few of the names currently showing in the gallery's collection.</p>
+                </div>
+                <div class="artists-grid">
+                    <div class="artist-card">
+                        <div class="artist-avatar artist-1">NA</div>
+                        <h3>Noor Ahmed</h3>
+                        <span>Contemporary Oils</span>
+                    </div>
+                    <div class="artist-card">
+                        <div class="artist-avatar artist-2">MK</div>
+                        <h3>Maya Khan</h3>
+                        <span>Mixed Media</span>
+                    </div>
+                    <div class="artist-card">
+                        <div class="artist-avatar artist-3">JT</div>
+                        <h3>Jamal Tariq</h3>
+                        <span>Sculpture</span>
+                    </div>
+                    <div class="artist-card">
+                        <div class="artist-avatar artist-4">LR</div>
+                        <h3>Liana Rossi</h3>
+                        <span>Photography</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment methods -->
+            <div class="payment-section reveal">
+                <div class="section-heading">
+                    <span class="info-eyebrow"><i class="fas fa-shield-heart"></i> Secure Checkout</span>
+                    <h2>Pay your <em>way</em></h2>
+                    <p>Every method below is encrypted and PCI-compliant.</p>
+                </div>
+                <div class="payment-strip">
+                    <div class="payment-chip"><i class="fas fa-credit-card"></i> Credit / Debit Card</div>
+                    <div class="payment-chip"><i class="fas fa-wallet"></i> Digital Wallet</div>
+                    <div class="payment-chip"><i class="fas fa-building-columns"></i> Bank Transfer</div>
+                    <div class="payment-chip"><i class="fas fa-money-bill-wave"></i> Cash On Delivery</div>
+                </div>
+            </div>
+
         </div>
-        <hr class="divider" />
-
-        <!-- Form -->
-        <form asp-controller="user" asp-action="Addcontactlogic" method="post" id="contactForm" novalidate>
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger" style="display:none;"></div>
-
-            <div class="form-group">
-                <label for="MessageInput">
-                    <i class="fas fa-comment-dots"></i> Message
-                </label>
-                <div class="input-group" id="messageWrapper">
-                    <i class="fas fa-pencil-alt input-icon"></i>
-                    <input id="MessageInput"
-                           asp-for="Message"
-                           placeholder="Type your message..."
-                           required
-                           minlength="3"
-                           maxlength="200"
-                           autocomplete="off" />
-                </div>
-                <div class="validation-msg text-muted" id="validationMsg">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Minimum 3 characters</span>
-                </div>
-                <div class="char-counter" id="charCounter">
-                    <span id="charCount">0</span> / 200
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom:0;">
-                <button type="submit" class="btn-submit" id="submitBtn" disabled>
-                    <span class="btn-text">
-                        <i class="fas fa-paper-plane"></i> Create
-                    </span>
-                    <span class="spinner">
-                        <i class="fas fa-spinner fa-pulse"></i> Sending...
-                    </span>
-                </button>
-            </div>
-        </form>
-
-        <!-- Back Link -->
-        <a asp-action="Index" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to List
-        </a>
-
     </div>
 </div>
 
@@ -555,7 +1982,7 @@
             <i class="fas fa-check"></i>
         </div>
         <h2>Success!</h2>
-        <p id="successMessage">Your contact has been created successfully.</p>
+        <p id="successMessage">Your message has been sent successfully.</p>
         <button class="btn-close-modal" onclick="closeSuccessModal()">
             <i class="fas fa-arrow-right"></i> Continue
         </button>
@@ -575,7 +2002,6 @@
         const successOverlay = document.getElementById('successOverlay');
         const successMessage = document.getElementById('successMessage');
 
-        // ─── Character Counter ───
         function updateCharCounter() {
             const len = input.value.length;
             charCount.textContent = len;
@@ -584,7 +2010,6 @@
             if (len >= 200) charCounter.classList.add('danger');
         }
 
-        // ─── Validation ───
         function validate() {
             const val = input.value;
             const len = val.length;
@@ -630,13 +2055,11 @@
             return valid;
         }
 
-        // ─── Update Button ───
         function updateBtn() {
             const val = input.value;
             submitBtn.disabled = !(val.length >= 3 && val.length <= 200);
         }
 
-        // ─── Show Success Modal ───
         window.showSuccessModal = function (message) {
             if (message) {
                 successMessage.textContent = message;
@@ -645,15 +2068,12 @@
             document.body.style.overflow = 'hidden';
         }
 
-        // ─── Close Success Modal ───
         window.closeSuccessModal = function () {
             successOverlay.classList.remove('active');
             document.body.style.overflow = '';
-            // Redirect to Index after closing
             window.location.href = '@Url.Action("Index")';
         }
 
-        // ─── Event Listeners ───
         input.addEventListener('input', function () {
             updateCharCounter();
             validate();
@@ -672,48 +2092,85 @@
             updateBtn();
         });
 
-        // ─── Init ───
         updateCharCounter();
         submitBtn.disabled = true;
         valMsg.classList.add('text-muted');
 
-        // ─── Form Submit ───
         form.addEventListener('submit', function (e) {
             if (!validate()) {
                 e.preventDefault();
                 input.focus();
                 return;
             }
-
-            // Show loading state
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
         });
 
-        // ─── Check for TempData on page load ───
         @if (TempData["Message"] != null)
         {
-            <text>
-                // Show success modal with the message
-                setTimeout(function() {
-                    showSuccessModal('@TempData["Message"]');
-                }, 500);
-            </text>
+                        <text>
+                            setTimeout(function() {
+                                showSuccessModal('@TempData["Message"]');
+                            }, 500);
+                        </text>
         }
 
-        // ─── Close modal on overlay click ───
         successOverlay.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeSuccessModal();
             }
         });
 
-        // ─── Close modal on Escape key ───
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && successOverlay.classList.contains('active')) {
                 closeSuccessModal();
             }
         });
+
+        // ─── FAQ accordion ───
+        document.querySelectorAll('.faq-item').forEach(function (item) {
+            const question = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+
+            question.addEventListener('click', function () {
+                const isOpen = item.classList.contains('open');
+
+                document.querySelectorAll('.faq-item.open').forEach(function (openItem) {
+                    if (openItem !== item) {
+                        openItem.classList.remove('open');
+                        openItem.querySelector('.faq-answer').style.maxHeight = null;
+                    }
+                });
+
+                if (isOpen) {
+                    item.classList.remove('open');
+                    answer.style.maxHeight = null;
+                } else {
+                    item.classList.add('open');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                }
+            });
+        });
+
+        // ─── Scroll reveal for below-form sections ───
+        if ('IntersectionObserver' in window) {
+            const revealObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            document.querySelectorAll('.reveal').forEach(function (el) {
+                revealObserver.observe(el);
+            });
+        } else {
+            document.querySelectorAll('.reveal').forEach(function (el) {
+                el.classList.add('revealed');
+            });
+        }
 
     })();
 </script>
