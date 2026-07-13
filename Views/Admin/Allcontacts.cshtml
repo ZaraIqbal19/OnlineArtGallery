@@ -1,0 +1,992 @@
+@model IEnumerable<Art_Gallery.Models.Contact>
+@{
+    ViewData["Title"] = "All Contacts";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@*
+    NOTE: Styles/Scripts are placed directly in the body (not wrapped in
+    @section Styles / @section Scripts) so this page renders correctly even
+    if _AdminLayout.cshtml doesn't call @RenderSection("Styles"/"Scripts").
+    Same approach used on the Customers page.
+*@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<style>
+    .contacts-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .contacts-page *,
+        .contacts-page *::before,
+        .contacts-page *::after {
+            box-sizing: border-box;
+        }
+
+        .contacts-page .container-cont {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ----- main card / glass effect ----- */
+        .contacts-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .contacts-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        /* ----- header ----- */
+        .contacts-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .contacts-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .contacts-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .contacts-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .contacts-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+            .contacts-page .heading-green span {
+                background: #88d200;
+                color: white;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 0.2rem 1rem;
+                border-radius: 60px;
+                letter-spacing: 0.3px;
+            }
+
+        .contacts-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .contacts-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        /* ----- toolbar / search ----- */
+        .contacts-page .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .contacts-page .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            border-radius: 60px;
+            padding: 9px 20px;
+            flex: 1;
+            max-width: 340px;
+            transition: all 0.2s;
+        }
+
+            .contacts-page .search-box:focus-within {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
+            }
+
+            .contacts-page .search-box i {
+                color: #6fa800;
+            }
+
+            .contacts-page .search-box input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 0.88rem;
+                width: 100%;
+                color: #1a1a1a;
+            }
+
+        .contacts-page .result-count {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .contacts-page .btn-export {
+            background: white;
+            color: #6fa800;
+            border: 1.5px solid #88d200;
+            border-radius: 60px;
+            padding: 0.5rem 1.3rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.25s;
+            white-space: nowrap;
+        }
+
+            .contacts-page .btn-export:hover {
+                background: #88d200;
+                color: white;
+                transform: translateY(-2px) scale(1.03);
+                box-shadow: 0 10px 20px rgba(136, 210, 0, 0.28);
+            }
+
+        /* ----- table ----- */
+        .contacts-page .table-responsive-cont {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+            scrollbar-color: #88d200 #eef6de;
+        }
+
+            .contacts-page .table-responsive-cont::-webkit-scrollbar {
+                height: 10px;
+            }
+
+            .contacts-page .table-responsive-cont::-webkit-scrollbar-track {
+                background: #eef6de;
+                border-radius: 20px;
+            }
+
+            .contacts-page .table-responsive-cont::-webkit-scrollbar-thumb {
+                background: linear-gradient(90deg, #88d200, #6fa800);
+                border-radius: 20px;
+                border: 2px solid #eef6de;
+            }
+
+        .contacts-page .table-green-white {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+            min-width: 800px;
+            margin-bottom: 0;
+        }
+
+            .contacts-page .table-green-white thead th {
+                background: #88d200;
+                color: white;
+                font-weight: 600;
+                font-size: 0.76rem;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                padding: 15px 18px;
+                border: none;
+            }
+
+                .contacts-page .table-green-white thead th:first-child {
+                    border-radius: 20px 0 0 20px;
+                    padding-left: 26px;
+                }
+
+                .contacts-page .table-green-white thead th:last-child {
+                    border-radius: 0 20px 20px 0;
+                    padding-right: 26px;
+                }
+
+                .contacts-page .table-green-white thead th i {
+                    margin-right: 6px;
+                    opacity: 0.9;
+                }
+
+        .contacts-page .empty-state-row td {
+            text-align: center;
+            padding: 40px 20px !important;
+            color: #8a9a6e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 20px !important;
+        }
+
+        .contacts-page .empty-state-row i {
+            display: block;
+            font-size: 2rem;
+            color: #d4f09b;
+            margin-bottom: 10px;
+        }
+
+        .contacts-page .table-green-white tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid rgba(136, 210, 0, 0.06);
+            opacity: 0;
+            animation: fadeSlideCont 0.45s forwards;
+            animation-delay: calc(0.05s * var(--i, 1));
+        }
+
+    @@keyframes fadeSlideCont {
+        0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .contacts-page .table-green-white tbody tr:hover {
+        background: #fbffef;
+        border-color: #d4f09b;
+        transform: scale(1.006) translateY(-2px);
+        box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
+    }
+
+    .contacts-page .table-green-white tbody td {
+        padding: 16px 18px;
+        vertical-align: middle;
+        border: none;
+        background: transparent;
+        font-size: 0.92rem;
+    }
+
+        .contacts-page .table-green-white tbody td:first-child {
+            padding-left: 26px;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .contacts-page .table-green-white tbody td:last-child {
+            padding-right: 26px;
+            border-radius: 0 18px 18px 0;
+        }
+
+    .contacts-page .message-cell {
+        max-width: 320px;
+        color: #3d3d3d;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .contacts-page .info-pill {
+        background: #f0fae6;
+        color: #4c7800;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .contacts-page .table-green-white tbody tr:hover .info-pill {
+        background: #d4f09b;
+    }
+
+    .contacts-page .gender-badge {
+        background: #eaf7d6;
+        color: #4c7800;
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.76rem;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        transition: all 0.25s;
+    }
+
+        .contacts-page .gender-badge:hover {
+            background: #88d200;
+            color: white;
+            border-color: #88d200;
+            transform: scale(1.06);
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.28);
+        }
+
+    /* action buttons */
+    .contacts-page .actions-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .contacts-page .btn-action {
+        border-radius: 60px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        letter-spacing: 0.25px;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .contacts-page .btn-reply {
+        background: #88d200;
+        color: white;
+        border-color: #88d200;
+    }
+
+        .contacts-page .btn-reply:hover {
+            background: #6fa800;
+            border-color: #6fa800;
+            color: white;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
+        }
+
+    .contacts-page .btn-delete {
+        background: transparent;
+        color: #a51b1b;
+        border: 1.5px solid #f0c8c8;
+    }
+
+        .contacts-page .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
+        }
+
+    /* footer */
+    .contacts-page .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.84rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .contacts-page .table-footer i {
+            color: #88d200;
+            margin: 0 4px;
+        }
+
+        .contacts-page .table-footer .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+        }
+
+            .contacts-page .table-footer .pill:hover {
+                background: #88d200;
+                color: white;
+            }
+
+    /* ===== DELETE MODAL ===== */
+    .contacts-page .delete-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInOverlayCont 0.3s ease;
+    }
+
+    @@keyframes fadeInOverlayCont {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .contacts-page .delete-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 440px;
+        width: 90%;
+        position: relative;
+        animation: modalSlideUpCont 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    @@keyframes modalSlideUpCont {
+        from {
+            transform: scale(0.8) translateY(40px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .contacts-page .delete-modal .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: #dc3545;
+        animation: pulseIconCont 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulseIconCont {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .contacts-page .delete-modal h3 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .contacts-page .delete-modal p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .contacts-page .delete-modal .contact-highlight {
+        color: #dc3545;
+        font-weight: 700;
+        background: #fff5f5;
+        padding: 2px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .contacts-page .delete-modal .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .contacts-page .delete-modal .btn-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        flex: 1;
+    }
+
+        .contacts-page .delete-modal .btn-cancel:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+    .contacts-page .delete-modal .btn-confirm-delete {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        cursor: pointer;
+        flex: 1;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .contacts-page .delete-modal .btn-confirm-delete:hover {
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+        }
+
+    /* ===== SUCCESS TOAST ===== */
+    .contacts-page .toast-container-custom {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        min-width: 320px;
+        max-width: 450px;
+        pointer-events: none;
+    }
+
+    .contacts-page .toast-success {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-left: 8px solid #88d200;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
+        padding: 20px 28px;
+        color: #1a1a2e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 1;
+        pointer-events: none;
+        animation: slideInRightCont 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInRightCont {
+        from {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .contacts-page .toast-success i {
+        font-size: 2rem;
+        color: #88d200;
+        background: linear-gradient(135deg, #f0fae6, #d4f09b);
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
+        animation: checkBounceCont 0.6s ease;
+    }
+
+    @@keyframes checkBounceCont {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .contacts-page .toast-success .toast-content {
+        flex: 1;
+    }
+
+    .contacts-page .toast-success .toast-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 1rem;
+    }
+
+    .contacts-page .toast-success .toast-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .contacts-page .toast-success.hide {
+        animation: slideOutRightCont 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes slideOutRightCont {
+        from {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    .contacts-page .fade-out {
+        animation: fadeOutCont 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes fadeOutCont {
+        0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+    }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .contacts-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .contacts-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .contacts-page .table-green-white thead th,
+        .contacts-page .table-green-white tbody td {
+            padding: 12px 10px;
+            font-size: 0.84rem;
+        }
+
+        .contacts-page .btn-action {
+            padding: 6px 12px;
+            font-size: 0.7rem;
+        }
+
+        .contacts-page .toast-container-custom {
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            min-width: unset;
+            max-width: unset;
+        }
+
+        .contacts-page .delete-modal {
+            padding: 2rem 1.5rem;
+        }
+
+            .contacts-page .delete-modal .modal-actions {
+                flex-direction: column;
+            }
+
+        .contacts-page .toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .contacts-page .search-box {
+            max-width: unset;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .contacts-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+    }
+</style>
+
+<div class="contacts-page">
+    <div class="container-cont">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h1 class="heading-green">
+                        All Contacts
+                        <span>@Model.Count()</span>
+                    </h1>
+                </div>
+                <div class="status-badge">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> active
+                </div>
+            </div>
+
+            <!-- search / toolbar -->
+            <div class="toolbar-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="contactSearch" placeholder="Search by email or message..." onkeyup="filterContacts()" />
+                </div>
+                <div class="toolbar-right" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                    <a asp-action="ExportContactsToExcel" asp-controller="Admin" class="btn-export">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </a>
+                </div>
+            </div>
+
+
+            <!-- table -->
+            <div class="table-responsive-cont">
+                <table class="table table-green-white">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-comment-dots"></i> @Html.DisplayNameFor(model => model.Message)</th>
+                            <th><i class="fas fa-envelope"></i> Sender Email</th>
+                            <th><i class="fas fa-venus-mars"></i> Gender</th>
+                            <th><i class="fas fa-map-marker-alt"></i> Address</th>
+                            <th style="text-align: right; padding-right: 26px;"><i class="fas fa-bolt"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int rowIndex = 0;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            rowIndex++;
+                            <tr style="--i: @rowIndex;" data-contact-id="@item.Id" data-contact-email="@item.User?.Email">
+                                <td><div class="message-cell">@Html.DisplayFor(modelItem => item.Message)</div></td>
+                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.User.Email)</span></td>
+                                <td>
+                                    <span class="gender-badge">
+                                        <i class="fas fa-user"></i> @Html.DisplayFor(modelItem => item.User.gender)
+                                    </span>
+                                </td>
+                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.User.address)</span></td>
+                                <td style="text-align: right;">
+                                    <div class="actions-wrap">
+                                        <a asp-action="Reply" asp-route-id="@item.Id" class="btn btn-action btn-reply">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </a>
+                                        <button type="button" class="btn btn-action btn-delete"
+                                                onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.User?.Email ?? "this contact"))')">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        <tr class="empty-state-row" id="noResultsRow" style="display: none;">
+                            <td colspan="5">
+                                <i class="fas fa-inbox"></i>
+                                No matching contacts found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- footer -->
+            <div class="table-footer">
+                <span><i class="fas fa-arrow-right"></i> hover rows · green theme</span>
+                <span class="pill"><i class="fas fa-envelope-open-text"></i> @Model.Count() contacts</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div id="deleteModal" class="delete-modal-overlay">
+        <div class="delete-modal">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete Contact?</h3>
+            <p>
+                Are you sure you want to delete the message from
+                <span class="contact-highlight" id="modalContactName">"..."</span>?
+                <br>
+                <small style="color: #dc3545; font-weight: 500;">
+                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
+                </small>
+            </p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn-confirm-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS TOAST ===== -->
+    <div id="successToast" class="toast-container-custom">
+        <div id="toastMessage" class="toast-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="toast-content">
+                <div class="toast-title">Deleting...</div>
+                <div class="toast-message" id="toastText">Redirecting to delete confirmation</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deleteContactId = null;
+
+    // Live search filter across message + email columns
+    function filterContacts() {
+        const query = document.getElementById('contactSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.contacts-page .table-green-white tbody tr:not(#noResultsRow)');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const email = (row.getAttribute('data-contact-email') || '').toLowerCase();
+            const message = (row.querySelector('.message-cell')?.textContent || '').toLowerCase();
+            const matches = email.includes(query) || message.includes(query);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
+
+        const totalRows = rows.length;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
+    }
+
+    function openDeleteModal(contactId, contactName) {
+        deleteContactId = contactId;
+        document.getElementById('modalContactName').textContent = `"${contactName}"`;
+
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+
+        const modalContent = modal.querySelector('.delete-modal');
+        modalContent.style.animation = 'none';
+        setTimeout(() => {
+            modalContent.style.animation = 'modalSlideUpCont 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deleteContactId = null;
+    }
+
+    // Confirms in-page, shows a success toast, then navigates to the
+    // existing Deletecontactlogic action on the Admin controller.
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (deleteContactId) {
+            const idToDelete = deleteContactId; // capture before closeDeleteModal() clears it
+            const row = document.querySelector(`tr[data-contact-id="${idToDelete}"]`);
+            closeDeleteModal();
+            showSuccessToast('Deleted!', 'The contact message was removed successfully.');
+
+            if (row) {
+                row.classList.add('fade-out');
+            }
+
+            setTimeout(() => {
+                window.location.href = '@Url.Action("Deletecontactlogic", "Admin")/' + idToDelete;
+            }, 900);
+        }
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    function showSuccessToast(title, message) {
+        const toast = document.getElementById('toastMessage');
+        const textSpan = document.getElementById('toastText');
+        const titleEl = toast.querySelector('.toast-title');
+
+        if (titleEl) titleEl.innerText = title;
+        if (textSpan) textSpan.innerText = message;
+
+        toast.classList.remove('hide');
+        toast.style.display = 'flex';
+
+        toast.style.animation = 'none';
+        setTimeout(() => {
+            toast.style.animation = 'slideInRightCont 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+
+        clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => { toast.style.display = 'none'; }, 500);
+        }, 4000);
+    }
+</script>

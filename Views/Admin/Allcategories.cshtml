@@ -1,32 +1,58 @@
-ï»¿@model IEnumerable<Art_Gallery.Areas.Identity.Data.Art_GalleryUser>
+@model IEnumerable<Art_Gallery.Models.Category>
 @{
-    ViewData["Title"] = "All Customers";
+    ViewData["Title"] = "Categories";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
 <style>
-    /* ===== everything scoped under .customers-page so it can't leak into the admin shell ===== */
-    .customers-page {
+    /* ===== everything scoped under .categories-page so it can't leak into the admin shell ===== */
+    .categories-page {
         font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
         padding: 1.5rem 0;
     }
 
-        .customers-page *,
-        .customers-page *::before,
-        .customers-page *::after {
+        .categories-page *,
+        .categories-page *::before,
+        .categories-page *::after {
             box-sizing: border-box;
         }
 
-        .customers-page .container-cust {
+        .categories-page .container-cust {
             max-width: 1280px;
             margin: 0 auto;
         }
 
+        /* ----- alerts ----- */
+        .categories-page .alert-cust {
+            border: none;
+            border-radius: 16px;
+            padding: 14px 22px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            animation: fadeSlideCust 0.4s ease;
+        }
+
+        .categories-page .alert-success-cust {
+            background: #f0fae6;
+            color: #4c7800;
+            border-left: 6px solid #88d200;
+        }
+
+        .categories-page .alert-danger-cust {
+            background: #fff5f5;
+            color: #a51b1b;
+            border-left: 6px solid #dc3545;
+        }
+
         /* ----- main card / glass effect ----- */
-        .customers-page .admin-card {
+        .categories-page .admin-card {
             background: rgba(255, 255, 255, 0.97);
             border-radius: 2rem;
             padding: 2rem 1.8rem 1.8rem 1.8rem;
@@ -36,7 +62,7 @@
             overflow: hidden;
         }
 
-            .customers-page .admin-card::before {
+            .categories-page .admin-card::before {
                 content: "";
                 position: absolute;
                 top: 0;
@@ -47,7 +73,7 @@
             }
 
         /* ----- header ----- */
-        .customers-page .header-section {
+        .categories-page .header-section {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -58,13 +84,13 @@
             border-bottom: 2px solid rgba(136, 210, 0, 0.18);
         }
 
-        .customers-page .brand-head {
+        .categories-page .brand-head {
             display: flex;
             align-items: center;
             gap: 0.9rem;
         }
 
-        .customers-page .brand-icon {
+        .categories-page .brand-icon {
             background: #88d200;
             width: 48px;
             height: 48px;
@@ -79,12 +105,12 @@
             flex-shrink: 0;
         }
 
-            .customers-page .brand-icon:hover {
+            .categories-page .brand-icon:hover {
                 transform: rotate(-6deg) scale(1.04);
                 background: #6fa800;
             }
 
-        .customers-page .heading-green {
+        .categories-page .heading-green {
             font-weight: 700;
             font-size: 1.85rem;
             letter-spacing: -0.5px;
@@ -96,7 +122,7 @@
             flex-wrap: wrap;
         }
 
-            .customers-page .heading-green span {
+            .categories-page .heading-green span {
                 background: #88d200;
                 color: white;
                 font-size: 0.85rem;
@@ -106,14 +132,14 @@
                 letter-spacing: 0.3px;
             }
 
-        .customers-page .header-actions {
+        .categories-page .header-actions {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .customers-page .status-badge {
+        .categories-page .status-badge {
             background: white;
             border: 1.5px solid #88d200;
             color: #6fa800;
@@ -125,12 +151,12 @@
             white-space: nowrap;
         }
 
-            .customers-page .status-badge i {
+            .categories-page .status-badge i {
                 color: #88d200;
                 margin-right: 6px;
             }
 
-        .customers-page .btn-add-customer {
+        .categories-page .btn-add-customer {
             background: linear-gradient(135deg, #88d200, #6fa800);
             color: white;
             border: none;
@@ -147,13 +173,13 @@
             white-space: nowrap;
         }
 
-            .customers-page .btn-add-customer:hover {
+            .categories-page .btn-add-customer:hover {
                 transform: translateY(-2px) scale(1.03);
                 box-shadow: 0 12px 24px rgba(111, 168, 0, 0.4);
                 color: white;
             }
 
-        .customers-page .btn-export {
+        .categories-page .btn-export {
             background: white;
             color: #6fa800;
             border: 1.5px solid #88d200;
@@ -170,22 +196,22 @@
             white-space: nowrap;
         }
 
-            .customers-page .btn-export:hover {
+            .categories-page .btn-export:hover {
                 background: #88d200;
                 color: white;
                 transform: translateY(-2px) scale(1.03);
                 box-shadow: 0 10px 20px rgba(136, 210, 0, 0.28);
             }
 
-        /* ----- stat cards ----- */
-        .customers-page .stats-row {
+        /* ----- stat card ----- */
+        .categories-page .stats-row {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr;
             gap: 14px;
             margin-bottom: 1.4rem;
         }
 
-        .customers-page .stat-card {
+        .categories-page .stat-card {
             background: #f0fae6;
             border: 1px solid #d4f09b;
             border-radius: 16px;
@@ -196,13 +222,13 @@
             transition: all 0.25s;
         }
 
-            .customers-page .stat-card:hover {
+            .categories-page .stat-card:hover {
                 background: #d4f09b;
                 transform: translateY(-3px);
                 box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
             }
 
-        .customers-page .stat-icon {
+        .categories-page .stat-icon {
             width: 40px;
             height: 40px;
             border-radius: 12px;
@@ -216,14 +242,14 @@
             box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
         }
 
-        .customers-page .stat-value {
+        .categories-page .stat-value {
             font-weight: 700;
             font-size: 1.25rem;
             color: #1a1a1a;
             line-height: 1.1;
         }
 
-        .customers-page .stat-label {
+        .categories-page .stat-label {
             font-size: 0.76rem;
             color: #5c7a2e;
             font-weight: 600;
@@ -231,7 +257,7 @@
         }
 
         /* ----- toolbar / search ----- */
-        .customers-page .toolbar-row {
+        .categories-page .toolbar-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -240,7 +266,7 @@
             margin-bottom: 1.1rem;
         }
 
-        .customers-page .search-box {
+        .categories-page .search-box {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -253,17 +279,17 @@
             transition: all 0.2s;
         }
 
-            .customers-page .search-box:focus-within {
+            .categories-page .search-box:focus-within {
                 border-color: #88d200;
                 background: white;
                 box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
             }
 
-            .customers-page .search-box i {
+            .categories-page .search-box i {
                 color: #6fa800;
             }
 
-            .customers-page .search-box input {
+            .categories-page .search-box input {
                 border: none;
                 outline: none;
                 background: transparent;
@@ -272,21 +298,21 @@
                 color: #1a1a1a;
             }
 
-        .customers-page .toolbar-right {
+        .categories-page .toolbar-right {
             display: flex;
             align-items: center;
             gap: 14px;
             flex-wrap: wrap;
         }
 
-        .customers-page .result-count {
+        .categories-page .result-count {
             font-size: 0.8rem;
             color: #5c7a2e;
             font-weight: 600;
             white-space: nowrap;
         }
 
-        .customers-page .scroll-hint {
+        .categories-page .scroll-hint {
             font-size: 0.78rem;
             color: #6fa800;
             font-weight: 600;
@@ -297,7 +323,7 @@
         }
 
         /* ----- table ----- */
-        .customers-page .table-responsive-cust {
+        .categories-page .table-responsive-cust {
             border-radius: 1.6rem;
             overflow-x: auto;
             overflow-y: hidden;
@@ -306,34 +332,34 @@
             scrollbar-color: #88d200 #eef6de;
         }
 
-            .customers-page .table-responsive-cust::-webkit-scrollbar {
+            .categories-page .table-responsive-cust::-webkit-scrollbar {
                 height: 10px;
             }
 
-            .customers-page .table-responsive-cust::-webkit-scrollbar-track {
+            .categories-page .table-responsive-cust::-webkit-scrollbar-track {
                 background: #eef6de;
                 border-radius: 20px;
             }
 
-            .customers-page .table-responsive-cust::-webkit-scrollbar-thumb {
+            .categories-page .table-responsive-cust::-webkit-scrollbar-thumb {
                 background: linear-gradient(90deg, #88d200, #6fa800);
                 border-radius: 20px;
                 border: 2px solid #eef6de;
             }
 
-                .customers-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
+                .categories-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
                     background: #6fa800;
                 }
 
-        .customers-page .table-green-white {
+        .categories-page .table-green-white {
             border-collapse: separate;
             border-spacing: 0 10px;
             width: 100%;
-            min-width: 950px;
+            min-width: 420px;
             margin-bottom: 0;
         }
 
-            .customers-page .table-green-white thead th {
+            .categories-page .table-green-white thead th {
                 background: #88d200;
                 color: white;
                 font-weight: 600;
@@ -345,51 +371,51 @@
                 transition: background 0.2s;
             }
 
-                .customers-page .table-green-white thead th:first-child {
+                .categories-page .table-green-white thead th:first-child {
                     border-radius: 20px 0 0 20px;
                     padding-left: 26px;
                 }
 
-                .customers-page .table-green-white thead th:last-child {
+                .categories-page .table-green-white thead th:last-child {
                     border-radius: 0 20px 20px 0;
                     padding-right: 26px;
                 }
 
-                .customers-page .table-green-white thead th:hover {
+                .categories-page .table-green-white thead th:hover {
                     background: #6fa800;
                 }
 
-                .customers-page .table-green-white thead th i.fa-fw-lead {
+                .categories-page .table-green-white thead th i.fa-fw-lead {
                     margin-right: 6px;
                     opacity: 0.9;
                 }
 
-                .customers-page .table-green-white thead th.sortable {
+                .categories-page .table-green-white thead th.sortable {
                     cursor: pointer;
                     user-select: none;
                 }
 
-                    .customers-page .table-green-white thead th.sortable .sort-icon {
+                    .categories-page .table-green-white thead th.sortable .sort-icon {
                         margin-left: 6px;
                         font-size: 0.63rem;
                         opacity: 0.6;
                         transition: opacity 0.2s, transform 0.2s;
                     }
 
-                    .customers-page .table-green-white thead th.sortable:hover .sort-icon {
+                    .categories-page .table-green-white thead th.sortable:hover .sort-icon {
                         opacity: 1;
                     }
 
-                .customers-page .table-green-white thead th.sort-asc .sort-icon,
-                .customers-page .table-green-white thead th.sort-desc .sort-icon {
+                .categories-page .table-green-white thead th.sort-asc .sort-icon,
+                .categories-page .table-green-white thead th.sort-desc .sort-icon {
                     opacity: 1;
                 }
 
-                .customers-page .table-green-white thead th.sort-desc .sort-icon {
+                .categories-page .table-green-white thead th.sort-desc .sort-icon {
                     transform: rotate(180deg);
                 }
 
-        .customers-page .empty-state-row td {
+        .categories-page .empty-state-row td {
             text-align: center;
             padding: 40px 20px !important;
             color: #8a9a6e;
@@ -398,14 +424,14 @@
             border-radius: 20px !important;
         }
 
-        .customers-page .empty-state-row i {
+        .categories-page .empty-state-row i {
             display: block;
             font-size: 2rem;
             color: #d4f09b;
             margin-bottom: 10px;
         }
 
-        .customers-page .table-green-white tbody tr {
+        .categories-page .table-green-white tbody tr {
             background: white;
             border-radius: 18px;
             box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
@@ -428,14 +454,14 @@
         }
     }
 
-    .customers-page .table-green-white tbody tr:hover {
+    .categories-page .table-green-white tbody tr:hover {
         background: #fbffef;
         border-color: #d4f09b;
         transform: scale(1.006) translateY(-2px);
         box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
     }
 
-    .customers-page .table-green-white tbody td {
+    .categories-page .table-green-white tbody td {
         padding: 16px 18px;
         vertical-align: middle;
         border: none;
@@ -443,44 +469,26 @@
         font-size: 0.92rem;
     }
 
-        .customers-page .table-green-white tbody td:first-child {
+        .categories-page .table-green-white tbody td:first-child {
             padding-left: 26px;
             border-radius: 18px 0 0 18px;
         }
 
-        .customers-page .table-green-white tbody td:last-child {
+        .categories-page .table-green-white tbody td:last-child {
             padding-right: 26px;
             border-radius: 0 18px 18px 0;
         }
 
-        /* sticky name column so it stays visible while scrolling horizontally */
-        .customers-page .table-green-white thead th:first-child,
-        .customers-page .table-green-white tbody td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background: #88d200;
-        }
-
-        .customers-page .table-green-white tbody td:first-child {
-            background: white;
-            box-shadow: 4px 0 8px -4px rgba(111, 168, 0, 0.15);
-        }
-
-    .customers-page .table-green-white tbody tr:hover td:first-child {
-        background: #fbffef;
-    }
-
-    .customers-page .name-cell {
+    .categories-page .name-cell {
         display: flex;
         align-items: center;
         gap: 10px;
     }
 
-    .customers-page .user-avatar {
+    .categories-page .cat-avatar {
         width: 32px;
         height: 32px;
-        border-radius: 50%;
+        border-radius: 10px;
         background: linear-gradient(135deg, #88d200, #6fa800);
         color: white;
         font-weight: 700;
@@ -493,104 +501,30 @@
         transition: transform 0.2s;
     }
 
-    .customers-page .table-green-white tbody tr:hover .user-avatar {
+    .categories-page .table-green-white tbody tr:hover .cat-avatar {
         transform: scale(1.08);
     }
 
-    .customers-page .user-name {
+    .categories-page .cat-name {
         font-weight: 700;
         color: #1a1a1a;
         transition: 0.15s;
         white-space: nowrap;
     }
 
-    .customers-page .table-green-white tbody tr:hover .user-name {
+    .categories-page .table-green-white tbody tr:hover .cat-name {
         color: #6fa800;
     }
-
-    .customers-page .email-cell {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .customers-page .user-email {
-        color: #3d3d3d;
-        transition: 0.15s;
-        font-weight: 450;
-    }
-
-    .customers-page .table-green-white tbody tr:hover .user-email {
-        color: #6fa800;
-        font-weight: 500;
-    }
-
-    .customers-page .copy-email-btn {
-        border: none;
-        background: transparent;
-        color: #9fbf6a;
-        cursor: pointer;
-        font-size: 0.78rem;
-        padding: 2px 4px;
-        transition: color 0.2s, transform 0.2s;
-    }
-
-        .customers-page .copy-email-btn:hover {
-            color: #6fa800;
-            transform: scale(1.15);
-        }
-
-        .customers-page .copy-email-btn.copied {
-            color: #4c9e00;
-        }
-
-    .customers-page .info-pill {
-        background: #f0fae6;
-        color: #4c7800;
-        padding: 4px 12px;
-        border-radius: 40px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        transition: all 0.2s;
-        display: inline-block;
-    }
-
-    .customers-page .table-green-white tbody tr:hover .info-pill {
-        background: #d4f09b;
-    }
-
-    .customers-page .gender-badge {
-        background: #eaf7d6;
-        color: #4c7800;
-        font-weight: 600;
-        padding: 6px 16px;
-        border-radius: 60px;
-        font-size: 0.76rem;
-        letter-spacing: 0.2px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid transparent;
-        transition: all 0.25s;
-    }
-
-        .customers-page .gender-badge:hover {
-            background: #88d200;
-            color: white;
-            border-color: #88d200;
-            transform: scale(1.06);
-            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.28);
-        }
 
     /* action buttons */
-    .customers-page .actions-wrap {
+    .categories-page .actions-wrap {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 8px;
     }
 
-    .customers-page .btn-action {
+    .categories-page .btn-action {
         border-radius: 60px;
         padding: 8px 16px;
         font-weight: 600;
@@ -606,27 +540,13 @@
         cursor: pointer;
     }
 
-    .customers-page .btn-details {
-        background: #88d200;
-        color: white;
-        border-color: #88d200;
-    }
-
-        .customers-page .btn-details:hover {
-            background: #6fa800;
-            border-color: #6fa800;
-            color: white;
-            transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
-        }
-
-    .customers-page .btn-edit {
+    .categories-page .btn-edit {
         background: white;
         color: #6fa800;
         border: 1.5px solid #88d200;
     }
 
-        .customers-page .btn-edit:hover {
+        .categories-page .btn-edit:hover {
             background: #88d200;
             color: white;
             transform: translateY(-3px) scale(1.04);
@@ -634,13 +554,13 @@
             border-color: #88d200;
         }
 
-    .customers-page .btn-delete {
+    .categories-page .btn-delete {
         background: transparent;
         color: #a51b1b;
         border: 1.5px solid #f0c8c8;
     }
 
-        .customers-page .btn-delete:hover {
+        .categories-page .btn-delete:hover {
             background: #dc3545;
             color: white;
             border-color: #dc3545;
@@ -649,7 +569,7 @@
         }
 
     /* footer */
-    .customers-page .table-footer {
+    .categories-page .table-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -662,12 +582,12 @@
         gap: 10px;
     }
 
-        .customers-page .table-footer i {
+        .categories-page .table-footer i {
             color: #88d200;
             margin: 0 4px;
         }
 
-        .customers-page .table-footer .pill {
+        .categories-page .table-footer .pill {
             background: #f0fae6;
             padding: 0.2rem 1.2rem;
             border-radius: 60px;
@@ -676,13 +596,13 @@
             transition: 0.15s;
         }
 
-            .customers-page .table-footer .pill:hover {
+            .categories-page .table-footer .pill:hover {
                 background: #88d200;
                 color: white;
             }
 
     /* ===== DELETE MODAL ===== */
-    .customers-page .delete-modal-overlay {
+    .categories-page .delete-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -707,7 +627,7 @@
         }
     }
 
-    .customers-page .delete-modal {
+    .categories-page .delete-modal {
         background: #ffffff;
         border-radius: 24px;
         padding: 2.5rem;
@@ -731,7 +651,7 @@
         }
     }
 
-    .customers-page .delete-modal .modal-icon {
+    .categories-page .delete-modal .modal-icon {
         width: 80px;
         height: 80px;
         background: linear-gradient(135deg, #fff5f5, #ffe8e8);
@@ -755,21 +675,21 @@
         }
     }
 
-    .customers-page .delete-modal h3 {
+    .categories-page .delete-modal h3 {
         color: #1a1a2e;
         font-weight: 700;
         margin-bottom: 0.5rem;
         font-size: 1.5rem;
     }
 
-    .customers-page .delete-modal p {
+    .categories-page .delete-modal p {
         color: #6c757d;
         font-size: 0.95rem;
         line-height: 1.6;
         margin-bottom: 1.5rem;
     }
 
-    .customers-page .delete-modal .user-name-highlight {
+    .categories-page .delete-modal .name-highlight {
         color: #dc3545;
         font-weight: 700;
         background: #fff5f5;
@@ -778,13 +698,13 @@
         display: inline-block;
     }
 
-    .customers-page .delete-modal .modal-actions {
+    .categories-page .delete-modal .modal-actions {
         display: flex;
         gap: 12px;
         justify-content: center;
     }
 
-    .customers-page .delete-modal .btn-cancel {
+    .categories-page .delete-modal .btn-cancel {
         background: #f1f3f5;
         color: #495057;
         border: none;
@@ -796,12 +716,12 @@
         flex: 1;
     }
 
-        .customers-page .delete-modal .btn-cancel:hover {
+        .categories-page .delete-modal .btn-cancel:hover {
             background: #e9ecef;
             transform: scale(1.02);
         }
 
-    .customers-page .delete-modal .btn-confirm-delete {
+    .categories-page .delete-modal .btn-confirm-delete {
         background: linear-gradient(135deg, #dc3545, #b02a37);
         color: #fff;
         border: none;
@@ -814,14 +734,14 @@
         box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
     }
 
-        .customers-page .delete-modal .btn-confirm-delete:hover {
+        .categories-page .delete-modal .btn-confirm-delete:hover {
             transform: scale(1.02) translateY(-2px);
             box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
             background: linear-gradient(135deg, #c82333, #a71d2a);
         }
 
     /* ===== SUCCESS TOAST ===== */
-    .customers-page .toast-container-custom {
+    .categories-page .toast-container-custom {
         position: fixed;
         top: 30px;
         right: 30px;
@@ -831,7 +751,7 @@
         pointer-events: none;
     }
 
-    .customers-page .toast-success {
+    .categories-page .toast-success {
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(10px);
         border-left: 8px solid #88d200;
@@ -860,7 +780,7 @@
         }
     }
 
-    .customers-page .toast-success i {
+    .categories-page .toast-success i {
         font-size: 2rem;
         color: #88d200;
         background: linear-gradient(135deg, #f0fae6, #d4f09b);
@@ -888,23 +808,23 @@
         }
     }
 
-    .customers-page .toast-success .toast-content {
+    .categories-page .toast-success .toast-content {
         flex: 1;
     }
 
-    .customers-page .toast-success .toast-title {
+    .categories-page .toast-success .toast-title {
         font-weight: 700;
         color: #1a1a2e;
         font-size: 1rem;
     }
 
-    .customers-page .toast-success .toast-message {
+    .categories-page .toast-success .toast-message {
         color: #6c757d;
         font-size: 0.9rem;
         margin-top: 2px;
     }
 
-    .customers-page .toast-success.hide {
+    .categories-page .toast-success.hide {
         animation: slideOutRightCust 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
     }
 
@@ -920,7 +840,7 @@
         }
     }
 
-    .customers-page .fade-out {
+    .categories-page .fade-out {
         animation: fadeOutCust 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
     }
 
@@ -938,44 +858,44 @@
 
     /* responsive */
     @@media (max-width: 768px) {
-        .customers-page .admin-card {
+        .categories-page .admin-card {
             padding: 1.2rem;
         }
 
-        .customers-page .heading-green {
+        .categories-page .heading-green {
             font-size: 1.45rem;
         }
 
-        .customers-page .brand-icon {
+        .categories-page .brand-icon {
             width: 40px;
             height: 40px;
             font-size: 1.25rem;
         }
 
-        .customers-page .table-green-white thead th,
-        .customers-page .table-green-white tbody td {
+        .categories-page .table-green-white thead th,
+        .categories-page .table-green-white tbody td {
             padding: 12px 10px;
             font-size: 0.84rem;
         }
 
-        .customers-page .btn-action {
+        .categories-page .btn-action {
             padding: 6px 12px;
             font-size: 0.7rem;
         }
 
-        .customers-page .actions-wrap {
+        .categories-page .actions-wrap {
             gap: 4px;
         }
 
-        .customers-page .table-green-white tbody td:first-child {
+        .categories-page .table-green-white tbody td:first-child {
             padding-left: 14px;
         }
 
-        .customers-page .table-green-white tbody td:last-child {
+        .categories-page .table-green-white tbody td:last-child {
             padding-right: 14px;
         }
 
-        .customers-page .toast-container-custom {
+        .categories-page .toast-container-custom {
             top: 20px;
             right: 20px;
             left: 20px;
@@ -983,40 +903,36 @@
             max-width: unset;
         }
 
-        .customers-page .delete-modal {
+        .categories-page .delete-modal {
             padding: 2rem 1.5rem;
         }
 
-            .customers-page .delete-modal .modal-actions {
+            .categories-page .delete-modal .modal-actions {
                 flex-direction: column;
             }
 
-        .customers-page .stats-row {
-            grid-template-columns: 1fr;
-        }
-
-        .customers-page .toolbar-row {
+        .categories-page .toolbar-row {
             flex-direction: column;
             align-items: stretch;
         }
 
-        .customers-page .search-box {
+        .categories-page .search-box {
             max-width: unset;
         }
 
-        .customers-page .toolbar-right {
+        .categories-page .toolbar-right {
             justify-content: space-between;
         }
     }
 
     @@media (max-width: 576px) {
-        .customers-page .header-section {
+        .categories-page .header-section {
             flex-direction: column;
             align-items: start;
             gap: 0.8rem;
         }
 
-        .customers-page .header-actions {
+        .categories-page .header-actions {
             width: 100%;
             justify-content: space-between;
         }
@@ -1024,18 +940,32 @@
 </style>
 
 
-<div class="customers-page">
+<div class="categories-page">
     <div class="container-cust">
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert-cust alert-success-cust">
+                <i class="fas fa-check-circle"></i> @TempData["Message"]
+            </div>
+        }
+        @if (TempData["Errormessage"] != null)
+        {
+            <div class="alert-cust alert-danger-cust">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Errormessage"]
+            </div>
+        }
+
         <div class="admin-card">
 
             <!-- header -->
             <div class="header-section">
                 <div class="brand-head">
                     <div class="brand-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-layer-group"></i>
                     </div>
                     <h1 class="heading-green">
-                        All Customers
+                        Categories
                         <span>@Model.Count()</span>
                     </h1>
                 </div>
@@ -1043,37 +973,22 @@
                     <div class="status-badge">
                         <i class="fas fa-circle" style="font-size: 0.5rem;"></i> active
                     </div>
-                    <a asp-action="ExportCustomersToExcel" asp-controller="Admin" class="btn-export">
+                    <a asp-action="ExportCategoriesToExcel" asp-controller="Admin" class="btn-export">
                         <i class="fas fa-file-excel"></i> Export to Excel
                     </a>
-                    @* Remove this if there's no Create action on your controller *@
-                    <a asp-action="Create" class="btn-add-customer">
-                        <i class="fas fa-plus"></i> Add Customer
+                    <a asp-action="Addcategory" class="btn-add-customer">
+                        <i class="fas fa-plus"></i> Create New
                     </a>
                 </div>
             </div>
 
-            <!-- stat cards -->
+            <!-- stat card -->
             <div class="stats-row">
                 <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
                     <div>
                         <div class="stat-value">@Model.Count()</div>
-                        <div class="stat-label">Total Customers</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-mars"></i></div>
-                    <div>
-                        <div class="stat-value">@Model.Count(u => u.gender != null && u.gender.ToLower() == "male")</div>
-                        <div class="stat-label">Male</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-venus"></i></div>
-                    <div>
-                        <div class="stat-value">@Model.Count(u => u.gender != null && u.gender.ToLower() == "female")</div>
-                        <div class="stat-label">Female</div>
+                        <div class="stat-label">Total Categories</div>
                     </div>
                 </div>
             </div>
@@ -1082,13 +997,10 @@
             <div class="toolbar-row">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="customerSearch" placeholder="Search by name or email..." onkeyup="filterCustomers()" />
+                    <input type="text" id="catSearch" placeholder="Search by name..." onkeyup="filterCategories()" />
                 </div>
                 <div class="toolbar-right">
                     <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
-                    <span class="scroll-hint">
-                        <i class="fas fa-arrows-left-right"></i> scroll table for more
-                    </span>
                 </div>
             </div>
 
@@ -1097,12 +1009,7 @@
                 <table class="table table-green-white">
                     <thead>
                         <tr>
-                            <th class="sortable" onclick="sortTable(0, this)"><i class="fas fa-user-circle fa-fw-lead"></i> @Html.DisplayNameFor(model => model.UserName) <i class="fas fa-sort sort-icon"></i></th>
-                            <th class="sortable" onclick="sortTable(1, this)"><i class="fas fa-envelope fa-fw-lead"></i> @Html.DisplayNameFor(model => model.Email) <i class="fas fa-sort sort-icon"></i></th>
-                            <th><i class="fas fa-phone fa-fw-lead"></i> @Html.DisplayNameFor(model => model.PhoneNumber)</th>
-                            <th><i class="fas fa-venus-mars fa-fw-lead"></i> @Html.DisplayNameFor(model => model.gender)</th>
-                            <th><i class="fas fa-map-marker-alt fa-fw-lead"></i> @Html.DisplayNameFor(model => model.address)</th>
-                            <th class="sortable" onclick="sortTable(5, this)"><i class="fas fa-birthday-cake fa-fw-lead"></i> @Html.DisplayNameFor(model => model.age) <i class="fas fa-sort sort-icon"></i></th>
+                            <th class="sortable" onclick="sortTable(0, this)"><i class="fas fa-tag fa-fw-lead"></i> @Html.DisplayNameFor(model => model.Name) <i class="fas fa-sort sort-icon"></i></th>
                             <th style="text-align: right; padding-right: 26px;"><i class="fas fa-bolt fa-fw-lead"></i> Actions</th>
                         </tr>
                     </thead>
@@ -1113,39 +1020,20 @@
                         @foreach (var item in Model)
                         {
                             rowIndex++;
-                            <tr style="--i: @rowIndex;" data-user-id="@item.Id" data-user-name="@item.UserName">
+                            <tr style="--i: @rowIndex;" data-cat-id="@item.Id" data-cat-name="@item.Name">
                                 <td>
                                     <div class="name-cell">
-                                        <div class="user-avatar">@(string.IsNullOrEmpty(item.UserName) ? "?" : item.UserName.Substring(0, 1).ToUpper())</div>
-                                        <span class="user-name">@Html.DisplayFor(modelItem => item.UserName)</span>
+                                        <div class="cat-avatar">@(string.IsNullOrEmpty(item.Name) ? "?" : item.Name.Substring(0, 1).ToUpper())</div>
+                                        <span class="cat-name">@Html.DisplayFor(modelItem => item.Name)</span>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="email-cell">
-                                        <span class="user-email">@Html.DisplayFor(modelItem => item.Email)</span>
-                                        <button type="button" class="copy-email-btn" title="Copy email" onclick="copyEmail(this, '@item.Email')">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.PhoneNumber)</span></td>
-                                <td>
-                                    <span class="gender-badge">
-                                        <i class="fas fa-user"></i> @Html.DisplayFor(modelItem => item.gender)
-                                    </span>
-                                </td>
-                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.address)</span></td>
-                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.age)</span></td>
                                 <td style="text-align: right;">
                                     <div class="actions-wrap" style="justify-content: flex-end;">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-action btn-details">
-                                            <i class="fas fa-eye"></i> Details
-                                        </a>
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-action btn-edit">
                                             <i class="fas fa-pen"></i> Edit
                                         </a>
                                         <button type="button" class="btn btn-action btn-delete"
-                                                onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.UserName))')">
+                                                onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.Name))')">
                                             <i class="fas fa-trash-alt"></i> Delete
                                         </button>
                                     </div>
@@ -1153,9 +1041,9 @@
                             </tr>
                         }
                         <tr class="empty-state-row" id="noResultsRow" style="display: none;">
-                            <td colspan="7">
-                                <i class="fas fa-user-slash"></i>
-                                No matching customers found.
+                            <td colspan="2">
+                                <i class="fas fa-folder-open"></i>
+                                No matching categories found.
                             </td>
                         </tr>
                     </tbody>
@@ -1165,10 +1053,10 @@
             <!-- footer -->
             <div class="table-footer">
                 <span>
-                    <i class="fas fa-arrow-right"></i> hover rows Â· click headers to sort Â· green theme
+                    <i class="fas fa-arrow-right"></i> hover rows · click header to sort · green theme
                 </span>
                 <span class="pill">
-                    <i class="fas fa-users"></i> @Model.Count() customers
+                    <i class="fas fa-layer-group"></i> @Model.Count() categories
                 </span>
             </div>
 
@@ -1180,10 +1068,10 @@
             <div class="modal-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <h3>Delete Customer?</h3>
+            <h3>Delete Category?</h3>
             <p>
                 Are you sure you want to delete
-                <span class="user-name-highlight" id="modalUserName">"User Name"</span>?
+                <span class="name-highlight" id="modalCatName">"Name"</span>?
                 <br>
                 <small style="color: #dc3545; font-weight: 500;">
                     <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
@@ -1210,21 +1098,20 @@
             </div>
         </div>
     </div>
-</div> <!-- end customers-page -->
+</div> <!-- end categories-page -->
 
 <script>
-    let deleteUserId = null;
+    let deleteCatId = null;
 
-    // Live search filter across name + email columns
-    function filterCustomers() {
-        const query = document.getElementById('customerSearch').value.trim().toLowerCase();
-        const rows = document.querySelectorAll('.customers-page .table-green-white tbody tr:not(#noResultsRow)');
+    // Live search filter across the name column
+    function filterCategories() {
+        const query = document.getElementById('catSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.categories-page .table-green-white tbody tr:not(#noResultsRow)');
         let visibleCount = 0;
 
         rows.forEach(row => {
-            const name = (row.getAttribute('data-user-name') || '').toLowerCase();
-            const email = (row.querySelector('.user-email')?.textContent || '').toLowerCase();
-            const matches = name.includes(query) || email.includes(query);
+            const name = (row.getAttribute('data-cat-name') || '').toLowerCase();
+            const matches = name.includes(query);
             row.style.display = matches ? '' : 'none';
             if (matches) visibleCount++;
         });
@@ -1236,7 +1123,7 @@
         if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
     }
 
-    // Click-to-sort table columns
+    // Click-to-sort table column
     let sortDirections = {};
     function sortTable(colIndex, headerEl) {
         const table = headerEl.closest('table');
@@ -1253,35 +1140,15 @@
         rows.sort((a, b) => {
             const cellA = a.children[colIndex].textContent.trim().toLowerCase();
             const cellB = b.children[colIndex].textContent.trim().toLowerCase();
-            const numA = parseFloat(cellA), numB = parseFloat(cellB);
-            const bothNumeric = !isNaN(numA) && !isNaN(numB);
-            const cmp = bothNumeric ? (numA - numB) : cellA.localeCompare(cellB);
-            return asc ? cmp : -cmp;
+            return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
         });
 
         rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
     }
 
-    // Copy email to clipboard
-    function copyEmail(btn, email) {
-        navigator.clipboard.writeText(email).then(() => {
-            const icon = btn.querySelector('i');
-            icon.classList.remove('fa-copy');
-            icon.classList.add('fa-check');
-            btn.classList.add('copied');
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-copy');
-                btn.classList.remove('copied');
-            }, 1500);
-        }).catch(() => {
-            console.error('Could not copy email to clipboard');
-        });
-    }
-
-    function openDeleteModal(userId, userName) {
-        deleteUserId = userId;
-        document.getElementById('modalUserName').textContent = `"${userName}"`;
+    function openDeleteModal(catId, catName) {
+        deleteCatId = catId;
+        document.getElementById('modalCatName').textContent = `"${catName}"`;
 
         const modal = document.getElementById('deleteModal');
         modal.style.display = 'flex';
@@ -1295,22 +1162,22 @@
 
     function closeDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
-        deleteUserId = null;
+        deleteCatId = null;
     }
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-        if (deleteUserId) {
-            const idToDelete = deleteUserId; // capture before closeDeleteModal() clears it
-            const row = document.querySelector(`tr[data-user-id="${idToDelete}"]`);
+        if (deleteCatId) {
+            const idToDelete = deleteCatId; // capture before closeDeleteModal() clears it
+            const row = document.querySelector(`tr[data-cat-id="${idToDelete}"]`);
             closeDeleteModal();
-            showSuccessToast('Deleted!', 'The customer was removed successfully.');
+            showSuccessToast('Deleted!', 'The category was removed successfully.');
 
             if (row) {
                 row.classList.add('fade-out');
             }
 
             setTimeout(() => {
-                window.location.href = '@Url.Action("Deletecustomerlogic", "Admin")/' + idToDelete;
+                window.location.href = '@Url.Action("Deletecategorylogic", "Admin")/' + idToDelete;
             }, 900);
         }
     });
