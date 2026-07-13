@@ -1,0 +1,109 @@
+@model Art_Gallery.Models.Product
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Message"]
+    </div>
+}
+
+<h1>Edit</h1>
+<h4>Product</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="User" asp-action="Editlogic" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Image 1</label>
+                <input type="file" name="Image1" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+                <label>Image 2</label>
+                <input type="file" name="Image2" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+                <label>Image 3</label>
+                <input type="file" name="Image3" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="price" class="control-label"></label>
+                <input asp-for="price" class="form-control" />
+                <span asp-validation-for="price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="quantity" class="control-label"></label>
+                <input asp-for="quantity" class="form-control" />
+                <span asp-validation-for="quantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SubCategoryId" class="control-label"></label>
+                <input asp-for="SubCategoryId" class="form-control" />
+                <span asp-validation-for="SubCategoryId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserId" class="control-label"></label>
+                <input asp-for="UserId" class="form-control" />
+                <span asp-validation-for="UserId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+                <input asp-for="Status" class="form-control" />
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AvailableForBid" class="control-label"></label>
+                <input asp-for="AvailableForBid" class="form-control" />
+                <span asp-validation-for="AvailableForBid" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BidStartDate" class="control-label"></label>
+                <input asp-for="BidStartDate" class="form-control" />
+                <span asp-validation-for="BidStartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BidEndDate" class="control-label"></label>
+                <input asp-for="BidEndDate" class="form-control" />
+                <span asp-validation-for="BidEndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BidPrice" class="control-label"></label>
+                <input asp-for="BidPrice" class="form-control" />
+                <span asp-validation-for="BidPrice" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Update" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

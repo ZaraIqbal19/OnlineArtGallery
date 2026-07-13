@@ -214,5 +214,52 @@ namespace Art_Gallery.Controllers
             TempData["Message"] = "Product deleted Successfully";
             return RedirectToAction("Addproduct", "User");
         }
+
+        public IActionResult Edit(int Id)
+        {
+
+            return View(bridge.products.Find(Id));
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult Editlogic(int Id, Product pro)
+        {
+            var prod = bridge.products.Find(Id);
+
+            // Copy submitted values onto the tracked entity
+            prod.Name = pro.Name;
+            prod.Description = pro.Description;
+            prod.Image1 = pro.Image1;
+            prod.Image2 = pro.Image2;
+            prod.Image3 = pro.Image3;
+            prod.price = pro.price;
+            prod.quantity = pro.quantity;
+            prod.SubCategoryId = pro.SubCategoryId;
+            prod.UserId = pro.UserId;
+            prod.Status = pro.Status;
+            prod.AvailableForBid = pro.AvailableForBid;
+            prod.BidStartDate = pro.BidStartDate;
+            prod.BidEndDate = pro.BidEndDate;
+            prod.BidPrice = pro.BidPrice;
+
+            bridge.products.Update(prod);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Product Updated Successfully";
+            return RedirectToAction("Allproducts");
+        }
+        public IActionResult Delete(int Id)
+        {
+            return View(bridge.products.Find(Id));
+        }
+        public IActionResult Deletelogic(int Id)
+        {
+            var Pro = bridge.products.Find(Id);
+            bridge.products.Remove(Pro);
+            bridge.SaveChanges();
+            TempData["Message"] = "Product deleted Successfully";
+            return RedirectToAction("Addproduct", "User");
+        }
     }
 }
