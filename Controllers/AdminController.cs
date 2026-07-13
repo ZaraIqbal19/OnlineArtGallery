@@ -51,21 +51,21 @@ namespace Art_Gallery.Controllers
             return RedirectToAction("addsubcategories");
         }
 
-        //public IActionResult AlLCategories() {
-
-            
-        //    return View(bridge.subCategories.ToList());
-        //}\\
-
-     
+        public IActionResult Allcontacts()
+        {
+            var contacts = bridge.contacts.Include(c => c.User).ToList();
+            return View(contacts);
+        }
 
 
 
 
 
-    [Authorize]
 
-            public IActionResult Allproducts()
+
+        [Authorize]
+
+        public IActionResult Allproducts()
         {
             return View(bridge.products.ToList());
         }
@@ -85,6 +85,7 @@ namespace Art_Gallery.Controllers
 
             return View(user);
         }
+<<<<<<< HEAD
 
         [HttpPost]
         public IActionResult EditLogic(string id, Art_GalleryUser model)
@@ -113,8 +114,14 @@ namespace Art_Gallery.Controllers
             return RedirectToAction("AllCustomers", "Admin");
         }
         public IActionResult DeleteCustomers(int Id)
+=======
+        public IActionResult Deletecustomerlogic(string id)
+>>>>>>> 47cd3f71042134ea61ceebc9b26b0edbdb9459f0
         {
+            var user = bridge.Users.Find(id);
+            if (user == null) return NotFound();
 
+<<<<<<< HEAD
             return View(bridge.Users.Find(Id));
         }
         
@@ -128,5 +135,79 @@ namespace Art_Gallery.Controllers
         }
 
 
+=======
+            bridge.Users.Remove(user);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Customer deleted successfully.";
+            return RedirectToAction("AllCustomers");
+        }
+        public IActionResult Deletecontactlogic(int Id)
+        {
+            var Contactid = bridge.contacts.Find(Id);
+
+            if (Contactid == null)
+            {
+                return NotFound();
+            }
+
+            bridge.contacts.Remove(Contactid);
+            bridge.SaveChanges();
+            TempData["Message"] = "Contact deleted Successfully";
+            return RedirectToAction("Allcontacts");
+
+        }
+
+        public IActionResult Allcategories()
+        {
+            return View(bridge.categories.ToList());
+
+        }
+
+        public IActionResult Deletecategorylogic(int id)
+        {
+            var category = bridge.categories.Find(id);
+
+            if (category == null)
+            {
+                TempData["Errormessage"] = "Category not found.";
+                return RedirectToAction("Allcategories");
+            }
+
+            bridge.categories.Remove(category);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Category deleted successfully";
+            return RedirectToAction("Allcategories");
+        }
+
+
+        public IActionResult Allsubcategories()
+        {
+            var data = bridge.subCategories
+                      .Include(s => s.category)
+                      .ToList();
+
+            return View(data);
+        }
+
+        public IActionResult Deletesubcategorylogic(int id)
+        {
+            var subcategory = bridge.subCategories.Find(id);
+
+            if (subcategory == null)
+            {
+                TempData["Errormessage"] = "SubCategory not found.";
+                return RedirectToAction("Allcategories"); 
+            }
+
+            bridge.subCategories.Remove(subcategory);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "SubCategory deleted successfully";
+            return RedirectToAction("Allsubcategories");
+        }
+
+>>>>>>> 47cd3f71042134ea61ceebc9b26b0edbdb9459f0
     }
 }   
