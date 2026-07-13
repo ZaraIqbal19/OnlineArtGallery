@@ -76,14 +76,57 @@ namespace Art_Gallery.Controllers
             return View(bridge.Users.ToList());
         }
 
-        public IActionResult EditCustomers()
+        public IActionResult EditCustomers(string id)
         {
-            return View();
+            var user = bridge.Users.Find(id);
+
+            if (user == null)
+                return NotFound();
+
+            return View(user);
         }
-        public IActionResult DeleteCustomers()
+
+        [HttpPost]
+        public IActionResult EditLogic(string id, Art_GalleryUser model)
+        {
+            var user = bridge.Users.Find(id);
+
+            if (user == null)
+                return NotFound();
+
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+            user.PhoneNumber = model.PhoneNumber;
+            user.gender = model.gender;
+            user.age = model.age;
+            user.address = model.address;
+
+
+            // Agar Name property hai to
+            // user.Name = model.Name;
+
+            bridge.Users.Update(user);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "User Updated Successfully";
+
+            return RedirectToAction("AllCustomers", "Admin");
+        }
+        public IActionResult DeleteCustomers(int Id)
         {
 
-            return View();
+            return View(bridge.Users.Find(Id));
         }
+        
+        public IActionResult Deletelogic(string Id)
+        {
+            var Cus = bridge.Users.Find(Id);
+            bridge.Users.Remove(Cus);
+            bridge.SaveChanges();
+            TempData["Message"] = "Customer deleted Successfully";
+            return RedirectToAction("AllCustomers", "Admin");
+        }
+
+
     }
 }   
