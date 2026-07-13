@@ -170,7 +170,7 @@ namespace Art_Gallery.Controllers
             return RedirectToAction("Addcontact");
         }
         [Authorize]
-        public IActionResult MyProducts()
+        public IActionResult Myproducts()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var products = bridge.products.Include(p => p.SubCategory).Include(p => p.User)
@@ -178,42 +178,6 @@ namespace Art_Gallery.Controllers
             return View(products);
         }
 
-        public IActionResult Edit(int Id)
-        {
-
-            return View(bridge.products.Find(Id));
-        }
-
-        public IActionResult Editlogic(int Id, Product pro)
-        {
-            var Prod = bridge.products.Find(Id);
-            Prod.Name = pro.Name;
-            Prod.Description = pro.Description;
-            Prod.Image1 = pro.Image1;
-            Prod.Image2 = pro.Image2;
-            Prod.Image3 = pro.Image3;
-            Prod.price = pro.price;
-            Prod.quantity = pro.quantity;
-            Prod.BidPrice = pro.BidPrice;
-            Prod.BidStartDate = pro.BidStartDate;
-            Prod.BidEndDate = pro.BidEndDate;
-            bridge.SaveChanges();
-            TempData["Message"] = "Product Updated Successfully";
-            return RedirectToAction("Allproducts");
-        }
-
-        public IActionResult Delete(int Id)
-        {
-            return View(bridge.products.Find(Id));
-        }
-        public IActionResult Deletelogic(int Id)
-        {
-            var Pro = bridge.products.Find(Id);
-            bridge.products.Remove(Pro);
-            bridge.SaveChanges();
-            TempData["Message"] = "Product deleted Successfully";
-            return RedirectToAction("Addproduct", "User");
-        }
 
 
         public IActionResult Allcategories()
@@ -226,6 +190,88 @@ namespace Art_Gallery.Controllers
         }
 
 
+        [Authorize]
+        public IActionResult Edit(int Id)
+        {
+            var product = bridge.products.Find(Id);
+            if (product == null)
+                return NotFound();
 
+            ViewBag.SubCategories = bridge.subCategories.ToList();
+            return View(product);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult Editlogic(int Id, Product pro, IFormFile Image1, IFormFile Image2, IFormFile Image3)
+        {
+            var prod = bridge.products.Find(Id);
+            if (prod == null)
+                return NotFound();
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (prod.UserId != userId)
+                return Forbid();
+
+            string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            string SaveImage(IFormFile file)
+            {
+                if (file == null || file.Length == 0)
+                    return null;
+
+                string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                }
+
+                return "/images/products/" + fileName;
+            }
+
+            prod.Name = pro.Name;
+            prod.Description = pro.Description;
+            prod.price = pro.price;
+            prod.quantity = pro.quantity;
+            prod.SubCategoryId = pro.SubCategoryId;
+            prod.AvailableForBid = pro.AvailableForBid;
+            prod.BidStartDate = pro.BidStartDate;
+            prod.BidEndDate = pro.BidEndDate;
+            prod.BidPrice = pro.BidPrice;
+
+            var newImage1 = SaveImage(Image1);
+            var newImage2 = SaveImage(Image2);
+            var newImage3 = SaveImage(Image3);
+
+            if (newImage1 != null) prod.Image1 = newImage1;
+            if (newImage2 != null) prod.Image2 = newImage2;
+            if (newImage3 != null) prod.Image3 = newImage3;
+
+            // UserId and Status are intentionally left untouched — backend-controlled
+
+            bridge.products.Update(prod);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Product Updated Successfully";
+            return RedirectToAction("Myproducts");
+        }
+        public IActionResult Delete(int Id)
+        {
+            return View(bridge.products.Find(Id));
+        }
+        public IActionResult Deletelogic(int Id)
+        {
+            var Pro = bridge.products.Find(Id);
+            bridge.products.Remove(Pro);
+            bridge.SaveChanges();
+            TempData["Message"] = "Product deleted Successfully";
+            return RedirectToAction("Addproduct", "User");
+        }
     }
 }
+      
+    
