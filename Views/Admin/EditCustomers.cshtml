@@ -1,0 +1,38 @@
+﻿@model Art_Gallery.Areas.Identity.Data.Art_GalleryUser
+
+<form asp-action="EditLogic">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label>User Name</label>
+        <input asp-for="UserName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Phone Number</label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Gender</label>
+        <input asp-for="gender" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Address</label>
+        <input asp-for="address" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Age</label>
+        <input asp-for="age" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" >
+        Update User
+    </button>
+
+</form>

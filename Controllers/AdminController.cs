@@ -230,17 +230,43 @@ namespace Art_Gallery.Controllers
             return View(bridge.Users.ToList());
         }
 
-     
-
         public IActionResult Deletecustomerlogic(string id)
         {
             var user = bridge.Users.Find(id);
             if (user == null) return NotFound();
 
+            // 1. Get this user's product IDs first (needed to clean up dependents)
+            var userProductIds = bridge.products
+                .Where(p => p.UserId == id)
+                .Select(p => p.Id)
+                .ToList();
+
+            // 2. Remove wishlist entries that reference this user's products
+            if (userProductIds.Any())
+            {
+                var wishlistForTheirProducts = bridge.wishlist
+                    .Where(w => userProductIds.Contains(w.ProductId));
+                bridge.wishlist.RemoveRange(wishlistForTheirProducts);
+            }
+
+            // 3. Remove wishlist entries belonging to this user (their own wishlist of other products)
+            var userOwnWishlist = bridge.wishlist.Where(w => w.UserId == id);
+            bridge.wishlist.RemoveRange(userOwnWishlist);
+
+            // 4. Now safe to remove their products
+            var userProducts = bridge.products.Where(p => p.UserId == id);
+            bridge.products.RemoveRange(userProducts);
+
+            // 5. Remove payment details tied to the user
+            var userPaymentDetails = bridge.paymentDetails.Where(pd => pd.UserId == id);
+            bridge.paymentDetails.RemoveRange(userPaymentDetails);
+
+            // 6. Finally remove the user
             bridge.Users.Remove(user);
+
             bridge.SaveChanges();
 
-            TempData["Message"] = "Customer deleted successfully.";
+            TempData["Message"] = "Customer and their related records were deleted successfully.";
             return RedirectToAction("AllCustomers");
         }
         public IActionResult Deletecontactlogic(int Id)
@@ -379,6 +405,7 @@ namespace Art_Gallery.Controllers
 
             return RedirectToAction("Allpaymentdetails");
         }
+
 
     }
 }   
