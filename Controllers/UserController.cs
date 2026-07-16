@@ -60,45 +60,71 @@ namespace Art_Gallery.Controllers
         }
 
         [Authorize]
+        [HttpPost]
         public IActionResult Addproductlogic(
-            string Name, string Description,
-            IFormFile Image1, IFormFile Image2, IFormFile Image3,
-            float price, int quantity, string AvailableForBid, DateOnly BidStartDate,
-            DateOnly BidEndDate, float BidPrice, int SubCategoryId)
+           string Name, string Description,
+           List<IFormFile> Images,
+           float price, int quantity, string AvailableForBid,
+           DateOnly BidStartDate, DateOnly BidEndDate, float BidPrice,
+           int SubCategoryId)
         {
+            // 1. Validate exactly 3 images
+            var validImages = Images?.Where(f => f != null && f.Length > 0).ToList() ?? new List<IFormFile>();
+            if (validImages.Count != 3)
+            {
+                TempData["Message"] = "Please upload exactly 3 images.";
+                return RedirectToAction("Addproduct");
+            }
+
+            // 2. Validate sale type fields
+            if (AvailableForBid == "Yes")
+            {
+                // Auction: price not applicable, bid fields required
+                if (BidStartDate == default || BidEndDate == default || BidPrice <= 0)
+                {
+                    TempData["Message"] = "Please fill in bid start date, end date, and bid price for an auction.";
+                    return RedirectToAction("Addproduct");
+                }
+                price = 0; // ignore any price value submitted
+            }
+            else
+            {
+                // Fixed price: price required, bid fields not applicable
+                if (price <= 0)
+                {
+                    TempData["Message"] = "Please enter a valid price.";
+                    return RedirectToAction("Addproduct");
+                }
+                BidStartDate = default;
+                BidEndDate = default;
+                BidPrice = 0;
+            }
+
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            // Helper local function — har image ke liye reuse hoga
             string SaveImage(IFormFile file)
             {
-                if (file == null || file.Length == 0)
-                    return null;
-
                 string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
                 string filePath = Path.Combine(uploadsFolder, fileName);
-
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     file.CopyTo(stream);
                 }
-
                 return "/images/products/" + fileName;
             }
 
-            string image1Path = SaveImage(Image1);
-            string image2Path = SaveImage(Image2);
-            string image3Path = SaveImage(Image3);
+            List<string> savedImagePaths = validImages.Select(SaveImage).ToList();
 
             var product = new Product()
             {
                 Name = Name,
                 Description = Description,
-                Image1 = image1Path,
-                Image2 = image2Path,
-                Image3 = image3Path,
+                Image1 = savedImagePaths.ElementAtOrDefault(0),
+                Image2 = savedImagePaths.ElementAtOrDefault(1),
+                Image3 = savedImagePaths.ElementAtOrDefault(2),
                 price = price,
                 quantity = quantity,
                 AvailableForBid = AvailableForBid,
@@ -112,14 +138,10 @@ namespace Art_Gallery.Controllers
 
             bridge.products.Add(product);
             bridge.SaveChanges();
-            TempData["Message"] = "product added sucessfully ";
-
+            TempData["Message"] = "Product added successfully";
             return RedirectToAction("Addproduct");
         }
-        public IActionResult Allproducts()
-        {
-            return View(bridge.products.ToList());
-        }
+
 
         public IActionResult Addpaymentdetails()
         {
@@ -197,13 +219,25 @@ namespace Art_Gallery.Controllers
             if (product == null)
                 return NotFound();
 
+            // Needed for the Category -> SubCategory cascading dropdown (same UI as Add)
+            ViewBag.Categories = bridge.categories.ToList();
             ViewBag.SubCategories = bridge.subCategories.ToList();
+
+            // So the view can pre-select the right Category for this product's current SubCategory
+            var currentSubCategory = bridge.subCategories.Find(product.SubCategoryId);
+            ViewBag.CurrentCategoryId = currentSubCategory?.CategoryId;
+
             return View(product);
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Editlogic(int Id, Product pro, IFormFile Image1, IFormFile Image2, IFormFile Image3)
+        public IActionResult Editlogic(
+            int Id, string Name, string Description,
+            float price, int quantity, string AvailableForBid,
+            DateOnly BidStartDate, DateOnly BidEndDate, float BidPrice,
+            int SubCategoryId,
+            IFormFile Image1, IFormFile Image2, IFormFile Image3)
         {
             var prod = bridge.products.Find(Id);
             if (prod == null)
@@ -213,6 +247,29 @@ namespace Art_Gallery.Controllers
             if (prod.UserId != userId)
                 return Forbid();
 
+            // --- Same sale-type normalization as Addproductlogic ---
+            // This was missing before, which is why stale price/bid values could survive an edit.
+            if (AvailableForBid == "Yes")
+            {
+                if (BidStartDate == default || BidEndDate == default || BidPrice <= 0)
+                {
+                    TempData["Message"] = "Please fill in bid start date, end date, and bid price for an auction.";
+                    return RedirectToAction("Edit", new { Id });
+                }
+                price = 0; // ignore any price value submitted
+            }
+            else
+            {
+                if (price <= 0)
+                {
+                    TempData["Message"] = "Please enter a valid price.";
+                    return RedirectToAction("Edit", new { Id });
+                }
+                BidStartDate = default;
+                BidEndDate = default;
+                BidPrice = 0;
+            }
+
             string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
@@ -221,41 +278,35 @@ namespace Art_Gallery.Controllers
             {
                 if (file == null || file.Length == 0)
                     return null;
-
                 string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
                 string filePath = Path.Combine(uploadsFolder, fileName);
-
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     file.CopyTo(stream);
                 }
-
                 return "/images/products/" + fileName;
             }
 
-            prod.Name = pro.Name;
-            prod.Description = pro.Description;
-            prod.price = pro.price;
-            prod.quantity = pro.quantity;
-            prod.SubCategoryId = pro.SubCategoryId;
-            prod.AvailableForBid = pro.AvailableForBid;
-            prod.BidStartDate = pro.BidStartDate;
-            prod.BidEndDate = pro.BidEndDate;
-            prod.BidPrice = pro.BidPrice;
+            prod.Name = Name;
+            prod.Description = Description;
+            prod.price = price;
+            prod.quantity = quantity;
+            prod.SubCategoryId = SubCategoryId;
+            prod.AvailableForBid = AvailableForBid;
+            prod.BidStartDate = BidStartDate;
+            prod.BidEndDate = BidEndDate;
+            prod.BidPrice = BidPrice;
 
             var newImage1 = SaveImage(Image1);
             var newImage2 = SaveImage(Image2);
             var newImage3 = SaveImage(Image3);
-
             if (newImage1 != null) prod.Image1 = newImage1;
             if (newImage2 != null) prod.Image2 = newImage2;
             if (newImage3 != null) prod.Image3 = newImage3;
 
             // UserId and Status are intentionally left untouched — backend-controlled
-
             bridge.products.Update(prod);
             bridge.SaveChanges();
-
             TempData["Message"] = "Product Updated Successfully";
             return RedirectToAction("Myproducts");
         }
@@ -270,6 +321,77 @@ namespace Art_Gallery.Controllers
             bridge.SaveChanges();
             TempData["Message"] = "Product deleted Successfully";
             return RedirectToAction("Addproduct", "User");
+        }
+
+
+        public IActionResult Allproducts()
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var products = bridge.products
+                                          .Where(p => p.Status == "Available" && p.UserId != userid)
+                                          .Include(p => p.SubCategory)
+                                          .ToList();
+
+            return View(products);
+        }
+
+
+        public IActionResult Mywishlist()
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var userwishlist = bridge.wishlist
+                .Include(w => w.Product)
+                .Where(w => w.UserId == userid)
+                .ToList();
+
+            return View(userwishlist);
+
+        }
+
+
+        public IActionResult Addtowishlistlogic(int id)
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var newwishlistitem = new Wishlist
+            {
+                UserId = userid,
+                ProductId = id,
+                Quantity = 1,
+            };
+
+            bridge.wishlist.Add(newwishlistitem);
+            bridge.SaveChanges();
+            return RedirectToAction("Mywishlist");
+
+
+        }
+
+        public IActionResult Removefromwishlistlogic(int id)
+        {
+
+            var wishlistitem = bridge.wishlist.Find(id);
+            bridge.wishlist.Remove(wishlistitem);
+            bridge.SaveChanges();
+
+            return RedirectToAction("Mywishlist");
+
+        }
+
+        public IActionResult Viewproductdetails(int id)
+        {
+            var productdetails = bridge.products
+                                       .Include(p => p.SubCategory)
+                                       .Include(p => p.User)
+                                       .FirstOrDefault(p => p.Id == id);
+            if (productdetails == null)
+            {
+                return NotFound();
+            }
+
+            return View(productdetails);
+
         }
     }
 }

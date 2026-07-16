@@ -7,6 +7,52 @@
     // Retrieve the subcategories from ViewBag and cast them so we can use LINQ
     var subCategories = ViewBag.SubCategories as List<Art_Gallery.Models.SubCategory>;
     var maxSubCount = Model?.Max(c => subCategories?.Count(s => s.CategoryId == c.Id) ?? 0) ?? 0;
+
+    // ---------------------------------------------------------------
+    // Normalizes whatever is stored in Categoryimage into a correct,
+    // root-relative URL the browser can actually resolve.
+    // Handles: bare filenames, paths without a leading slash,
+    // paths already containing "images/categories", and full URLs.
+    // ---------------------------------------------------------------
+    string GetCategoryImageUrl(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "";
+
+        var value = raw.Trim().Replace("\\", "/");
+
+        // Already a full/external URL - leave it alone
+        if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return value;
+        }
+
+        // Strip any leading tilde/slash so we can rebuild cleanly
+        value = value.TrimStart('~', '/');
+
+        // If it accidentally contains a full Windows path, just take the filename
+        if (value.Contains(":/"))
+        {
+            value = value.Split('/').Last();
+        }
+
+        // If the stored value already includes the images/categories folder, keep it
+        if (value.StartsWith("images/categories/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/" + value;
+        }
+
+        // If it includes "images/" but not the categories subfolder, respect it as-is
+        if (value.StartsWith("images/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/" + value;
+        }
+
+        // Otherwise assume it's a bare filename and point it at the categories folder
+        var fileName = value.Contains("/") ? value.Split('/').Last() : value;
+        return "/images/categories/" + fileName;
+    }
 }
 
 <style>
@@ -20,13 +66,13 @@
 
     /* Section Styling */
     .artify-categories-section {
-        padding: 60px 0;
-        background: #f8faf6;
+        padding: 70px 0;
+        background: linear-gradient(180deg, #f8faf6 0%, #f2f7ec 100%);
     }
 
     .section-title {
         text-align: center;
-        margin-bottom: 50px;
+        margin-bottom: 55px;
     }
 
     .artify-eyebrow {
@@ -38,7 +84,7 @@
         font-size: 14px;
         font-weight: 600;
         letter-spacing: 1px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         border: 1px solid var(--light-green);
     }
 
@@ -49,9 +95,10 @@
 
     .section-title .title {
         font-weight: 800;
-        font-size: 38px;
-        color: #2d2d2d;
-        margin-bottom: 10px;
+        font-size: 40px;
+        color: #232323;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
     }
 
         .section-title .title span {
@@ -59,9 +106,11 @@
         }
 
     .section-title .subtitle {
-        color: #777;
+        color: #7a7a7a;
         font-size: 17px;
         font-weight: 400;
+        max-width: 480px;
+        margin: 0 auto;
     }
 
     /* Shop Card */
@@ -69,12 +118,31 @@
         position: relative;
         overflow: hidden;
         margin: 15px 0px;
-        border-radius: 18px;
-        transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        border-radius: 20px;
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.5s ease;
         cursor: pointer;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        box-shadow: 0 6px 24px rgba(20, 40, 10, 0.06);
         background: #fff;
         height: 100%;
+        opacity: 0;
+        animation: shopFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @@keyframes shopFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .shop:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(20, 40, 10, 0.14);
     }
 
         /* Green Gradient Overlay */
@@ -87,11 +155,10 @@
             width: 65%;
             background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             opacity: 0.92;
-            -webkit-transform: skewX(-45deg) scaleX(1.1);
-            -ms-transform: skewX(-45deg) scaleX(1.1);
             transform: skewX(-45deg) scaleX(1.1);
             transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             transform-origin: left;
+            z-index: 4;
         }
 
         .shop:after {
@@ -103,22 +170,17 @@
             width: 100%;
             background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             opacity: 0.92;
-            -webkit-transform: skewX(-45deg) translateX(-100%) scaleX(1.1);
-            -ms-transform: skewX(-45deg) translateX(-100%) scaleX(1.1);
             transform: skewX(-45deg) translateX(-100%) scaleX(1.1);
             transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 4;
         }
 
         .shop:hover:before {
-            -webkit-transform: skewX(-30deg) scaleX(1.1);
-            -ms-transform: skewX(-30deg) scaleX(1.1);
             transform: skewX(-30deg) scaleX(1.1);
             opacity: 1;
         }
 
         .shop:hover:after {
-            -webkit-transform: skewX(-30deg) translateX(-100%) scaleX(1.1);
-            -ms-transform: skewX(-30deg) translateX(-100%) scaleX(1.1);
             transform: skewX(-30deg) translateX(-100%) scaleX(1.1);
             opacity: 1;
         }
@@ -129,19 +191,23 @@
             background-color: var(--ultra-light-green);
             z-index: -1;
             overflow: hidden;
+            height: 280px;
         }
 
             .shop .shop-img > img {
                 width: 100%;
-                height: 280px;
+                height: 100%;
                 object-fit: cover;
-                -webkit-transition: 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                transition: 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
+                opacity: 0;
+                background: var(--ultra-light-green);
             }
 
+                .shop .shop-img > img.loaded {
+                    opacity: 1;
+                }
+
         .shop:hover .shop-img > img {
-            -webkit-transform: scale(1.2);
-            -ms-transform: scale(1.2);
             transform: scale(1.2);
         }
 
@@ -284,10 +350,8 @@
         display: inline-flex;
         align-items: center;
         gap: 12px;
-        transition: all 0.4s ease;
         font-weight: 700;
         padding: 10px 0;
-        border-bottom: 2px solid rgba(255,255,255,0.25);
         width: fit-content;
         font-size: 14px;
         letter-spacing: 1.5px;
@@ -321,8 +385,8 @@
         transform: translateX(8px) scale(1.15);
     }
 
-    /* Dummy Images - Different colors for variety */
-    .dummy-img {
+    /* Fallback when no image / image fails to load */
+    .no-image-fallback {
         width: 100%;
         height: 280px;
         display: flex;
@@ -333,9 +397,10 @@
         font-weight: bold;
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
     }
 
-        .dummy-img .category-initial {
+        .no-image-fallback .category-initial {
             font-size: 120px;
             font-weight: 800;
             opacity: 0.3;
@@ -345,13 +410,13 @@
             color: rgba(255,255,255,0.2);
         }
 
-        .dummy-img .category-icon {
+        .no-image-fallback .category-icon {
             font-size: 64px;
             margin-bottom: 10px;
             display: block;
         }
 
-        .dummy-img .category-label {
+        .no-image-fallback .category-label {
             font-size: 16px;
             font-weight: 600;
             letter-spacing: 2px;
@@ -359,46 +424,31 @@
             opacity: 0.9;
         }
 
-    /* Dummy image color variations */
-    .dummy-1 {
-        background: linear-gradient(135deg, #88d200, #6fa800);
+    /* Different background colors for fallback */
+    .fallback-1 { background: linear-gradient(135deg, #88d200, #6fa800); }
+    .fallback-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .fallback-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+    .fallback-4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+    .fallback-5 { background: linear-gradient(135deg, #fa709a, #fee140); }
+    .fallback-6 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+    .fallback-7 { background: linear-gradient(135deg, #fccb90, #d57eeb); }
+    .fallback-8 { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
+    .fallback-9 { background: linear-gradient(135deg, #f6d365, #fda085); }
+    .fallback-10 { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+
+    /* Empty state */
+    .categories-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
     }
 
-    .dummy-2 {
-        background: linear-gradient(135deg, #f093fb, #f5576c);
-    }
-
-    .dummy-3 {
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-    }
-
-    .dummy-4 {
-        background: linear-gradient(135deg, #43e97b, #38f9d7);
-    }
-
-    .dummy-5 {
-        background: linear-gradient(135deg, #fa709a, #fee140);
-    }
-
-    .dummy-6 {
-        background: linear-gradient(135deg, #a18cd1, #fbc2eb);
-    }
-
-    .dummy-7 {
-        background: linear-gradient(135deg, #fccb90, #d57eeb);
-    }
-
-    .dummy-8 {
-        background: linear-gradient(135deg, #89f7fe, #66a6ff);
-    }
-
-    .dummy-9 {
-        background: linear-gradient(135deg, #f6d365, #fda085);
-    }
-
-    .dummy-10 {
-        background: linear-gradient(135deg, #84fab0, #8fd3f4);
-    }
+        .categories-empty-state i {
+            font-size: 48px;
+            color: var(--light-green);
+            margin-bottom: 16px;
+            display: block;
+        }
 
     /* Responsive */
     @@media (max-width: 768px) {
@@ -415,8 +465,8 @@
                 font-size: 22px;
             }
 
-        .shop .shop-img > img,
-        .dummy-img {
+        .shop .shop-img,
+        .no-image-fallback {
             height: 220px;
         }
 
@@ -426,11 +476,11 @@
             padding: 4px 12px;
         }
 
-        .dummy-img .category-icon {
+        .no-image-fallback .category-icon {
             font-size: 48px;
         }
 
-        .dummy-img .category-initial {
+        .no-image-fallback .category-initial {
             font-size: 80px;
         }
     }
@@ -444,20 +494,20 @@
             font-size: 12px;
         }
 
-        .shop .shop-img > img,
-        .dummy-img {
+        .shop .shop-img,
+        .no-image-fallback {
             height: 180px;
         }
 
-            .dummy-img .category-icon {
+            .no-image-fallback .category-icon {
                 font-size: 36px;
             }
 
-            .dummy-img .category-label {
+            .no-image-fallback .category-label {
                 font-size: 12px;
             }
 
-            .dummy-img .category-initial {
+            .no-image-fallback .category-initial {
                 font-size: 60px;
             }
     }
@@ -476,54 +526,87 @@
 
             @{
                 int index = 0;
-                string[] dummyColors = { "dummy-1", "dummy-2", "dummy-3", "dummy-4", "dummy-5", "dummy-6", "dummy-7", "dummy-8", "dummy-9", "dummy-10" };
+                string[] fallbackColors = { "fallback-1", "fallback-2", "fallback-3", "fallback-4", "fallback-5", "fallback-6", "fallback-7", "fallback-8", "fallback-9", "fallback-10" };
                 string[] icons = { "fa-paint-brush", "fa-camera", "fa-music", "fa-sculpture", "fa-pencil", "fa-palette", "fa-artstation", "fa-image", "fa-cubes", "fa-gem" };
             }
 
-            @foreach (var category in Model)
+            @if (Model == null || !Model.Any())
             {
-                var subCount = subCategories?.Count(s => s.CategoryId == category.Id) ?? 0;
-                var isMostPopular = maxSubCount > 0 && subCount == maxSubCount;
-                var colorClass = dummyColors[index % dummyColors.Length];
-                var icon = icons[index % icons.Length];
-                var firstLetter = category.Name?.FirstOrDefault().ToString().ToUpper() ?? "A";
-                index++;
-
-                <div class="col-md-4 col-6 mb-4">
-                    <div class="shop">
-                        <div class="shop-img">
-                            <span class="shop-icon-badge"><i class="fa fa-tag"></i></span>
-
-                            @if (isMostPopular)
-                            {
-                                <span class="shop-popular-badge"><i class="fa fa-fire"></i> Most Popular</span>
-                            }
-
-                            <span class="shop-count-badge"><i class="fa fa-cube"></i> @subCount items</span>
-                            <span class="shop-explore-tag"><i class="fa fa-arrow-circle-right"></i> Tap to explore</span>
-
-                            <!-- Dummy Image with Category Info -->
-                            <div class="dummy-img @colorClass">
-                                <div style="text-align: center; z-index: 2; position: relative;">
-                                    <span class="category-icon">
-                                        <i class="fa @icon"></i>
-                                    </span>
-                                    <div class="category-label">@category.Name</div>
-                                </div>
-                                <span class="category-initial">@firstLetter</span>
-                            </div>
-                        </div>
-                        <div class="shop-body">
-                            <h3>
-                                @category.Name
-                                <small>@subCount subcategories</small>
-                            </h3>
-                            <a href="#" class="cta-btn">
-                                Explore <i class="fa fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
+                <div class="col-12">
+                    <div class="categories-empty-state">
+                        <i class="fa fa-folder-open"></i>
+                        <p>No categories have been added yet.</p>
                     </div>
                 </div>
+            }
+            else
+            {
+                @foreach (var category in Model)
+                {
+                    var subCount = subCategories?.Count(s => s.CategoryId == category.Id) ?? 0;
+                    var isMostPopular = maxSubCount > 0 && subCount == maxSubCount;
+                    var colorClass = fallbackColors[index % fallbackColors.Length];
+                    var icon = icons[index % icons.Length];
+                    var firstLetter = category.Name?.FirstOrDefault().ToString().ToUpper() ?? "A";
+                    var imageUrl = GetCategoryImageUrl(category.Categoryimage);
+                    var delay = (index % 6) * 0.08;
+                    index++;
+
+                    <div class="col-md-4 col-6 mb-4">
+                        <div class="shop" style="animation-delay:@delay.ToString("0.00")s">
+                            <div class="shop-img">
+                                <span class="shop-icon-badge"><i class="fa fa-tag"></i></span>
+
+                                @if (isMostPopular)
+                                {
+                                    <span class="shop-popular-badge"><i class="fa fa-fire"></i> Most Popular</span>
+                                }
+
+                                <span class="shop-count-badge"><i class="fa fa-cube"></i> @subCount items</span>
+                                <span class="shop-explore-tag"><i class="fa fa-arrow-circle-right"></i> Tap to explore</span>
+
+                                @if (!string.IsNullOrEmpty(imageUrl))
+                                {
+                                    <!-- Real image with a JS fallback: if the file 404s, swap to the styled icon card -->
+                                    <img src="@imageUrl"
+                                         alt="@category.Name"
+                                         loading="lazy"
+                                         onload="this.classList.add('loaded')"
+                                         onerror="this.onerror=null; this.replaceWith(Object.assign(document.createElement('div'), { innerHTML: document.getElementById('fallback-@category.Id').innerHTML, className: 'no-image-fallback @colorClass' }));" />
+                                    <template id="fallback-@category.Id">
+                                        <div style="text-align: center; z-index: 2; position: relative;">
+                                            <span class="category-icon"><i class="fa @icon"></i></span>
+                                            <div class="category-label">@category.Name</div>
+                                        </div>
+                                        <span class="category-initial">@firstLetter</span>
+                                    </template>
+                                }
+                                else
+                                {
+                                    <!-- No image on record - styled fallback -->
+                                    <div class="no-image-fallback @colorClass">
+                                        <div style="text-align: center; z-index: 2; position: relative;">
+                                            <span class="category-icon">
+                                                <i class="fa @icon"></i>
+                                            </span>
+                                            <div class="category-label">@category.Name</div>
+                                        </div>
+                                        <span class="category-initial">@firstLetter</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="shop-body">
+                                <h3>
+                                    @category.Name
+                                    <small>@subCount subcategories</small>
+                                </h3>
+                                <a href="#" class="cta-btn">
+                                    Explore <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
             }
         </div>
     </div>

@@ -1,0 +1,2104 @@
+@model IEnumerable<Art_Gallery.Models.Wishlist>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+    int i = 0;
+    int totalItems = Model.Count();
+    int totalQty = Model.Sum(w => w.Quantity);
+    // Convert.ToDecimal handles float / double / decimal Product.price uniformly.
+    decimal totalValue = Model.Sum(w => Convert.ToDecimal(w.Product != null ? w.Product.price : 0) * w.Quantity);
+    int maxQtyPerItem = 20; // adjust to match real stock rules if you have inventory data
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --primary-green-rgb: 136, 210, 0;
+        --dark-green-rgb: 111, 168, 0;
+        --danger: #c0492e;
+        --danger-light: #f6d8cf;
+        --danger-rgb: 192, 73, 46;
+        --gray-500: #8b9583;
+    }
+
+    .gallery-page {
+        padding-top: 100px;
+        font-family: 'Inter', sans-serif;
+        position: relative;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+        outline: 2px solid var(--dark-green);
+        outline-offset: 3px;
+        border-radius: 6px;
+    }
+
+    /* =========================================================
+           STICKY MINI HEADER
+           ========================================================= */
+    #stickyWishlistBar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 18px rgba(var(--dark-green-rgb), 0.14);
+        transform: translateY(-100%);
+        transition: transform 0.35s cubic-bezier(.2, .8, .3, 1.1);
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: #2c3a17;
+    }
+
+        #stickyWishlistBar.show {
+            transform: translateY(0);
+        }
+
+        #stickyWishlistBar i {
+            color: var(--dark-green);
+            font-size: 1rem;
+        }
+
+        #stickyWishlistBar strong {
+            color: var(--dark-green);
+        }
+
+    /* =========================================================
+           HERO BANNER
+           ========================================================= */
+    .wishlist-banner {
+        position: relative;
+        border-radius: 26px;
+        overflow: hidden;
+        padding: 42px 40px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        background: linear-gradient(125deg, #6fa800 0%, #88d200 55%, #a3e635 100%);
+        box-shadow: 0 22px 48px rgba(var(--dark-green-rgb), 0.32);
+        opacity: 0;
+        animation: bannerIn 0.7s cubic-bezier(.2, .7, .3, 1.1) forwards;
+    }
+
+    @@keyframes bannerIn {
+        from {
+            opacity: 0;
+            transform: translateY(-18px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .wishlist-banner::before,
+    .wishlist-banner::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        pointer-events: none;
+    }
+
+    .wishlist-banner::before {
+        width: 260px;
+        height: 260px;
+        top: -120px;
+        right: 60px;
+        animation: driftSlow 10s ease-in-out infinite;
+    }
+
+    .wishlist-banner::after {
+        width: 140px;
+        height: 140px;
+        bottom: -70px;
+        right: 220px;
+        background: rgba(255, 255, 255, 0.1);
+        animation: driftSlow 8s ease-in-out infinite reverse;
+    }
+
+    @@keyframes driftSlow {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(-16px, 14px);
+        }
+    }
+
+    .wishlist-banner__pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1.6px, transparent 1.6px);
+        background-size: 22px 22px;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .wishlist-banner__content {
+        position: relative;
+        z-index: 1;
+        color: #fff;
+        max-width: 560px;
+    }
+
+    .wishlist-banner__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        padding: 5px 14px;
+        border-radius: 999px;
+        margin-bottom: 14px;
+        backdrop-filter: blur(3px);
+    }
+
+    .wishlist-banner__content h1 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+        text-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .wishlist-banner__content p {
+        font-size: 1rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.92);
+        margin: 0 0 20px;
+    }
+
+    .wishlist-banner__stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .stat-chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(4px);
+        border-radius: 14px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #fff;
+        opacity: 0;
+        animation: chipIn 0.5s ease forwards;
+    }
+
+        .stat-chip:nth-child(1) {
+            animation-delay: 0.15s;
+        }
+
+        .stat-chip:nth-child(2) {
+            animation-delay: 0.28s;
+        }
+
+    @@keyframes chipIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-chip i {
+        font-size: 1rem;
+    }
+
+    .stat-chip strong {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+    }
+
+    .wishlist-banner__badge {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+        width: 148px;
+        height: 148px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .heart-orb {
+        position: relative;
+        width: 108px;
+        height: 108px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1.5px solid rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+    }
+
+        .heart-orb .ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.55);
+            animation: ringPulse 2.6s ease-out infinite;
+        }
+
+            .heart-orb .ring:nth-child(2) {
+                animation-delay: 0.9s;
+            }
+
+        .heart-orb i {
+            font-size: 2.6rem;
+            color: #fff;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+            animation: pump 1.4s cubic-bezier(.3, .3, .3, 1.4) infinite;
+            transform-origin: center;
+        }
+
+    @@keyframes pump {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        18% {
+            transform: scale(1.22);
+        }
+
+        32% {
+            transform: scale(0.94);
+        }
+
+        45% {
+            transform: scale(1.12);
+        }
+
+        60% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes ringPulse {
+        0% {
+            transform: scale(0.75);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: scale(1.6);
+            opacity: 0;
+        }
+    }
+
+    .heart-orb__count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--dark-green);
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+        animation: badgeBounce 0.6s cubic-bezier(.3, .6, .3, 1.6) 0.5s backwards;
+    }
+
+        .heart-orb__count.tick {
+            animation: badgeTick 0.4s ease;
+        }
+
+    @@keyframes badgeBounce {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        60% {
+            transform: scale(1.25);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes badgeTick {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.35);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .wishlist-banner {
+            flex-direction: column;
+            text-align: center;
+            padding: 32px 24px;
+        }
+
+        .wishlist-banner__content {
+            max-width: 100%;
+        }
+
+        .wishlist-banner__stats {
+            justify-content: center;
+        }
+    }
+
+    /* =========================================================
+           TOOLBAR (search / sort / clear all)
+           ========================================================= */
+    .wishlist-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 18px;
+        opacity: 0;
+        animation: chipIn 0.5s ease 0.35s forwards;
+    }
+
+    .wishlist-toolbar__right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .search-field {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+        .search-field i {
+            position: absolute;
+            left: 13px;
+            color: var(--dark-green);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .search-field input {
+            border: 1px solid var(--light-green);
+            background: #fff;
+            border-radius: 10px;
+            padding: 8px 12px 8px 34px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #2c3a17;
+            width: 200px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, width 0.25s ease;
+        }
+
+            .search-field input:hover {
+                border-color: var(--primary-green);
+            }
+
+            .search-field input:focus {
+                width: 230px;
+                box-shadow: 0 0 0 3px rgba(var(--primary-green-rgb), 0.2);
+            }
+
+    .wishlist-toolbar label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #5a6650;
+    }
+
+    .wishlist-toolbar select {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid var(--light-green);
+        background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236fa800' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 12px center;
+        background-size: 12px;
+        padding: 8px 34px 8px 14px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #2c3a17;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .wishlist-toolbar select:hover {
+            border-color: var(--primary-green);
+        }
+
+        .wishlist-toolbar select:focus-visible {
+            box-shadow: 0 0 0 3px rgba(var(--primary-green-rgb), 0.25);
+        }
+
+    .btn-clear-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--danger-light);
+        background: #fff;
+        color: var(--danger);
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+
+        .btn-clear-all:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(var(--danger-rgb), 0.28);
+        }
+
+        .btn-clear-all:active {
+            transform: scale(0.97);
+        }
+
+        .btn-clear-all:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background: #fff;
+            color: var(--danger);
+        }
+
+    .no-results {
+        text-align: center;
+        padding: 50px 20px;
+        color: #74806a;
+        font-size: 0.92rem;
+        display: none;
+    }
+
+        .no-results.show {
+            display: block;
+        }
+
+        .no-results i {
+            font-size: 1.8rem;
+            color: var(--light-green);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+    /* =========================================================
+           CARDS
+           ========================================================= */
+    @@keyframes cardIn {
+        from {
+            opacity: 0;
+            transform: translateY(26px) scale(0.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes cardOut {
+        to {
+            opacity: 0;
+            transform: scale(0.8) translateY(6px);
+            margin: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+        gap: 28px;
+        padding: 4px 4px 40px;
+    }
+
+    .product-card {
+        background: #fff;
+        border: 1px solid var(--light-green);
+        border-radius: 20px;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 2px 6px rgba(20, 30, 10, 0.06), 0 10px 26px rgba(var(--dark-green-rgb), 0.1);
+        opacity: 0;
+        animation: cardIn 0.55s cubic-bezier(.2, .7, .3, 1.1) forwards;
+        animation-delay: calc(var(--card-index) * 70ms);
+        transition: transform 0.32s cubic-bezier(.2, .8, .3, 1.15), box-shadow 0.32s ease, border-color 0.32s ease;
+        will-change: transform;
+    }
+
+        .product-card:hover {
+            transform: translateY(-9px);
+            box-shadow: 0 4px 10px rgba(20, 30, 10, 0.08), 0 26px 42px rgba(var(--dark-green-rgb), 0.28);
+            border-color: var(--primary-green);
+        }
+
+        .product-card.is-removing {
+            animation: cardOut 0.5s ease forwards;
+            pointer-events: none;
+        }
+
+        .product-card.is-filtered-out {
+            display: none;
+        }
+
+    .product-card--unavailable {
+        border-color: #e2e6da;
+    }
+
+        .product-card--unavailable:hover {
+            transform: none;
+            box-shadow: 0 2px 6px rgba(20, 30, 10, 0.06);
+            border-color: #e2e6da;
+        }
+
+    .product-card__media {
+        position: relative;
+        background: linear-gradient(135deg, var(--ultra-light-green), #fff);
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        border-radius: 20px 20px 0 0;
+        box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.05);
+        transition: transform 0.25s ease;
+    }
+
+        .product-card__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(.2, .8, .2, 1), opacity 0.35s ease;
+            opacity: 0;
+        }
+
+            .product-card__media img.loaded {
+                opacity: 1;
+            }
+
+    .product-card:hover .product-card__media img {
+        transform: scale(1.1) rotate(0.3deg);
+    }
+
+    .product-card--unavailable .product-card__media img {
+        filter: grayscale(1) brightness(0.92);
+    }
+
+    .product-card--unavailable:hover .product-card__media img {
+        transform: none;
+    }
+
+    .img-skeleton {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(100deg, var(--ultra-light-green) 30%, #fff 50%, var(--ultra-light-green) 70%);
+        background-size: 200% 100%;
+        animation: shimmer 1.3s linear infinite;
+        z-index: 1;
+        transition: opacity 0.3s ease;
+    }
+
+        .img-skeleton.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    @@keyframes shimmer {
+        from {
+            background-position: 120% 0;
+        }
+
+        to {
+            background-position: -20% 0;
+        }
+    }
+
+    .product-card__media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.2) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .product-card:hover .product-card__media::after {
+        opacity: 1;
+    }
+
+    .unavailable-flag {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+        .unavailable-flag span {
+            background: rgba(44, 58, 23, 0.78);
+            color: #fff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            padding: 7px 16px;
+            border-radius: 999px;
+            backdrop-filter: blur(2px);
+        }
+
+    .product-card__badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 5px 12px;
+        border-radius: 999px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        text-transform: uppercase;
+        box-shadow: 0 3px 8px rgba(var(--dark-green-rgb), 0.35);
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        .product-card__badge i {
+            animation: heartbeat 1.8s ease-in-out infinite;
+        }
+
+    @@keyframes heartbeat {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        25% {
+            transform: scale(1.18);
+        }
+
+        40% {
+            transform: scale(1);
+        }
+    }
+
+    .product-card__icons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 6px;
+        z-index: 3;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(4px);
+        border: 1px solid var(--light-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-green);
+        text-decoration: none;
+        font-size: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .icon-btn:hover {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: scale(1.14) rotate(-4deg);
+            box-shadow: 0 6px 14px rgba(var(--dark-green-rgb), 0.4);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.9);
+        }
+
+    .product-card__body {
+        padding: 18px 18px 4px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card__title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3a17;
+        margin: 0 0 3px;
+        transition: color 0.2s ease;
+    }
+
+    .product-card:hover .product-card__title {
+        color: var(--dark-green);
+    }
+
+    .product-card__desc {
+        font-size: 0.85rem;
+        color: #5a6650;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 12px;
+        min-height: 2.4em;
+    }
+
+    .product-card__meta {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--light-green);
+        gap: 10px;
+    }
+
+    .product-card__price {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.24rem;
+        font-weight: 700;
+        color: var(--dark-green);
+        white-space: nowrap;
+    }
+
+    /* quantity stepper + validation */
+    .qty-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+    }
+
+    .qty-stepper {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: var(--ultra-light-green);
+        border-radius: 999px;
+        padding: 3px;
+        transition: background 0.2s ease;
+    }
+
+        .qty-stepper.shake {
+            animation: shake 0.4s ease;
+        }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(-4px);
+        }
+
+        40% {
+            transform: translateX(4px);
+        }
+
+        60% {
+            transform: translateX(-3px);
+        }
+
+        80% {
+            transform: translateX(3px);
+        }
+    }
+
+    .product-card:hover .qty-stepper {
+        background: var(--light-green);
+    }
+
+    .qty-stepper button {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: none;
+        background: #fff;
+        color: var(--dark-green);
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+    }
+
+        .qty-stepper button:hover {
+            background: var(--dark-green);
+            color: #fff;
+        }
+
+        .qty-stepper button:active {
+            transform: scale(0.88);
+        }
+
+        .qty-stepper button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+            .qty-stepper button:disabled:hover {
+                background: #fff;
+                color: var(--dark-green);
+            }
+
+    .qty-stepper__value {
+        min-width: 26px;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #43502f;
+    }
+
+        .qty-stepper__value.bump {
+            animation: badgeTick 0.3s ease;
+        }
+
+    .qty-error {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--danger);
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        white-space: nowrap;
+    }
+
+        .qty-error.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    .product-card__footer {
+        padding: 0 18px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-action {
+        position: relative;
+        flex: 1;
+        text-align: center;
+        padding: 10px 14px;
+        border-radius: 11px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        border: none;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+        .btn-action::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -60%;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-20deg);
+            transition: left 0.5s ease;
+        }
+
+        .btn-action:hover::before {
+            left: 130%;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(var(--dark-green-rgb), 0.32);
+        }
+
+        .btn-action:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+    .btn-buy {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+    }
+
+        .btn-buy:hover {
+            background: linear-gradient(135deg, #7cc200, #587f00);
+            color: #fff;
+        }
+
+        .btn-buy.is-disabled {
+            background: var(--gray-500);
+            pointer-events: none;
+            opacity: 0.65;
+        }
+
+            .btn-buy.is-disabled::before {
+                display: none;
+            }
+
+    .btn-remove {
+        background: #fff;
+        color: var(--danger);
+        border: 1px solid var(--danger-light);
+    }
+
+        .btn-remove:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 10px 18px rgba(192, 73, 46, 0.3);
+        }
+
+        .btn-remove i {
+            transition: transform 0.25s ease;
+        }
+
+        .btn-remove:hover i {
+            transform: rotate(-8deg) scale(1.1);
+        }
+
+    .fly-clone {
+        position: fixed;
+        z-index: 2500;
+        border-radius: 14px;
+        object-fit: cover;
+        pointer-events: none;
+        transition: transform 0.62s cubic-bezier(.3, .1, .2, 1), opacity 0.5s ease 0.15s;
+        box-shadow: 0 10px 24px rgba(var(--dark-green-rgb), 0.35);
+    }
+
+    /* =========================================================
+           CONFIRM POPOVER (single-item remove)
+           ========================================================= */
+    .confirm-popover {
+        position: fixed;
+        z-index: 2400;
+        width: 236px;
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid var(--light-green);
+        box-shadow: 0 20px 40px rgba(20, 30, 10, 0.22);
+        padding: 16px;
+        opacity: 0;
+        transform: translateY(6px) scale(0.96);
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+        .confirm-popover.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .confirm-popover::before {
+            content: "";
+            position: absolute;
+            top: -7px;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-left: 1px solid var(--light-green);
+            border-top: 1px solid var(--light-green);
+            transform: rotate(45deg);
+            left: var(--arrow-left, 20px);
+        }
+
+        .confirm-popover p {
+            margin: 0 0 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3a17;
+            line-height: 1.4;
+        }
+
+    .confirm-popover__actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .confirm-popover button {
+        flex: 1;
+        padding: 8px 10px;
+        border-radius: 9px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.15s ease;
+    }
+
+    .confirm-popover__cancel {
+        background: var(--ultra-light-green);
+        color: #43502f;
+    }
+
+        .confirm-popover__cancel:hover {
+            background: var(--light-green);
+        }
+
+    .confirm-popover__confirm {
+        background: var(--danger);
+        color: #fff;
+    }
+
+        .confirm-popover__confirm:hover {
+            background: #a53d27;
+        }
+
+    .confirm-popover button:active {
+        transform: scale(0.96);
+    }
+
+    /* =========================================================
+           CLEAR-ALL MODAL
+           ========================================================= */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2600;
+        background: rgba(30, 40, 15, 0.45);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    .modal-card {
+        width: min(380px, 90vw);
+        background: #fff;
+        border-radius: 20px;
+        padding: 28px 26px;
+        text-align: center;
+        box-shadow: 0 30px 60px rgba(20, 30, 10, 0.3);
+        transform: translateY(14px) scale(0.96);
+        transition: transform 0.3s cubic-bezier(.2, .8, .3, 1.1);
+    }
+
+    .modal-overlay.show .modal-card {
+        transform: translateY(0) scale(1);
+    }
+
+    .modal-card .modal-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: var(--danger-light);
+        color: var(--danger);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .modal-card h3 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #2c3a17;
+        margin: 0 0 8px;
+    }
+
+    .modal-card p {
+        font-size: 0.88rem;
+        color: #5a6650;
+        margin: 0 0 22px;
+    }
+
+    .modal-card__actions {
+        display: flex;
+        gap: 10px;
+    }
+
+        .modal-card__actions button {
+            flex: 1;
+            padding: 11px 14px;
+            border-radius: 11px;
+            font-weight: 700;
+            font-size: 0.86rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+        }
+
+    .modal-cancel {
+        background: var(--ultra-light-green);
+        color: #43502f;
+    }
+
+        .modal-cancel:hover {
+            background: var(--light-green);
+        }
+
+    .modal-confirm {
+        background: var(--danger);
+        color: #fff;
+    }
+
+        .modal-confirm:hover {
+            background: #a53d27;
+        }
+
+        .modal-confirm:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .modal-card__actions button:active {
+        transform: scale(0.97);
+    }
+
+    /* =========================================================
+           EMPTY STATE
+           ========================================================= */
+    .empty-state {
+        text-align: center;
+        padding: 70px 20px;
+        color: #74806a;
+        opacity: 0;
+        animation: fadeDown 0.6s ease 0.1s forwards;
+    }
+
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .empty-state .empty-icon {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .empty-state .empty-icon .ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid var(--light-green);
+            animation: ringPulse 2.4s ease-out infinite;
+        }
+
+            .empty-state .empty-icon .ring:nth-child(2) {
+                animation-delay: 0.8s;
+            }
+
+        .empty-state .empty-icon i {
+            font-size: 2.4rem;
+            color: var(--primary-green);
+            z-index: 1;
+            animation: heartbeat 2.2s ease-in-out infinite;
+        }
+
+    .empty-state p {
+        font-size: 0.98rem;
+        max-width: 360px;
+        margin: 0 auto 20px;
+    }
+
+    .empty-state .btn-browse {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        box-shadow: 0 10px 20px rgba(var(--dark-green-rgb), 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .empty-state .btn-browse:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(var(--dark-green-rgb), 0.36);
+            color: #fff;
+        }
+
+    /* =========================================================
+           TOAST (success / error variants)
+           ========================================================= */
+    #wishlistToast {
+        position: fixed;
+        top: 110px;
+        right: 24px;
+        z-index: 2000;
+        min-width: 280px;
+        max-width: 340px;
+        background: #fff;
+        border-radius: 14px;
+        border-left: 4px solid var(--primary-green);
+        box-shadow: 0 18px 40px rgba(var(--dark-green-rgb), 0.28);
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        transform: translateX(120%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.45s cubic-bezier(.2, .8, .25, 1.15), opacity 0.35s ease;
+        overflow: hidden;
+    }
+
+        #wishlistToast.show {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #wishlistToast.toast--error {
+            border-left-color: var(--danger);
+        }
+
+        #wishlistToast .toast-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        #wishlistToast.toast--error .toast-icon {
+            background: linear-gradient(135deg, var(--danger), #a53d27);
+        }
+
+        #wishlistToast .toast-text {
+            font-size: 0.88rem;
+            color: #2c3a17;
+            font-weight: 600;
+            line-height: 1.35;
+            padding-top: 4px;
+        }
+
+        #wishlistToast .toast-close {
+            background: none;
+            border: none;
+            color: #99a48e;
+            font-size: 1rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px;
+            margin-left: auto;
+            transition: color 0.2s ease;
+        }
+
+            #wishlistToast .toast-close:hover {
+                color: var(--danger);
+            }
+
+        #wishlistToast .toast-progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary-green), var(--dark-green));
+            transform-origin: left;
+            animation: toastShrink 3.2s linear forwards;
+        }
+
+        #wishlistToast.toast--error .toast-progress {
+            background: linear-gradient(90deg, var(--danger), #a53d27);
+        }
+
+    @@keyframes toastShrink {
+        from {
+            transform: scaleX(1);
+        }
+
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    @@media (max-width: 480px) {
+        #wishlistToast {
+            right: 12px;
+            left: 12px;
+            max-width: none;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .product-card, .empty-state, .empty-icon .ring, .product-card__badge i,
+        .wishlist-banner, .stat-chip, .heart-orb i, .heart-orb .ring, .heart-orb__count,
+        .wishlist-banner::before, .wishlist-banner::after, .img-skeleton, .wishlist-toolbar,
+        .qty-stepper.shake {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .product-card, .product-card__media, .product-card__media img, .icon-btn,
+        .btn-action, #wishlistToast, #stickyWishlistBar, .fly-clone, .confirm-popover, .modal-overlay, .modal-card {
+            transition: none !important;
+        }
+    }
+</style>
+
+<!-- Sticky mini header, appears once the hero banner scrolls out of view -->
+<div id="stickyWishlistBar">
+    <i class="bi bi-heart-fill"></i>
+    <span>Wishlist &middot; <strong id="stickyCount">@totalItems</strong> @(totalItems == 1 ? "item" : "items")</span>
+</div>
+
+<div class="gallery-page">
+
+    <!-- ============ HERO BANNER ============ -->
+    <div class="wishlist-banner" id="wishlistBanner"
+         data-total-items="@totalItems"
+         data-total-qty="@totalQty"
+         data-total-value="@totalValue.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+        <div class="wishlist-banner__pattern"></div>
+
+        <div class="wishlist-banner__content">
+            <span class="wishlist-banner__eyebrow"><i class="bi bi-stars"></i> Your favorites, all in one place</span>
+            <h1>My Wishlist</h1>
+            <p>Everything you've saved for later, ready whenever you are.</p>
+
+            <div class="wishlist-banner__stats">
+                <span class="stat-chip"><i class="bi bi-bag-heart-fill"></i> <strong id="statItemsCount">0</strong>&nbsp;<span id="statItemsLabel">items</span> saved</span>
+                @if (totalItems > 0)
+                {
+                    <span class="stat-chip"><i class="bi bi-cash-coin"></i> Worth <strong id="statWorthCount">@totalValue.ToString("C")</strong></span>
+                }
+            </div>
+        </div>
+
+        <div class="wishlist-banner__badge">
+            <div class="heart-orb">
+                <span class="ring"></span>
+                <span class="ring"></span>
+                <i class="bi bi-heart-fill"></i>
+                <span class="heart-orb__count" id="heartOrbCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <span class="ring"></span>
+                <span class="ring"></span>
+                <i class="bi bi-heart"></i>
+            </div>
+            <p>Your wishlist is empty. Browse products and tap the heart on anything you love.</p>
+            <a href="/" class="btn-browse"><i class="bi bi-bag-heart"></i> Discover products</a>
+        </div>
+    }
+    else
+    {
+        <div class="wishlist-toolbar">
+            <div class="search-field">
+                <i class="bi bi-search"></i>
+                <input type="text" id="wishlistSearch" placeholder="Search your wishlist..." aria-label="Search your wishlist">
+            </div>
+
+            <div class="wishlist-toolbar__right">
+                <label for="wishlistSort">Sort by</label>
+                <select id="wishlistSort">
+                    <option value="newest">Newest first</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="name-asc">Name: A&ndash;Z</option>
+                </select>
+
+                <button type="button" class="btn-clear-all" id="btnClearAll">
+                    <i class="bi bi-trash3"></i> Clear all
+                </button>
+            </div>
+        </div>
+
+        <div class="no-results" id="noResults">
+            <i class="bi bi-search"></i>
+            No items match your search.
+        </div>
+
+        <div class="product-grid" id="wishlistGrid">
+            @foreach (var item in Model)
+            {
+                i++;
+                bool isAvailable = item.Product != null;
+                decimal linePrice = isAvailable ? Convert.ToDecimal(item.Product.price) : 0;
+
+                <div class="product-card @(isAvailable ? "" : "product-card--unavailable")"
+                     style="--card-index:@i"
+                     data-wishlist-item
+                     data-original-index="@i"
+                     data-price="@linePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-qty="@item.Quantity"
+                     data-name="@(isAvailable? item.Product.Name : "")">
+
+                    <div class="product-card__media">
+                        <div class="img-skeleton"></div>
+                        @if (isAvailable && !string.IsNullOrEmpty(item.Product.Image1))
+                        {
+                            <img src="@item.Product.Image1" alt="@item.Product.Name" data-parallax-img loading="lazy">
+                        }
+                        else
+                        {
+                            <img src="~/images/no-image.png" alt="No image available" data-parallax-img loading="lazy">
+                        }
+
+                        @if (!isAvailable)
+                        {
+                            <div class="unavailable-flag"><span>No longer available</span></div>
+                        }
+                        else
+                        {
+                            <span class="product-card__badge"><i class="bi bi-heart-fill"></i> Saved</span>
+                        }
+
+                        <div class="product-card__icons">
+                            @if (isAvailable)
+                            {
+                                <a asp-action="Viewproductdetails" asp-route-id="@item.ProductId" class="icon-btn" title="View details" aria-label="View product details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="product-card__body">
+                        @if (isAvailable)
+                        {
+                            <p class="product-card__title">@Html.DisplayFor(modelItem => item.Product.Name)</p>
+                            <p class="product-card__desc">@Html.DisplayFor(modelItem => item.Product.Description)</p>
+                        }
+                        else
+                        {
+                            <p class="product-card__title">Item unavailable</p>
+                            <p class="product-card__desc">This product has been removed from the catalog. You can still remove it from your wishlist.</p>
+                        }
+
+                        <div class="product-card__meta">
+                            <span class="product-card__price" data-price-display>@linePrice.ToString("C")</span>
+
+                            @if (isAvailable)
+                            {
+                                <div class="qty-block">
+                                    <div class="qty-stepper" data-qty-stepper
+                                         data-max-qty="@maxQtyPerItem"
+                                         data-update-url="@Url.Action("UpdateWishlistQuantity", new { id = item.Id })">
+                                        <button type="button" data-qty-decrease aria-label="Decrease quantity">&minus;</button>
+                                        <span class="qty-stepper__value" data-qty-value>@item.Quantity</span>
+                                        <button type="button" data-qty-increase aria-label="Increase quantity">+</button>
+                                    </div>
+                                    <span class="qty-error" data-qty-error></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="product-card__qty"><i class="bi bi-box-seam"></i> Qty: @item.Quantity</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="product-card__footer">
+                        @if (isAvailable)
+                        {
+                            <a asp-action="buynowlogic" asp-route-id="@item.Id" class="btn-action btn-buy">
+                                <i class="bi bi-bag-check"></i> Buy Now
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="btn-action btn-buy is-disabled" aria-disabled="true">
+                                <i class="bi bi-slash-circle"></i> Unavailable
+                            </span>
+                        }
+                        <a asp-action="RemovefromwishlistLogic" asp-route-id="@item.Id"
+                           class="btn-action btn-remove"
+                           data-remove-link
+                           data-item-name="@(isAvailable? item.Product.Name : "item")"
+                           aria-label="Remove from wishlist">
+                            <i class="bi bi-trash"></i> Remove
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Confirm popover for single-item remove -->
+<div class="confirm-popover" id="confirmPopover" role="dialog" aria-modal="false">
+    <p>Remove this item from your wishlist?</p>
+    <div class="confirm-popover__actions">
+        <button type="button" class="confirm-popover__cancel" id="confirmCancel">Cancel</button>
+        <button type="button" class="confirm-popover__confirm" id="confirmRemove">Remove</button>
+    </div>
+</div>
+
+<!-- Confirm modal for clear-all -->
+<div class="modal-overlay" id="clearAllOverlay" role="dialog" aria-modal="true" aria-labelledby="clearAllTitle">
+    <div class="modal-card">
+        <div class="modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h3 id="clearAllTitle">Clear your whole wishlist?</h3>
+        <p id="clearAllBody">This removes every saved item and can't be undone.</p>
+        <div class="modal-card__actions">
+            <button type="button" class="modal-cancel" id="clearAllCancel">Cancel</button>
+            <button type="button" class="modal-confirm" id="clearAllConfirm">Clear all</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div id="wishlistToast" role="status" aria-live="polite">
+    <span class="toast-icon"><i class="bi bi-check-lg" id="toastIcon"></i></span>
+    <span class="toast-text" id="wishlistToastText">Item removed successfully</span>
+    <button type="button" class="toast-close" aria-label="Close" onclick="hideWishlistToast()"><i class="bi bi-x"></i></button>
+    <span class="toast-progress"></span>
+</div>
+
+<script>
+    (function () {
+        var TOAST_KEY = 'wishlistToastMessage';
+        var TOAST_TYPE_KEY = 'wishlistToastType';
+        var toastEl = document.getElementById('wishlistToast');
+        var toastTextEl = document.getElementById('wishlistToastText');
+        var toastIconEl = document.getElementById('toastIcon');
+        var toastTimer = null;
+
+        var banner = document.getElementById('wishlistBanner');
+        var heartOrbCount = document.getElementById('heartOrbCount');
+        var statItemsCount = document.getElementById('statItemsCount');
+        var statItemsLabel = document.getElementById('statItemsLabel');
+        var statWorthCount = document.getElementById('statWorthCount');
+        var stickyBar = document.getElementById('stickyWishlistBar');
+        var stickyCount = document.getElementById('stickyCount');
+        var grid = document.getElementById('wishlistGrid');
+        var noResults = document.getElementById('noResults');
+
+        var serverTotalItems = banner ? parseInt(banner.getAttribute('data-total-items'), 10) || 0 : 0;
+        var serverTotalValue = banner ? parseFloat(banner.getAttribute('data-total-value')) || 0 : 0;
+        var currencySymbol = (statWorthCount ? statWorthCount.textContent.match(/^[^\d\-]+/) : null);
+        currencySymbol = currencySymbol ? currencySymbol[0] : '$';
+
+        // ---------- toast (success / error) ----------
+        function showWishlistToast(message, type) {
+            if (!toastEl) return;
+            toastTextEl.textContent = message;
+            toastEl.classList.toggle('toast--error', type === 'error');
+            toastIconEl.className = type === 'error' ? 'bi bi-exclamation-lg' : 'bi bi-check-lg';
+
+            var progress = toastEl.querySelector('.toast-progress');
+            progress.style.animation = 'none';
+            void progress.offsetWidth;
+            progress.style.animation = '';
+
+            toastEl.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(hideWishlistToast, 3200);
+        }
+
+        window.hideWishlistToast = function () {
+            if (!toastEl) return;
+            toastEl.classList.remove('show');
+            clearTimeout(toastTimer);
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var pending = sessionStorage.getItem(TOAST_KEY);
+            if (pending) {
+                var type = sessionStorage.getItem(TOAST_TYPE_KEY) || 'success';
+                sessionStorage.removeItem(TOAST_KEY);
+                sessionStorage.removeItem(TOAST_TYPE_KEY);
+                setTimeout(function () { showWishlistToast(pending, type); }, 150);
+            }
+        });
+
+        // ---------- animated counters on load ----------
+        function animateNumber(el, from, to, duration, formatter) {
+            if (!el) return;
+            var start = null;
+            function step(ts) {
+                if (start === null) start = ts;
+                var progress = Math.min((ts - start) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                var value = from + (to - from) * eased;
+                el.textContent = formatter(value);
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            animateNumber(heartOrbCount, 0, serverTotalItems, 700, function (v) { return Math.round(v); });
+            animateNumber(statItemsCount, 0, serverTotalItems, 700, function (v) { return Math.round(v); });
+            if (statItemsLabel) statItemsLabel.textContent = serverTotalItems === 1 ? 'item' : 'items';
+            if (statWorthCount) {
+                animateNumber(statWorthCount, 0, serverTotalValue, 800, function (v) {
+                    return currencySymbol + v.toFixed(2);
+                });
+            }
+        });
+
+        // ---------- recalc totals from live DOM ----------
+        function recalcTotals(animateBadge) {
+            var cards = grid ? grid.querySelectorAll('.product-card[data-wishlist-item]:not(.is-removing)') : [];
+            var items = cards.length;
+            var value = 0;
+            cards.forEach(function (card) {
+                var price = parseFloat(card.getAttribute('data-price')) || 0;
+                var qty = parseInt(card.getAttribute('data-qty'), 10) || 0;
+                value += price * qty;
+            });
+
+            if (heartOrbCount) heartOrbCount.textContent = items;
+            if (statItemsCount) statItemsCount.textContent = items;
+            if (statItemsLabel) statItemsLabel.textContent = items === 1 ? 'item' : 'items';
+            if (statWorthCount) statWorthCount.textContent = currencySymbol + value.toFixed(2);
+            if (stickyCount) stickyCount.textContent = items;
+
+            var clearBtn = document.getElementById('btnClearAll');
+            if (clearBtn) clearBtn.disabled = items === 0;
+
+            if (animateBadge && heartOrbCount) {
+                heartOrbCount.classList.remove('tick');
+                void heartOrbCount.offsetWidth;
+                heartOrbCount.classList.add('tick');
+            }
+        }
+
+        // ---------- sticky mini header on scroll ----------
+        if (banner && stickyBar) {
+            var toggleSticky = function () {
+                var bannerBottom = banner.getBoundingClientRect().bottom;
+                stickyBar.classList.toggle('show', bannerBottom < 0);
+            };
+            window.addEventListener('scroll', toggleSticky, { passive: true });
+            toggleSticky();
+        }
+
+        // ---------- image skeleton ----------
+        document.querySelectorAll('[data-parallax-img]').forEach(function (img) {
+            var skeleton = img.parentElement.querySelector('.img-skeleton');
+            function reveal() {
+                img.classList.add('loaded');
+                if (skeleton) skeleton.classList.add('hide');
+            }
+            if (img.complete && img.naturalWidth > 0) {
+                reveal();
+            } else {
+                img.addEventListener('load', reveal);
+                img.addEventListener('error', reveal);
+            }
+        });
+
+        // ---------- subtle parallax on card image ----------
+        var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll('.product-card__media').forEach(function (media) {
+            if (prefersReduced) return;
+            media.addEventListener('mousemove', function (e) {
+                var rect = media.getBoundingClientRect();
+                var x = (e.clientX - rect.left) / rect.width - 0.5;
+                var y = (e.clientY - rect.top) / rect.height - 0.5;
+                media.style.transform = 'translate(' + (x * 8).toFixed(1) + 'px,' + (y * 8).toFixed(1) + 'px)';
+            });
+            media.addEventListener('mouseleave', function () {
+                media.style.transform = 'translate(0,0)';
+            });
+        });
+
+        // ---------- quantity stepper with validation ----------
+        document.querySelectorAll('[data-qty-stepper]').forEach(function (stepper) {
+            var card = stepper.closest('.product-card');
+            var valueEl = stepper.querySelector('[data-qty-value]');
+            var errorEl = card.querySelector('[data-qty-error]');
+            var priceDisplay = card.querySelector('[data-price-display]');
+            var unitPrice = parseFloat(card.getAttribute('data-price')) || 0;
+            var maxQty = parseInt(stepper.getAttribute('data-max-qty'), 10) || 99;
+            var decreaseBtn = stepper.querySelector('[data-qty-decrease]');
+            var increaseBtn = stepper.querySelector('[data-qty-increase]');
+            var updateUrl = stepper.getAttribute('data-update-url');
+            var errorTimer = null;
+
+            function currentQty() { return parseInt(card.getAttribute('data-qty'), 10) || 1; }
+
+            function flashError(message) {
+                if (!errorEl) return;
+                errorEl.textContent = message;
+                errorEl.classList.add('show');
+                stepper.classList.remove('shake');
+                void stepper.offsetWidth;
+                stepper.classList.add('shake');
+                clearTimeout(errorTimer);
+                errorTimer = setTimeout(function () { errorEl.classList.remove('show'); }, 1800);
+            }
+
+            function render(qty) {
+                card.setAttribute('data-qty', qty);
+                valueEl.textContent = qty;
+                valueEl.classList.remove('bump');
+                void valueEl.offsetWidth;
+                valueEl.classList.add('bump');
+                if (priceDisplay) priceDisplay.textContent = currencySymbol + (unitPrice * qty).toFixed(2);
+                decreaseBtn.disabled = qty <= 1;
+                increaseBtn.disabled = qty >= maxQty;
+                recalcTotals(false);
+                persistQty(qty);
+            }
+
+            function persistQty(qty) {
+                if (!updateUrl) return;
+                // Best-effort sync — requires an UpdateWishlistQuantity action on the
+                // controller that accepts { quantity }. UI already reflects the change
+                // optimistically, so a failed request only shows a soft warning toast.
+                fetch(updateUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: qty })
+                }).then(function (res) {
+                    if (!res.ok) throw new Error('sync failed');
+                }).catch(function () {
+                    showWishlistToast("Quantity updated here, but couldn't sync — refresh to confirm", 'error');
+                });
+            }
+
+            decreaseBtn.addEventListener('click', function () {
+                var qty = currentQty();
+                if (qty <= 1) { flashError('Quantity can\'t go below 1'); return; }
+                render(qty - 1);
+            });
+
+            increaseBtn.addEventListener('click', function () {
+                var qty = currentQty();
+                if (qty >= maxQty) { flashError('Maximum quantity is ' + maxQty); return; }
+                render(qty + 1);
+            });
+
+            decreaseBtn.disabled = currentQty() <= 1;
+            increaseBtn.disabled = currentQty() >= maxQty;
+        });
+
+        // ---------- live search / filter ----------
+        var searchInput = document.getElementById('wishlistSearch');
+        if (searchInput && grid) {
+            searchInput.addEventListener('input', function () {
+                var term = searchInput.value.trim().toLowerCase();
+                var cards = grid.querySelectorAll('.product-card');
+                var visibleCount = 0;
+
+                cards.forEach(function (card) {
+                    var name = (card.getAttribute('data-name') || '').toLowerCase();
+                    var matches = term === '' || name.indexOf(term) !== -1;
+                    card.classList.toggle('is-filtered-out', !matches);
+                    if (matches) visibleCount++;
+                });
+
+                if (noResults) noResults.classList.toggle('show', visibleCount === 0 && term !== '');
+            });
+        }
+
+        // ---------- sort ----------
+        var sortSelect = document.getElementById('wishlistSort');
+        if (sortSelect && grid) {
+            sortSelect.addEventListener('change', function () {
+                var cards = Array.prototype.slice.call(grid.querySelectorAll('.product-card'));
+                var mode = sortSelect.value;
+
+                cards.sort(function (a, b) {
+                    if (mode === 'price-asc' || mode === 'price-desc') {
+                        var pa = parseFloat(a.getAttribute('data-price')) || 0;
+                        var pb = parseFloat(b.getAttribute('data-price')) || 0;
+                        return mode === 'price-asc' ? pa - pb : pb - pa;
+                    }
+                    if (mode === 'name-asc') {
+                        var na = (a.getAttribute('data-name') || '').toLowerCase();
+                        var nb = (b.getAttribute('data-name') || '').toLowerCase();
+                        return na.localeCompare(nb);
+                    }
+                    return (parseInt(a.getAttribute('data-original-index'), 10) || 0) -
+                           (parseInt(b.getAttribute('data-original-index'), 10) || 0);
+                });
+
+                cards.forEach(function (card) {
+                    card.style.animation = 'none';
+                    card.style.opacity = '1';
+                    card.style.transform = '';
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        // ---------- confirm popover for single remove ----------
+        var popover = document.getElementById('confirmPopover');
+        var popoverCancel = document.getElementById('confirmCancel');
+        var popoverConfirm = document.getElementById('confirmRemove');
+        var pendingLink = null;
+        var pendingCard = null;
+
+        function openPopover(link, card) {
+            pendingLink = link;
+            pendingCard = card;
+            var rect = link.getBoundingClientRect();
+            var popW = 236;
+            var left = Math.min(Math.max(rect.left + rect.width / 2 - popW / 2, 12), window.innerWidth - popW - 12);
+            var top = rect.bottom + 10;
+            popover.style.left = left + 'px';
+            popover.style.top = top + 'px';
+            popover.style.setProperty('--arrow-left', (rect.left + rect.width / 2 - left - 7) + 'px');
+            popover.classList.add('show');
+        }
+
+        function closePopover() {
+            popover.classList.remove('show');
+            pendingLink = null;
+            pendingCard = null;
+        }
+
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('[data-remove-link]');
+            if (link) {
+                e.preventDefault();
+                if (pendingLink === link && popover.classList.contains('show')) {
+                    closePopover();
+                    return;
+                }
+                openPopover(link, link.closest('[data-wishlist-item]'));
+                return;
+            }
+
+            if (popover.classList.contains('show') && !popover.contains(e.target)) {
+                closePopover();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closePopover();
+        });
+
+        popoverCancel.addEventListener('click', closePopover);
+
+        popoverConfirm.addEventListener('click', function () {
+            var link = pendingLink;
+            var card = pendingCard;
+            closePopover();
+            if (!link) return;
+            performRemove(link, card);
+        });
+
+        function performRemove(link, card) {
+            var itemName = link.getAttribute('data-item-name');
+            var message = itemName ? ('"' + itemName + '" removed from your wishlist') : 'Item removed from your wishlist';
+            sessionStorage.setItem(TOAST_KEY, message);
+            sessionStorage.setItem(TOAST_TYPE_KEY, 'success');
+
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (!card) {
+                window.location.href = link.href;
+                return;
+            }
+
+            card.classList.add('is-removing');
+            recalcTotals(true);
+
+            if (reduceMotion) {
+                window.location.href = link.href;
+                return;
+            }
+
+            var img = card.querySelector('img');
+            var orb = document.querySelector('.heart-orb');
+            if (img && orb) {
+                var startRect = img.getBoundingClientRect();
+                var endRect = orb.getBoundingClientRect();
+                var clone = img.cloneNode(true);
+                clone.className = 'fly-clone';
+                clone.style.left = startRect.left + 'px';
+                clone.style.top = startRect.top + 'px';
+                clone.style.width = startRect.width + 'px';
+                clone.style.height = startRect.height + 'px';
+                clone.style.opacity = '1';
+                document.body.appendChild(clone);
+
+                var endX = endRect.left + endRect.width / 2 - startRect.left - startRect.width / 2;
+                var endY = endRect.top + endRect.height / 2 - startRect.top - startRect.height / 2;
+
+                requestAnimationFrame(function () {
+                    clone.style.transform = 'translate(' + endX + 'px,' + endY + 'px) scale(0.08)';
+                    clone.style.opacity = '0';
+                });
+
+                setTimeout(function () { clone.remove(); }, 700);
+            }
+
+            setTimeout(function () { window.location.href = link.href; }, 650);
+        }
+
+        // ---------- clear-all modal + bulk removal ----------
+        var clearAllBtn = document.getElementById('btnClearAll');
+        var clearAllOverlay = document.getElementById('clearAllOverlay');
+        var clearAllCancel = document.getElementById('clearAllCancel');
+        var clearAllConfirm = document.getElementById('clearAllConfirm');
+        var clearAllBody = document.getElementById('clearAllBody');
+
+        function openClearAllModal() {
+            var count = grid ? grid.querySelectorAll('.product-card[data-wishlist-item]').length : 0;
+            if (count === 0) return;
+            clearAllBody.textContent = 'This removes all ' + count + ' saved ' + (count === 1 ? 'item' : 'items') + ' and can\'t be undone.';
+            clearAllOverlay.classList.add('show');
+        }
+
+        function closeClearAllModal() {
+            clearAllOverlay.classList.remove('show');
+        }
+
+        if (clearAllBtn) clearAllBtn.addEventListener('click', openClearAllModal);
+        clearAllCancel.addEventListener('click', closeClearAllModal);
+        clearAllOverlay.addEventListener('click', function (e) {
+            if (e.target === clearAllOverlay) closeClearAllModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && clearAllOverlay.classList.contains('show')) closeClearAllModal();
+        });
+
+        clearAllConfirm.addEventListener('click', function () {
+            var links = Array.prototype.slice.call(
+                grid.querySelectorAll('[data-remove-link]')
+            ).map(function (a) { return a.href; });
+
+            if (links.length === 0) { closeClearAllModal(); return; }
+
+            clearAllConfirm.disabled = true;
+            clearAllConfirm.textContent = 'Removing...';
+
+            // Sequential best-effort AJAX calls to the existing remove action.
+            // Assumes RemovefromwishlistLogic can be safely invoked via fetch
+            // (e.g. a GET action that removes the item and redirects) — verify
+            // this matches your controller before relying on it in production.
+            var failures = 0;
+            var chain = Promise.resolve();
+            links.forEach(function (href) {
+                chain = chain.then(function () {
+                    return fetch(href, { credentials: 'same-origin' }).catch(function () {
+                        failures++;
+                    });
+                });
+            });
+
+            chain.then(function () {
+                sessionStorage.setItem(
+                    TOAST_KEY,
+                    failures === 0 ? 'Your wishlist has been cleared' : 'Some items could not be removed'
+                );
+                sessionStorage.setItem(TOAST_TYPE_KEY, failures === 0 ? 'success' : 'error');
+                window.location.reload();
+            });
+        });
+    })();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var cards = document.querySelectorAll('.product-card');
+        if (!('IntersectionObserver' in window)) return;
+
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(function (card) { observer.observe(card); });
+    });
+</script>

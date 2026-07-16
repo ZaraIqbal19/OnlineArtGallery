@@ -1,0 +1,822 @@
+@model Art_Gallery.Models.SubCategory
+@{
+    ViewData["Title"] = "Edit Subcategory";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --card-shadow: 0 20px 60px rgba(136, 210, 0, 0.12);
+        --border-radius-lg: 32px;
+        --border-radius-sm: 20px;
+        --error-color: #dc3545;
+        --error-bg: #fff5f5;
+        --success-color: #28a745;
+        --success-bg: #e6f4ea;
+    }
+
+    ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+    }
+
+    * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .create-page-wrapper {
+        padding: 20px 0;
+        animation: fadeInUp 0.6s ease;
+        overflow: hidden;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-green-white {
+        background: #ffffff;
+        border: none;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--card-shadow);
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .card-green-white::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-green), var(--dark-green), var(--primary-green));
+            background-size: 200% 100%;
+            animation: shimmerGreen 4s infinite;
+            z-index: 2;
+        }
+
+    @@keyframes shimmerGreen {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .card-green-white:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 28px 70px rgba(136, 210, 0, 0.18);
+    }
+
+    .text-green-accent {
+        color: var(--primary-green);
+    }
+
+    .bg-green-soft {
+        background: var(--ultra-light-green);
+    }
+
+    .btn-green {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        color: white;
+        padding: 14px 36px;
+        border-radius: 60px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 8px 30px rgba(136, 210, 0, 0.35);
+    }
+
+        .btn-green:hover {
+            background: linear-gradient(135deg, #7abe00, #5a8f00);
+            transform: scale(1.04) translateY(-3px);
+            box-shadow: 0 14px 40px rgba(136, 210, 0, 0.50);
+            color: #fff;
+        }
+
+        .btn-green:active {
+            transform: scale(0.96);
+        }
+
+        .btn-green i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-green:hover i {
+            transform: rotate(6deg) scale(1.1);
+        }
+
+    .btn-outline-green {
+        background: transparent;
+        border: 2px solid var(--primary-green);
+        color: var(--dark-green);
+        padding: 12px 30px;
+        border-radius: 60px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-outline-green:hover {
+            background: var(--ultra-light-green);
+            transform: scale(1.03) translateY(-2px);
+            color: var(--dark-green);
+            border-color: var(--dark-green);
+        }
+
+    .form-control-green {
+        border: 2px solid #e2e8e0;
+        border-radius: var(--border-radius-sm);
+        padding: 14px 20px;
+        transition: all 0.3s ease;
+        background: #fefcfc;
+        font-weight: 450;
+        font-size: 1rem;
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        width: 100%;
+    }
+
+        .form-control-green:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 6px rgba(136, 210, 0, 0.12), inset 0 2px 8px rgba(0,0,0,0.02);
+            background: #ffffff;
+            outline: none;
+        }
+
+    .form-label {
+        font-weight: 700;
+        color: #2d3d24;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-label i {
+            color: var(--primary-green);
+            width: 20px;
+            text-align: center;
+        }
+
+    .form-control-green.is-valid {
+        border-color: var(--success-color);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='20 6 9 17 4 12'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 22px;
+        padding-right: 50px;
+    }
+
+    .form-control-green.is-invalid {
+        border-color: var(--error-color);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%23dc3545' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='12' cy='12' r='10'%3e%3c/circle%3e%3cline x1='15' y1='9' x2='9' y2='15'%3e%3c/line%3e%3cline x1='9' y1='9' x2='15' y2='15'%3e%3c/line%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 22px;
+        padding-right: 50px;
+        animation: invalidShake 0.5s ease;
+    }
+
+    @@keyframes invalidShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+
+    .invalid-feedback, .valid-feedback {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .invalid-feedback {
+        color: var(--error-color);
+    }
+
+    .valid-feedback {
+        color: var(--success-color);
+    }
+
+    .input-group-icon {
+        position: relative;
+    }
+
+        .input-group-icon .form-control-green {
+            padding-left: 48px;
+        }
+
+        .input-group-icon .input-icon-left {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            transition: all 0.3s ease;
+            z-index: 3;
+            font-size: 1rem;
+        }
+
+        .input-group-icon:focus-within .input-icon-left {
+            color: var(--primary-green);
+        }
+
+    .validation-alert-custom {
+        display: none !important;
+        align-items: center;
+        gap: 10px;
+        background: var(--error-bg);
+        color: var(--error-color);
+        border: 1px solid rgba(220, 53, 69, 0.25);
+        border-radius: var(--border-radius-sm);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease;
+    }
+
+        .validation-alert-custom.show {
+            display: flex !important;
+        }
+
+    .breadcrumb-custom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #7a8a7a;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background: var(--ultra-light-green);
+        border-radius: 50px;
+        border: 1px solid var(--light-green);
+        width: fit-content;
+    }
+
+        .breadcrumb-custom i {
+            color: var(--primary-green);
+        }
+
+        .breadcrumb-custom .separator {
+            color: #c0d0c0;
+        }
+
+        .breadcrumb-custom .current {
+            color: var(--dark-green);
+            font-weight: 600;
+        }
+
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        background: var(--ultra-light-green);
+        border-radius: 50px;
+        font-size: 0.75rem;
+        color: var(--dark-green);
+        border: 1px solid var(--light-green);
+    }
+
+    /* ===== IMAGE UPLOAD ===== */
+    .image-drop-zone {
+        border: 2px dashed var(--light-green);
+        border-radius: var(--border-radius-sm);
+        background: var(--ultra-light-green);
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .image-drop-zone:hover, .image-drop-zone.dragover {
+            border-color: var(--primary-green);
+            background: #e8f5e0;
+        }
+
+        .image-drop-zone.is-invalid {
+            border-color: var(--error-color);
+            background: var(--error-bg);
+            animation: invalidShake 0.5s ease;
+        }
+
+        .image-drop-zone.is-valid {
+            border-color: var(--success-color);
+            background: var(--success-bg);
+        }
+
+        .image-drop-zone .drop-icon {
+            font-size: 2rem;
+            color: var(--primary-green);
+            margin-bottom: 8px;
+        }
+
+        .image-drop-zone .drop-text {
+            font-weight: 600;
+            color: #2d3d24;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .image-drop-zone .drop-subtext {
+            font-size: 0.75rem;
+            color: #7a8a7a;
+        }
+
+    #subImageInput {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .image-preview-wrapper {
+        display: none;
+        margin-top: 14px;
+    }
+
+        .image-preview-wrapper.show {
+            display: inline-block;
+        }
+
+    .image-preview-box {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(136, 210, 0, 0.2);
+        border: 3px solid var(--primary-green);
+    }
+
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .image-preview-remove {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--error-color);
+        color: white;
+        border: 3px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        transition: transform 0.2s ease;
+    }
+
+        .image-preview-remove:hover {
+            transform: scale(1.15) rotate(90deg);
+        }
+
+    .image-preview-filename {
+        font-size: 0.78rem;
+        color: #4a6a5a;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* ===== CURRENT IMAGE BOX ===== */
+    .current-image-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--ultra-light-green);
+        border: 1px solid var(--light-green);
+        border-radius: var(--border-radius-sm);
+        padding: 14px 18px;
+        margin-bottom: 14px;
+    }
+
+        .current-image-box img {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 3px solid var(--primary-green);
+            box-shadow: 0 6px 16px rgba(136, 210, 0, 0.25);
+        }
+
+        .current-image-box .current-image-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7a9a8a;
+            margin-bottom: 2px;
+        }
+
+        .current-image-box .current-image-text {
+            font-weight: 600;
+            color: #2d3d24;
+            font-size: 0.9rem;
+        }
+
+    @@media (max-width: 576px) {
+        .card-green-white {
+            padding: 1.6rem !important;
+        }
+
+        .btn-green, .btn-outline-green {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .current-image-box {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="create-page-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="card card-green-white p-4 p-md-5 position-relative">
+
+                <div class="breadcrumb-custom">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                    <span class="separator">/</span>
+                    <i class="fas fa-sitemap"></i>
+                    <span>Subcategories</span>
+                    <span class="separator">/</span>
+                    <span class="current"><i class="fas fa-pen me-1"></i>Edit</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-green-soft p-3 rounded-4 shadow-sm">
+                        <i class="fa fa-sitemap fa-2x text-green-accent"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0" style="color: #1d2d1a;">
+                            Edit Subcategory
+                            <span class="stats-badge ms-2">
+                                <i class="fa-regular fa-pen-to-square"></i> Updating
+                            </span>
+                        </h3>
+                        <p class="text-muted small mb-0">Update the name or image of this subcategory</p>
+                    </div>
+                </div>
+
+                <form asp-action="Editsubcategorylogic" method="post" asp-controller="Admin" id="subEditForm" enctype="multipart/form-data" novalidate>
+
+                    <div class="validation-alert-custom" id="subValidationSummary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span></span>
+                    </div>
+
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CategoryId" />
+
+                    <!-- Subcategory Name -->
+                    <div class="mb-4">
+                        <label asp-for="Name" class="form-label">
+                            <i class="fa-regular fa-tag"></i> Subcategory Name <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group-icon">
+                            <span class="input-icon-left"><i class="fa-regular fa-folder-open"></i></span>
+                            <input asp-for="Name" type="text" id="subNameInput" class="form-control form-control-green"
+                                   placeholder="e.g., Watercolor, Sculpture..." maxlength="50" required />
+                        </div>
+                        <div class="invalid-feedback" id="subNameInvalid" style="display:none;">
+                            <i class="fa-regular fa-circle-exclamation"></i> <span id="subNameInvalidText">Subcategory name is required.</span>
+                        </div>
+                        <div class="valid-feedback" id="subNameValid" style="display:none;">
+                            <i class="fa-regular fa-check-circle"></i> Looks good!
+                        </div>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Subcategory Image -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fa-regular fa-image"></i> Subcategory Image
+                            <span class="stats-badge">
+                                <i class="fa-regular fa-circle-check me-1"></i> Optional · Max 2MB
+                            </span>
+                        </label>
+
+                        @if (!string.IsNullOrEmpty(Model.SubCategoryimage))
+                        {
+                            <div class="current-image-box">
+                                <img src="@Model.SubCategoryimage" alt="@Model.Name" onerror="this.style.display='none';" />
+                                <div>
+                                    <div class="current-image-label">Current Image</div>
+                                    <div class="current-image-text">Upload a new image below to replace it</div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="image-drop-zone" id="subImageDropZone">
+                            <input type="file" name="SubCategoryImageFile" id="subImageInput" accept=".jpg,.jpeg,.png,.webp" />
+                            <div class="drop-icon"><i class="fa-regular fa-cloud-arrow-up"></i></div>
+                            <div class="drop-text">Click or drag a new image here</div>
+                            <div class="drop-subtext">Leave empty to keep the current image · JPG, PNG, WEBP (max 2MB)</div>
+                        </div>
+
+                        <div class="invalid-feedback" id="subImageInvalid" style="display:none;">
+                            <i class="fa-regular fa-circle-exclamation"></i> <span id="subImageInvalidText">Please select a valid image.</span>
+                        </div>
+                        <span asp-validation-for="SubCategoryimage" class="text-danger small"></span>
+
+                        <div class="image-preview-wrapper" id="subImagePreviewWrapper">
+                            <div class="image-preview-box">
+                                <img id="subImagePreviewImg" src="" alt="Preview">
+                                <div class="image-preview-remove" id="subImageRemoveBtn" title="Remove image">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </div>
+                            </div>
+                            <div class="image-preview-filename">
+                                <i class="fa-regular fa-file-image text-green-accent"></i>
+                                <span id="subImageFileName"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+                        <button class="btn btn-green px-5 py-3" type="submit" id="subSubmitBtn">
+                            <i class="fa fa-check me-2"></i> <span id="subSubmitText">Update Subcategory</span>
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-green px-5 py-3">
+                            <i class="fa fa-arrow-left me-2"></i> Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<script>
+    (function () {
+        'use strict';
+
+        const subNameInput = document.getElementById('subNameInput');
+        const subNameInvalid = document.getElementById('subNameInvalid');
+        const subNameInvalidText = document.getElementById('subNameInvalidText');
+        const subNameValid = document.getElementById('subNameValid');
+        const subForm = document.getElementById('subEditForm');
+        const subSubmitBtn = document.getElementById('subSubmitBtn');
+
+        const subImageDropZone = document.getElementById('subImageDropZone');
+        const subImageInput = document.getElementById('subImageInput');
+        const subImageInvalid = document.getElementById('subImageInvalid');
+        const subImageInvalidText = document.getElementById('subImageInvalidText');
+        const subImagePreviewWrapper = document.getElementById('subImagePreviewWrapper');
+        const subImagePreviewImg = document.getElementById('subImagePreviewImg');
+        const subImageFileName = document.getElementById('subImageFileName');
+        const subImageRemoveBtn = document.getElementById('subImageRemoveBtn');
+
+        const minLength = 3;
+        const maxLength = 50;
+        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        const maxImageSize = 2 * 1024 * 1024; // 2MB
+
+        // Initialize char state for pre-filled name
+        if (subNameInput.value && subNameInput.value.trim().length > 0) {
+            subNameInput.classList.add('is-valid');
+        }
+
+        function validateName(value) {
+            if (!value || value.trim().length === 0) {
+                return { valid: false, message: 'Subcategory name is required.' };
+            }
+            if (value.trim().length < minLength) {
+                return { valid: false, message: 'Must be at least ' + minLength + ' characters.' };
+            }
+            if (value.trim().length > maxLength) {
+                return { valid: false, message: 'Maximum ' + maxLength + ' characters allowed.' };
+            }
+            if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+                return { valid: false, message: 'Only letters and spaces are allowed.' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        // Image optional on edit — only validates if a new file is chosen
+        function validateImageFile(file) {
+            if (!file) {
+                return { valid: true, message: '' };
+            }
+            if (!allowedImageTypes.includes(file.type)) {
+                return { valid: false, message: 'Only JPG, PNG, or WEBP images are allowed.' };
+            }
+            if (file.size > maxImageSize) {
+                return { valid: false, message: 'Image size must not exceed 2MB.' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        subNameInput.addEventListener('input', function () {
+            const result = validateName(this.value);
+            if (!result.valid && this.value.length > 0) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameValid.style.display = 'none';
+                subNameInvalidText.textContent = result.message;
+            } else if (result.valid) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                subNameInvalid.style.display = 'none';
+                subNameValid.style.display = 'flex';
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+                subNameInvalid.style.display = 'none';
+                subNameValid.style.display = 'none';
+            }
+        });
+
+        subNameInput.addEventListener('blur', function () {
+            const result = validateName(this.value);
+            if (!result.valid) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameValid.style.display = 'none';
+                subNameInvalidText.textContent = result.message;
+            }
+        });
+
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                subImagePreviewImg.src = e.target.result;
+                subImagePreviewWrapper.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+            subImageFileName.textContent = file.name;
+        }
+
+        function clearImagePreview() {
+            subImagePreviewImg.src = '';
+            subImagePreviewWrapper.classList.remove('show');
+            subImageFileName.textContent = '';
+            subImageInput.value = '';
+            subImageDropZone.classList.remove('is-valid', 'is-invalid');
+        }
+
+        subImageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            const result = validateImageFile(file);
+
+            if (!file) {
+                subImageDropZone.classList.remove('is-valid', 'is-invalid');
+                subImageInvalid.style.display = 'none';
+                subImagePreviewWrapper.classList.remove('show');
+                return;
+            }
+
+            if (!result.valid) {
+                subImageDropZone.classList.add('is-invalid');
+                subImageDropZone.classList.remove('is-valid');
+                subImageInvalid.style.display = 'flex';
+                subImageInvalidText.textContent = result.message;
+                subImagePreviewWrapper.classList.remove('show');
+                return;
+            }
+
+            subImageDropZone.classList.remove('is-invalid');
+            subImageDropZone.classList.add('is-valid');
+            subImageInvalid.style.display = 'none';
+            showImagePreview(file);
+        });
+
+        subImageRemoveBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            clearImagePreview();
+        });
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            subImageDropZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                subImageDropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            subImageDropZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                subImageDropZone.classList.remove('dragover');
+            });
+        });
+
+        subImageDropZone.addEventListener('drop', function (e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const dt = new DataTransfer();
+                dt.items.add(files[0]);
+                subImageInput.files = dt.files;
+                subImageInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        subForm.addEventListener('submit', function (event) {
+            let isValid = true;
+
+            const nameResult = validateName(subNameInput.value);
+            if (!nameResult.valid) {
+                subNameInput.classList.add('is-invalid');
+                subNameInput.classList.remove('is-valid');
+                subNameInvalid.style.display = 'flex';
+                subNameInvalidText.textContent = nameResult.message;
+                isValid = false;
+            } else {
+                subNameInput.classList.remove('is-invalid');
+                subNameInput.classList.add('is-valid');
+                subNameInvalid.style.display = 'none';
+            }
+
+            const imageResult = validateImageFile(subImageInput.files[0]);
+            if (!imageResult.valid) {
+                subImageDropZone.classList.add('is-invalid');
+                subImageDropZone.classList.remove('is-valid');
+                subImageInvalid.style.display = 'flex';
+                subImageInvalidText.textContent = imageResult.message;
+                isValid = false;
+            } else if (subImageInput.files[0]) {
+                subImageDropZone.classList.remove('is-invalid');
+                subImageDropZone.classList.add('is-valid');
+                subImageInvalid.style.display = 'none';
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+
+            subSubmitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Updating...';
+            subSubmitBtn.disabled = true;
+        });
+    })();
+</script>

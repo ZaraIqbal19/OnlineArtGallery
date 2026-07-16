@@ -1,0 +1,816 @@
+@model Art_Gallery.Models.Product
+@{
+    ViewData["Title"] = "Product Details";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@* Font Awesome for icons *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    /* ----- RESET & BASE ----- */
+    .product-detail-card {
+        max-width: 1300px;
+        width: 100%;
+        background: #ffffff;
+        border-radius: 2rem;
+        padding: 0;
+        box-shadow: 0 30px 60px -15px rgba(111, 168, 0, 0.18), 0 10px 30px -8px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(136, 210, 0, 0.15);
+        margin: 6rem auto 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: fadeSlideUp 0.7s ease forwards;
+    }
+
+    @@keyframes fadeSlideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-slide-up {
+        opacity: 0;
+        animation: slideUp 0.6s ease forwards;
+    }
+
+    @@keyframes slideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-body-wrap {
+        padding: 2.4rem 2.8rem 2.8rem;
+    }
+
+    /* ----- TOP BAR ----- */
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.4rem 2.8rem;
+        background: linear-gradient(135deg, #6fa800 0%, #88d200 100%);
+    }
+
+        .top-bar .eyebrow {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin: 0 0 0.2rem;
+        }
+
+        .top-bar h1 {
+            color: #fff;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+
+        .top-bar .id-pill {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            padding: 0.4rem 1.1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+    /* ----- GALLERY + SUMMARY (hero split) ----- */
+    .hero-split {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 2.4rem;
+        margin-bottom: 2.4rem;
+    }
+
+    .main-image-frame {
+        position: relative;
+        border-radius: 1.2rem;
+        overflow: hidden;
+        background: #f0fae6;
+        border: 1px solid #e5f5cc;
+        aspect-ratio: 4 / 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .main-image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .main-image-frame .no-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            color: #8fae5c;
+            font-size: 0.85rem;
+        }
+
+            .main-image-frame .no-image i {
+                font-size: 2.2rem;
+                opacity: 0.6;
+            }
+
+    .thumb-strip {
+        display: flex;
+        gap: 0.7rem;
+        margin-top: 0.8rem;
+    }
+
+        .thumb-strip .thumb {
+            width: 68px;
+            height: 68px;
+            border-radius: 0.7rem;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: #f0fae6;
+            flex-shrink: 0;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+            .thumb-strip .thumb img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            .thumb-strip .thumb:hover {
+                border-color: #88d200;
+                transform: translateY(-2px);
+            }
+
+            .thumb-strip .thumb.active {
+                border-color: #6fa800;
+            }
+
+    /* ----- SUMMARY PANEL ----- */
+    .summary-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.1rem;
+    }
+
+    .price-line {
+        display: flex;
+        align-items: baseline;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+        .price-line .price {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #4a7000;
+            letter-spacing: -0.5px;
+        }
+
+        .price-line .price-tag {
+            font-size: 0.85rem;
+            color: #7a9a55;
+            font-weight: 500;
+        }
+
+    .chip-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: #f0fae6;
+        color: #4a7000;
+        border: 1px solid #d4f09b;
+    }
+
+        .chip i {
+            font-size: 0.75rem;
+        }
+
+        .chip.status-available {
+            background: #d4f09b;
+            color: #3d5a1a;
+        }
+
+        .chip.status-sold {
+            background: #fde2e2;
+            color: #b3261e;
+        }
+
+        .chip.status-pending {
+            background: #fef3c7;
+            color: #92600a;
+        }
+
+        .chip.bid-yes {
+            background: #eaf7ff;
+            color: #0b6e99;
+            border-color: #cdeeff;
+        }
+
+    .description-text {
+        color: #445;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        border-left: 3px solid #d4f09b;
+        padding-left: 1rem;
+    }
+
+    /* ----- SECTION HEADER ----- */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 1.3rem;
+    }
+
+        .section-header .bar {
+            width: 4px;
+            height: 22px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #88d200, #6fa800);
+        }
+
+        .section-header h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #26361c;
+            margin: 0;
+            flex: 1;
+        }
+
+        .section-header .count-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6fa800;
+            background: #f0fae6;
+            padding: 0.25rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid #e5f5cc;
+        }
+
+    /* ----- INFO SECTIONS ----- */
+    .info-section {
+        background: #fbfef7;
+        border-radius: 1.4rem;
+        padding: 1.6rem 1.8rem;
+        margin-bottom: 1.6rem;
+        border: 1px solid #eef7dc;
+    }
+
+    /* ----- FIELD GRID ----- */
+    .field-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .field-tile {
+        background: #ffffff;
+        border: 1px solid #eef2e5;
+        border-radius: 0.9rem;
+        padding: 0.85rem 1rem;
+        display: flex;
+        gap: 0.7rem;
+        align-items: flex-start;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+        .field-tile:hover {
+            border-color: #b7e065;
+            box-shadow: 0 6px 18px rgba(111, 168, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .field-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        border-radius: 8px;
+        background: #f0fae6;
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        margin-top: 0.1rem;
+    }
+
+    .field-body {
+        min-width: 0;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #8aa568;
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+    }
+
+    .field-value {
+        display: block;
+        font-size: 0.92rem;
+        color: #26361c;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+        .field-value.currency {
+            color: #4a7000;
+            font-weight: 700;
+        }
+
+    /* ----- IMAGE GALLERY GRID ----- */
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .image-card {
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid #eef7dc;
+        background: #f0fae6;
+    }
+
+        .image-card .tag {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(74, 112, 0, 0.9);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            z-index: 2;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-card .broken-fallback {
+            display: none;
+            height: 190px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            color: #b3261e;
+            background: #fdf3f3;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+            .image-card .broken-fallback i {
+                font-size: 1.6rem;
+                opacity: 0.7;
+            }
+
+            .image-card .broken-fallback code {
+                font-size: 0.68rem;
+                background: rgba(0,0,0,0.05);
+                padding: 0.1rem 0.4rem;
+                border-radius: 4px;
+                word-break: break-all;
+            }
+
+    .empty-state {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 2rem;
+        color: #6fa800;
+        background: #f9fdf3;
+        border-radius: 1rem;
+        border: 1px dashed #d4f09b;
+    }
+
+    /* ----- BACK BUTTON / FOOTER ----- */
+    .back-section {
+        margin-top: 0.6rem;
+        text-align: right;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.65rem 1.8rem;
+        background: #f0fae6;
+        color: #3d5a1a;
+        border: 1px solid #d4f09b;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+        .btn-back:hover {
+            background: #6fa800;
+            color: #fff;
+            border-color: #6fa800;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(111, 168, 0, 0.28);
+        }
+
+    .footer-note {
+        margin-top: 1.6rem;
+        padding-top: 1.2rem;
+        font-size: 0.78rem;
+        color: #9fb385;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #eef7dc;
+    }
+
+    .footer-badge {
+        background: #d4f09b;
+        color: #3d5a1a;
+        padding: 0.25rem 1rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    /* ----- RESPONSIVE ----- */
+    @@media (max-width: 900px) {
+        .hero-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .card-body-wrap {
+            padding: 1.6rem 1.4rem 2rem;
+        }
+
+        .top-bar {
+            padding: 1.1rem 1.4rem;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+            .top-bar h1 {
+                font-size: 1.25rem;
+            }
+
+        .price-line .price {
+            font-size: 1.7rem;
+        }
+
+        .field-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .footer-note {
+            flex-direction: column;
+            gap: 0.6rem;
+            text-align: center;
+        }
+
+        .back-section {
+            text-align: center;
+        }
+    }
+
+    @@media (max-width: 420px) {
+        .field-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@{
+    string statusText = "N/A";
+    if (Model.Status != null) { statusText = Model.Status.ToString(); }
+    string statusClass = "status-" + statusText.ToLower();
+
+    var isBiddable = Model.AvailableForBid == "Yes";
+    string biddableText = isBiddable ? "Yes" : "No";
+
+    string subCategoryText = "N/A";
+    if (Model.SubCategory != null) { subCategoryText = Model.SubCategory.Name; }
+
+    string bidPriceText = Model.BidPrice.ToString("N0");
+    string bidStartText = Model.BidStartDate.ToString("dd MMM yyyy");
+    string bidEndText = Model.BidEndDate.ToString("dd MMM yyyy");
+
+    string ownerName = "N/A";
+    string ownerEmail = "N/A";
+    string ownerGender = "N/A";
+    string ownerAge = "N/A";
+    string ownerAddress = "N/A";
+    if (Model.User != null)
+    {
+        ownerName = string.IsNullOrEmpty(Model.User.UserName) ? "N/A" : Model.User.UserName;
+        ownerEmail = string.IsNullOrEmpty(Model.User.Email) ? "N/A" : Model.User.Email;
+        ownerGender = string.IsNullOrEmpty(Model.User.gender) ? "N/A" : Model.User.gender;
+        ownerAge = Model.User.age.ToString();
+        ownerAddress = string.IsNullOrEmpty(Model.User.address) ? "N/A" : Model.User.address;
+    }
+
+    Func<string, string> resolveImage = (raw) =>
+    {
+        if (string.IsNullOrEmpty(raw)) return null;
+        if (raw.StartsWith("http://") || raw.StartsWith("https://") || raw.StartsWith("/"))
+        {
+            return raw;
+        }
+        if (raw.Contains("/"))
+        {
+            return Url.Content("~/" + raw.TrimStart('~', '/'));
+        }
+        return Url.Content("~/images/products/" + raw);
+    };
+
+    var rawImages = new List<string>();
+    if (!string.IsNullOrEmpty(Model.Image1)) { rawImages.Add(Model.Image1); }
+    if (!string.IsNullOrEmpty(Model.Image2)) { rawImages.Add(Model.Image2); }
+    if (!string.IsNullOrEmpty(Model.Image3)) { rawImages.Add(Model.Image3); }
+
+    var resolvedImages = new List<string>();
+    foreach (var raw in rawImages) { resolvedImages.Add(resolveImage(raw)); }
+
+    string imageCountLabel = rawImages.Count.ToString() + (rawImages.Count == 1 ? " image" : " images");
+    string mainImageUrl = resolvedImages.Count > 0 ? resolvedImages[0] : null;
+}
+
+<div class="product-detail-card">
+
+    <!-- ====== TOP BAR ====== -->
+    <div class="top-bar">
+        <div>
+            <p class="eyebrow">Product Details · @subCategoryText</p>
+            <h1>@Model.Name</h1>
+        </div>
+        <span class="id-pill">#@Model.Id</span>
+    </div>
+
+    <div class="card-body-wrap">
+
+        <!-- ====== GALLERY + SUMMARY ====== -->
+        <div class="hero-split animate-slide-up">
+            <div>
+                <div class="main-image-frame">
+                    @if (mainImageUrl != null)
+                    {
+                        <img id="mainProductImage" src="@mainImageUrl" alt="@Model.Name"
+                             onerror="this.closest('.main-image-frame').innerHTML='<div class=\'no-image\'><i class=\'fas fa-image\'></i><span>Image failed to load</span></div>';" />
+                    }
+                    else
+                    {
+                        <div class="no-image">
+                            <i class="fas fa-image"></i>
+                            <span>No images available</span>
+                        </div>
+                    }
+                </div>
+                @if (resolvedImages.Count > 1)
+                {
+                    <div class="thumb-strip">
+                        @for (int i = 0; i < resolvedImages.Count; i++)
+                        {
+                            <div class="thumb @(i == 0 ? "active" : "")" onclick="document.getElementById('mainProductImage').src = this.querySelector('img').src;">
+                                <img src="@resolvedImages[i]" alt="Thumbnail @(i + 1)" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="summary-panel">
+                <div class="price-line">
+                    <span class="price">Rs @Model.price.ToString("N0")</span>
+                    <span class="price-tag">per item · Qty @Model.quantity</span>
+                </div>
+
+                <div class="chip-row">
+                    <span class="chip @statusClass"><i class="fas fa-circle"></i> @statusText</span>
+                    <span class="chip @(isBiddable ? "bid-yes" : "")"><i class="fas fa-gavel"></i> Bidding: @biddableText</span>
+                    @if (isBiddable)
+                    {
+                        <span class="chip"><i class="fas fa-hand-holding-usd"></i> Bid Rs @bidPriceText</span>
+                    }
+                </div>
+
+                <p class="description-text">@Model.Description</p>
+            </div>
+        </div>
+
+        <!-- ====== PRODUCT INFO SECTION ====== -->
+        <div class="info-section animate-slide-up">
+            <div class="section-header">
+                <span class="bar"></span>
+                <h3>Product Information</h3>
+            </div>
+
+            <div class="field-grid">
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-tag"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Sub Category</span>
+                        <span class="field-value">@subCategoryText</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Price</span>
+                        <span class="field-value currency">Rs @Model.price.ToString("N0")</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-cubes"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Quantity</span>
+                        <span class="field-value">@Model.quantity</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Status</span>
+                        <span class="field-value">@statusText</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (isBiddable)
+        {
+            <!-- ====== BID INFORMATION SECTION ====== -->
+            <div class="info-section animate-slide-up">
+                <div class="section-header">
+                    <span class="bar"></span>
+                    <h3>Bid Information</h3>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field-tile">
+                        <div class="field-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <div class="field-body">
+                            <span class="field-label">Bid Price</span>
+                            <span class="field-value currency">Rs @bidPriceText</span>
+                        </div>
+                    </div>
+                    <div class="field-tile">
+                        <div class="field-icon"><i class="fas fa-calendar-plus"></i></div>
+                        <div class="field-body">
+                            <span class="field-label">Bid Start Date</span>
+                            <span class="field-value">@bidStartText</span>
+                        </div>
+                    </div>
+                    <div class="field-tile">
+                        <div class="field-icon"><i class="fas fa-calendar-times"></i></div>
+                        <div class="field-body">
+                            <span class="field-label">Bid End Date</span>
+                            <span class="field-value">@bidEndText</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ====== IMAGES SECTION ====== -->
+        <div class="info-section animate-slide-up">
+            <div class="section-header">
+                <span class="bar"></span>
+                <h3>Product Images</h3>
+                <span class="count-tag">@imageCountLabel</span>
+            </div>
+
+            <div class="image-grid">
+                @for (int i = 0; i < rawImages.Count; i++)
+                {
+                    var raw = rawImages[i];
+                    var url = resolvedImages[i];
+                    <div class="image-card">
+                        <span class="tag">@(i + 1)</span>
+                        <img src="@url" alt="Product Image @(i + 1)"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="broken-fallback">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <span>Couldn't load this file</span>
+                            <code>@raw</code>
+                        </div>
+                    </div>
+                }
+                @if (rawImages.Count == 0)
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-image fa-2x" style="opacity:0.5; margin-bottom:0.5rem; display:block;"></i>
+                        No images available
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ====== ARTIST INFORMATION SECTION ====== -->
+        <div class="info-section animate-slide-up">
+            <div class="section-header">
+                <span class="bar"></span>
+                <h3>Artist Information</h3>
+            </div>
+
+            <div class="field-grid">
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-user"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Name</span>
+                        <span class="field-value">@ownerName</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Email</span>
+                        <span class="field-value">@ownerEmail</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-venus-mars"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Gender</span>
+                        <span class="field-value">@ownerGender</span>
+                    </div>
+                </div>
+                <div class="field-tile">
+                    <div class="field-icon"><i class="fas fa-birthday-cake"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Age</span>
+                        <span class="field-value">@ownerAge</span>
+                    </div>
+                </div>
+                <div class="field-tile" style="grid-column: 1 / -1;">
+                    <div class="field-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="field-body">
+                        <span class="field-label">Address</span>
+                        <span class="field-value">@ownerAddress</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== BACK BUTTON ====== -->
+        <div class="back-section">
+            <a asp-action="Allproducts" asp-controller="user" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Product
+            </a>
+        </div>
+
+        <!-- ====== FOOTER ====== -->
+        <div class="footer-note">
+            <span><i class="fas fa-palette"></i> Product Details</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Verified</span>
+        </div>
+
+    </div>
+</div>

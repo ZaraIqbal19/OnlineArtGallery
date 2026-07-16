@@ -6,6 +6,9 @@ namespace Art_Gallery.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public String SubCategoryimage { get; set; }
+
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
 

@@ -1,0 +1,1292 @@
+@model IEnumerable<Art_Gallery.Models.Payment_Details>
+@{
+    ViewData["Title"] = "Payment Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    /* ===== everything scoped under .payments-page ===== */
+    .payments-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .payments-page *,
+        .payments-page *::before,
+        .payments-page *::after {
+            box-sizing: border-box;
+        }
+
+        .payments-page .container-cust {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .payments-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .payments-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        .payments-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .payments-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .payments-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .payments-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .payments-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+            .payments-page .heading-green span {
+                background: #88d200;
+                color: white;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 0.2rem 1rem;
+                border-radius: 60px;
+                letter-spacing: 0.3px;
+            }
+
+        .payments-page .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .payments-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .payments-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        /* ----- stat cards ----- */
+        .payments-page .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 1.4rem;
+        }
+
+        .payments-page .stat-card {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.25s;
+        }
+
+            .payments-page .stat-card:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
+            }
+
+        .payments-page .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #88d200;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+        }
+
+        .payments-page .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1a1a1a;
+            line-height: 1.1;
+        }
+
+        .payments-page .stat-label {
+            font-size: 0.76rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* ----- toolbar / search ----- */
+        .payments-page .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .payments-page .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            border-radius: 60px;
+            padding: 9px 20px;
+            flex: 1;
+            max-width: 340px;
+            transition: all 0.2s;
+        }
+
+            .payments-page .search-box:focus-within {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
+            }
+
+            .payments-page .search-box i {
+                color: #6fa800;
+            }
+
+            .payments-page .search-box input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 0.88rem;
+                width: 100%;
+                color: #1a1a1a;
+            }
+
+        .payments-page .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .payments-page .result-count {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .payments-page .scroll-hint {
+            font-size: 0.78rem;
+            color: #6fa800;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* ----- table ----- */
+        .payments-page .table-responsive-cust {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+            scrollbar-color: #88d200 #eef6de;
+        }
+
+            .payments-page .table-responsive-cust::-webkit-scrollbar {
+                height: 10px;
+            }
+
+            .payments-page .table-responsive-cust::-webkit-scrollbar-track {
+                background: #eef6de;
+                border-radius: 20px;
+            }
+
+            .payments-page .table-responsive-cust::-webkit-scrollbar-thumb {
+                background: linear-gradient(90deg, #88d200, #6fa800);
+                border-radius: 20px;
+                border: 2px solid #eef6de;
+            }
+
+                .payments-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
+                    background: #6fa800;
+                }
+
+        .payments-page .table-green-white {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+            min-width: 800px;
+            margin-bottom: 0;
+        }
+
+            .payments-page .table-green-white thead th {
+                background: #88d200;
+                color: white;
+                font-weight: 600;
+                font-size: 0.76rem;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                padding: 15px 18px;
+                border: none;
+                transition: background 0.2s;
+            }
+
+                .payments-page .table-green-white thead th:first-child {
+                    border-radius: 20px 0 0 20px;
+                    padding-left: 26px;
+                }
+
+                .payments-page .table-green-white thead th:last-child {
+                    border-radius: 0 20px 20px 0;
+                    padding-right: 26px;
+                }
+
+                .payments-page .table-green-white thead th:hover {
+                    background: #6fa800;
+                }
+
+                .payments-page .table-green-white thead th i.fa-fw-lead {
+                    margin-right: 6px;
+                    opacity: 0.9;
+                }
+
+                .payments-page .table-green-white thead th.sortable {
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                    .payments-page .table-green-white thead th.sortable .sort-icon {
+                        margin-left: 6px;
+                        font-size: 0.63rem;
+                        opacity: 0.6;
+                        transition: opacity 0.2s, transform 0.2s;
+                    }
+
+                    .payments-page .table-green-white thead th.sortable:hover .sort-icon {
+                        opacity: 1;
+                    }
+
+                .payments-page .table-green-white thead th.sort-asc .sort-icon,
+                .payments-page .table-green-white thead th.sort-desc .sort-icon {
+                    opacity: 1;
+                }
+
+                .payments-page .table-green-white thead th.sort-desc .sort-icon {
+                    transform: rotate(180deg);
+                }
+
+        .payments-page .empty-state-row td {
+            text-align: center;
+            padding: 40px 20px !important;
+            color: #8a9a6e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 20px !important;
+        }
+
+        .payments-page .empty-state-row i {
+            display: block;
+            font-size: 2rem;
+            color: #d4f09b;
+            margin-bottom: 10px;
+        }
+
+        .payments-page .table-green-white tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid rgba(136, 210, 0, 0.06);
+            opacity: 0;
+            animation: fadeSlideCust 0.45s forwards;
+            animation-delay: calc(0.05s * var(--i, 1));
+        }
+
+    @@keyframes fadeSlideCust {
+        0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .payments-page .table-green-white tbody tr:hover {
+        background: #fbffef;
+        border-color: #d4f09b;
+        transform: scale(1.006) translateY(-2px);
+        box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
+    }
+
+    .payments-page .table-green-white tbody td {
+        padding: 16px 18px;
+        vertical-align: middle;
+        border: none;
+        background: transparent;
+        font-size: 0.92rem;
+    }
+
+        .payments-page .table-green-white tbody td:first-child {
+            padding-left: 26px;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .payments-page .table-green-white tbody td:last-child {
+            padding-right: 26px;
+            border-radius: 0 18px 18px 0;
+        }
+
+        .payments-page .table-green-white thead th:first-child,
+        .payments-page .table-green-white tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #88d200;
+        }
+
+        .payments-page .table-green-white tbody td:first-child {
+            background: white;
+            box-shadow: 4px 0 8px -4px rgba(111, 168, 0, 0.15);
+        }
+
+    .payments-page .table-green-white tbody tr:hover td:first-child {
+        background: #fbffef;
+    }
+
+    .payments-page .card-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .payments-page .card-icon-wrap {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+        transition: transform 0.2s;
+    }
+
+    .payments-page .table-green-white tbody tr:hover .card-icon-wrap {
+        transform: scale(1.08);
+    }
+
+    .payments-page .card-number-masked {
+        font-weight: 700;
+        color: #1a1a1a;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .payments-page .table-green-white tbody tr:hover .card-number-masked {
+        color: #6fa800;
+    }
+
+    .payments-page .toggle-card-btn {
+        border: none;
+        background: transparent;
+        color: #9fbf6a;
+        cursor: pointer;
+        font-size: 0.78rem;
+        padding: 2px 4px;
+        transition: color 0.2s, transform 0.2s;
+    }
+
+        .payments-page .toggle-card-btn:hover {
+            color: #6fa800;
+            transform: scale(1.15);
+        }
+
+    .payments-page .info-pill {
+        background: #f0fae6;
+        color: #4c7800;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+
+    .payments-page .table-green-white tbody tr:hover .info-pill {
+        background: #d4f09b;
+    }
+
+    .payments-page .cvv-pill {
+        background: #eaf7d6;
+        color: #4c7800;
+        font-weight: 700;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s;
+        font-family: monospace;
+    }
+
+    .payments-page .expiry-badge {
+        background: #eaf7d6;
+        color: #4c7800;
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.76rem;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        transition: all 0.25s;
+    }
+
+        .payments-page .expiry-badge.expired {
+            background: #fff0f0;
+            color: #a51b1b;
+        }
+
+    .payments-page .table-green-white tbody tr:hover .expiry-badge:not(.expired) {
+        background: #88d200;
+        color: white;
+        transform: scale(1.06);
+        box-shadow: 0 8px 18px rgba(136, 210, 0, 0.28);
+    }
+
+    .payments-page .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .payments-page .user-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: white;
+        font-weight: 700;
+        font-size: 0.72rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+    }
+
+    /* action buttons */
+    .payments-page .actions-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .payments-page .btn-action {
+        border-radius: 60px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        letter-spacing: 0.25px;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .payments-page .btn-delete {
+        background: transparent;
+        color: #a51b1b;
+        border: 1.5px solid #f0c8c8;
+    }
+
+        .payments-page .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
+        }
+
+    /* footer */
+    .payments-page .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.84rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .payments-page .table-footer i {
+            color: #88d200;
+            margin: 0 4px;
+        }
+
+        .payments-page .table-footer .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+            .payments-page .table-footer .pill:hover {
+                background: #88d200;
+                color: white;
+            }
+
+    /* ===== DELETE MODAL ===== */
+    .payments-page .delete-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInOverlayCust 0.3s ease;
+    }
+
+    @@keyframes fadeInOverlayCust {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .payments-page .delete-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 440px;
+        width: 90%;
+        position: relative;
+        animation: modalSlideUpCust 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    @@keyframes modalSlideUpCust {
+        from {
+            transform: scale(0.8) translateY(40px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .payments-page .delete-modal .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: #dc3545;
+        animation: pulseIconCust 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulseIconCust {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .payments-page .delete-modal h3 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .payments-page .delete-modal p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .payments-page .delete-modal .user-name-highlight {
+        color: #dc3545;
+        font-weight: 700;
+        background: #fff5f5;
+        padding: 2px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .payments-page .delete-modal .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .payments-page .delete-modal .btn-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        flex: 1;
+    }
+
+        .payments-page .delete-modal .btn-cancel:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+    .payments-page .delete-modal .btn-confirm-delete {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        cursor: pointer;
+        flex: 1;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .payments-page .delete-modal .btn-confirm-delete:hover {
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+        }
+
+    /* ===== SUCCESS TOAST ===== */
+    .payments-page .toast-container-custom {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        min-width: 320px;
+        max-width: 450px;
+        pointer-events: none;
+    }
+
+    .payments-page .toast-success {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-left: 8px solid #88d200;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
+        padding: 20px 28px;
+        color: #1a1a2e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 1;
+        pointer-events: none;
+        animation: slideInRightCust 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInRightCust {
+        from {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .payments-page .toast-success i {
+        font-size: 2rem;
+        color: #88d200;
+        background: linear-gradient(135deg, #f0fae6, #d4f09b);
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
+        animation: checkBounceCust 0.6s ease;
+    }
+
+    @@keyframes checkBounceCust {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .payments-page .toast-success .toast-content {
+        flex: 1;
+    }
+
+    .payments-page .toast-success .toast-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 1rem;
+    }
+
+    .payments-page .toast-success .toast-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .payments-page .toast-success.hide {
+        animation: slideOutRightCust 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes slideOutRightCust {
+        from {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    .payments-page .fade-out {
+        animation: fadeOutCust 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes fadeOutCust {
+        0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+    }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .payments-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .payments-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .payments-page .brand-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .payments-page .table-green-white thead th,
+        .payments-page .table-green-white tbody td {
+            padding: 12px 10px;
+            font-size: 0.84rem;
+        }
+
+        .payments-page .btn-action {
+            padding: 6px 12px;
+            font-size: 0.7rem;
+        }
+
+        .payments-page .actions-wrap {
+            gap: 4px;
+        }
+
+        .payments-page .table-green-white tbody td:first-child {
+            padding-left: 14px;
+        }
+
+        .payments-page .table-green-white tbody td:last-child {
+            padding-right: 14px;
+        }
+
+        .payments-page .toast-container-custom {
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            min-width: unset;
+            max-width: unset;
+        }
+
+        .payments-page .delete-modal {
+            padding: 2rem 1.5rem;
+        }
+
+            .payments-page .delete-modal .modal-actions {
+                flex-direction: column;
+            }
+
+        .payments-page .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .payments-page .toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .payments-page .search-box {
+            max-width: unset;
+        }
+
+        .payments-page .toolbar-right {
+            justify-content: space-between;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .payments-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+
+        .payments-page .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+</style>
+
+<div class="payments-page">
+    <div class="container-cust">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h1 class="heading-green">
+                        Payment Details
+                        <span>@Model.Count()</span>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge">
+                        <i class="fas fa-shield-alt"></i> secured
+                    </div>
+                </div>
+            </div>
+
+            <!-- stat cards -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-credit-card"></i></div>
+                    <div>
+                        <div class="stat-value">@Model.Count()</div>
+                        <div class="stat-label">Total Cards on File</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="stat-value">@Model.Where(m => m.User != null).Select(m => m.UserId).Distinct().Count()</div>
+                        <div class="stat-label">Unique Customers</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        @{
+                            var today = DateOnly.FromDateTime(DateTime.Now);
+                            int expiredCount = Model.Count(m => m.DateofExpiry < today);
+                        }
+                        <div class="stat-value">@expiredCount</div>
+                        <div class="stat-label">Expired Cards</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- search / toolbar -->
+            <div class="toolbar-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="paymentSearch" placeholder="Search by card title or customer..." onkeyup="filterPayments()" />
+                </div>
+                <div class="toolbar-right">
+                    <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                    <span class="scroll-hint">
+                        <i class="fas fa-arrows-left-right"></i> scroll table for more
+                    </span>
+                </div>
+            </div>
+
+            <!-- table -->
+            <div class="table-responsive-cust">
+                <table class="table table-green-white">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable(0, this)"><i class="fas fa-credit-card fa-fw-lead"></i> @Html.DisplayNameFor(model => model.CardNumber) <i class="fas fa-sort sort-icon"></i></th>
+                            <th class="sortable" onclick="sortTable(1, this)"><i class="fas fa-tag fa-fw-lead"></i> @Html.DisplayNameFor(model => model.CardTitle) <i class="fas fa-sort sort-icon"></i></th>
+                            <th><i class="fas fa-lock fa-fw-lead"></i> @Html.DisplayNameFor(model => model.CVVCode)</th>
+                            <th class="sortable" onclick="sortTable(3, this)"><i class="fas fa-calendar-alt fa-fw-lead"></i> @Html.DisplayNameFor(model => model.DateofExpiry) <i class="fas fa-sort sort-icon"></i></th>
+                            <th><i class="fas fa-user fa-fw-lead"></i> @Html.DisplayNameFor(model => model.User)</th>
+                            <th style="text-align: right; padding-right: 26px;"><i class="fas fa-bolt fa-fw-lead"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int rowIndex = 0;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            rowIndex++;
+                            string fullCard = item.CardNumber.ToString();
+                            string last4 = fullCard.Length >= 4 ? fullCard.Substring(fullCard.Length - 4) : fullCard;
+                            string masked = fullCard.Length > 4 ? new string('•', fullCard.Length - 4) + last4 : fullCard;
+                            bool expired = item.DateofExpiry < today;
+                            <tr style="--i: @rowIndex;" data-payment-id="@item.Id" data-card-title="@item.CardTitle" data-user-name="@(item.User != null ? item.User.UserName : "")">
+                                <td>
+                                    <div class="card-cell">
+                                        <div class="card-icon-wrap"><i class="fas fa-credit-card"></i></div>
+                                        <span class="card-number-masked" data-full="@fullCard" data-masked="@masked">@masked</span>
+                                        <button type="button" class="toggle-card-btn" title="Show/hide full number" onclick="toggleCardNumber(this)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td><span class="info-pill">@Html.DisplayFor(modelItem => item.CardTitle)</span></td>
+                                <td>
+                                    <span class="cvv-pill">
+                                        <i class="fas fa-lock"></i> •••
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="expiry-badge @(expired ? "expired" : "")">
+                                        <i class="fas fa-calendar-alt"></i> @item.DateofExpiry.ToString("MM/yy")
+                                        @if (expired)
+                                        {
+                                            <text>(Expired)</text>
+                                        }
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar">@(item.User != null && !string.IsNullOrEmpty(item.User.UserName) ? item.User.UserName.Substring(0, 1).ToUpper() : "?")</div>
+                                        <span>@Html.DisplayFor(modelItem => item.User.UserName)</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div class="actions-wrap">
+                                        <button type="button" class="btn btn-action btn-delete"
+                                                onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.CardTitle))')">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        <tr class="empty-state-row" id="noResultsRow" style="display: none;">
+                            <td colspan="6">
+                                <i class="fas fa-credit-card"></i>
+                                No matching payment records found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- footer -->
+            <div class="table-footer">
+                <span>
+                    <i class="fas fa-arrow-right"></i> hover rows · click headers to sort · green theme
+                </span>
+                <span class="pill">
+                    <i class="fas fa-credit-card"></i> @Model.Count() cards on file
+                </span>
+            </div>
+
+        </div> <!-- end admin-card -->
+    </div> <!-- end container-cust -->
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div id="deleteModal" class="delete-modal-overlay">
+        <div class="delete-modal">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete Payment Card?</h3>
+            <p>
+                Are you sure you want to delete
+                <span class="user-name-highlight" id="modalCardName">"Card Title"</span>?
+                <br>
+                <small style="color: #dc3545; font-weight: 500;">
+                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
+                </small>
+            </p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn-confirm-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS TOAST ===== -->
+    <div id="successToast" class="toast-container-custom">
+        <div id="toastMessage" class="toast-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="toast-content">
+                <div class="toast-title">Deleting...</div>
+                <div class="toast-message" id="toastText">Redirecting to delete confirmation</div>
+            </div>
+        </div>
+    </div>
+</div> <!-- end payments-page -->
+
+<script>
+    let deletePaymentId = null;
+
+    // Live search filter across card title + user columns
+    function filterPayments() {
+        const query = document.getElementById('paymentSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.payments-page .table-green-white tbody tr:not(#noResultsRow)');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const title = (row.getAttribute('data-card-title') || '').toLowerCase();
+            const user = (row.getAttribute('data-user-name') || '').toLowerCase();
+            const matches = title.includes(query) || user.includes(query);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
+
+        const totalRows = rows.length;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
+    }
+
+    // Click-to-sort table columns
+    let sortDirections = {};
+    function sortTable(colIndex, headerEl) {
+        const table = headerEl.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
+
+        const asc = !sortDirections[colIndex];
+        sortDirections = {};
+        sortDirections[colIndex] = asc;
+
+        table.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+        headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+        rows.sort((a, b) => {
+            const cellA = a.children[colIndex].textContent.trim().toLowerCase();
+            const cellB = b.children[colIndex].textContent.trim().toLowerCase();
+            const numA = parseFloat(cellA), numB = parseFloat(cellB);
+            const bothNumeric = !isNaN(numA) && !isNaN(numB);
+            const cmp = bothNumeric ? (numA - numB) : cellA.localeCompare(cellB);
+            return asc ? cmp : -cmp;
+        });
+
+        rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
+    }
+
+    // Toggle masked / full card number
+    function toggleCardNumber(btn) {
+        const span = btn.previousElementSibling;
+        const icon = btn.querySelector('i');
+        const showing = span.dataset.showing === 'true';
+
+        if (showing) {
+            span.textContent = span.dataset.masked;
+            span.dataset.showing = 'false';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        } else {
+            span.textContent = span.dataset.full;
+            span.dataset.showing = 'true';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    }
+
+    function openDeleteModal(paymentId, cardTitle) {
+        deletePaymentId = paymentId;
+        document.getElementById('modalCardName').textContent = `"${cardTitle}"`;
+
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+
+        const modalContent = modal.querySelector('.delete-modal');
+        modalContent.style.animation = 'none';
+        setTimeout(() => {
+            modalContent.style.animation = 'modalSlideUpCust 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deletePaymentId = null;
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (deletePaymentId) {
+            const idToDelete = deletePaymentId; // capture before closeDeleteModal() clears it
+            const row = document.querySelector(`tr[data-payment-id="${idToDelete}"]`);
+            closeDeleteModal();
+            showSuccessToast('Deleted!', 'The payment card was removed successfully.');
+
+            if (row) {
+                row.classList.add('fade-out');
+            }
+
+            setTimeout(() => {
+                window.location.href = '@Url.Action("Deletepaymentdetailslogic", "Admin")/' + idToDelete;
+            }, 900);
+        }
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    function showSuccessToast(title, message) {
+        const toast = document.getElementById('toastMessage');
+        const textSpan = document.getElementById('toastText');
+        const titleEl = toast.querySelector('.toast-title');
+
+        if (titleEl) titleEl.innerText = title;
+        if (textSpan) textSpan.innerText = message;
+
+        toast.classList.remove('hide');
+        toast.style.display = 'flex';
+
+        toast.style.animation = 'none';
+        setTimeout(() => {
+            toast.style.animation = 'slideInRightCust 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+
+        clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => { toast.style.display = 'none'; }, 500);
+        }, 4000);
+    }
+</script>

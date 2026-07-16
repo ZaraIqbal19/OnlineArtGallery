@@ -1,125 +1,1794 @@
+@using System.Reflection
 @model IEnumerable<Art_Gallery.Models.Product>
 
 @{
     ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+    int i = 0;
+    const int LOW_STOCK_THRESHOLD = 5;
+
+    // Distinct categories for the filter chips
+    var categories = Model
+        .Where(p => p.SubCategory != null)
+        .Select(p => p.SubCategory.Name)
+        .Distinct()
+        .OrderBy(n => n)
+        .ToList();
+
+    bool hasProducts = Model != null && Model.Any();
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Image1)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Image2)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Image3)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SubCategoryId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SubCategory)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AvailableForBid)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BidStartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BidEndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BidPrice)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(model => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Image1)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Image2)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Image3)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.price)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.quantity)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.SubCategoryId)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.SubCategory)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.UserId)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.User)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.AvailableForBid)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.BidStartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.BidEndDate)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.BidPrice)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@functions {
+    // Safely reads an optional property that may or may not exist on the Product model
+    // (e.g. Image2, Image3, OriginalPrice, CreatedDate). Returns null if not present.
+    string SafeProp(object obj, string propName)
+    {
+        if (obj == null) return null;
+        var prop = obj.GetType().GetProperty(propName);
+        if (prop == null) return null;
+        var val = prop.GetValue(obj);
+        return val == null ? null : val.ToString();
+    }
 }
-    </tbody>
-</table>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --deep-green: #2c3a17;
+        --glow-green: rgba(136, 210, 0, 0.45);
+        --danger-red: #e0447c;
+        --amber: #d98c00;
+    }
+
+    .gallery-page {
+        padding-top: 100px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ---------------- HEADER ---------------- */
+    .gallery-header {
+        text-align: center;
+        margin-bottom: 26px;
+        opacity: 0;
+        animation: fadeDown 0.6s ease forwards;
+    }
+
+        .gallery-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 2.1rem;
+            color: var(--deep-green);
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+
+        .gallery-header p {
+            color: var(--dark-green);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .gallery-header .accent-line {
+            width: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--dark-green));
+            border-radius: 999px;
+            margin: 14px auto 0;
+            animation: growLine 0.7s ease 0.4s forwards;
+        }
+
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes growLine {
+        to {
+            width: 64px;
+        }
+    }
+
+    @@keyframes cardIn {
+        from {
+            opacity: 0;
+            transform: translateY(26px) scale(0.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes pulseBid {
+        0%, 100% {
+            box-shadow: 0 0 0 0 var(--glow-green);
+        }
+
+        50% {
+            box-shadow: 0 0 0 7px rgba(136, 210, 0, 0);
+        }
+    }
+
+    @@keyframes heartPop {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.4) rotate(-6deg);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes shimmerSweep {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    @@keyframes floatBadge {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-2px);
+        }
+    }
+
+    @@keyframes ripple {
+        to {
+            transform: scale(3.2);
+            opacity: 0;
+        }
+    }
+
+    @@keyframes skeletonPulse {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    @@keyframes toastIn {
+        from {
+            opacity: 0;
+            transform: translateY(14px) scale(0.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes toastOut {
+        to {
+            opacity: 0;
+            transform: translateY(8px) scale(0.96);
+        }
+    }
+
+    @@keyframes popIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes badgeBounce {
+        0% {
+            transform: scale(0.6);
+        }
+
+        60% {
+            transform: scale(1.25);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes floatSlow {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+
+    /* ---------------- STICKY FILTER BAR ---------------- */
+    .filter-bar {
+        position: sticky;
+        top: 76px;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--light-green);
+        border-radius: 16px;
+        padding: 14px 18px;
+        margin-bottom: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 6px 20px rgba(111, 168, 0, 0.08);
+        opacity: 0;
+        animation: fadeDown 0.6s ease 0.15s forwards;
+    }
+
+    .filter-search {
+        position: relative;
+        flex: 1 1 220px;
+        min-width: 180px;
+    }
+
+        .filter-search i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dark-green);
+            font-size: 0.9rem;
+        }
+
+        .filter-search input {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            border-radius: 999px;
+            border: 1px solid var(--light-green);
+            outline: none;
+            font-size: 0.87rem;
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .filter-search input:focus {
+                border-color: var(--primary-green);
+                box-shadow: 0 0 0 3px rgba(136, 210, 0, 0.18);
+            }
+
+    .filter-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        border: 1px solid var(--light-green);
+        background: #fff;
+        color: var(--dark-green);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.22s ease;
+        white-space: nowrap;
+    }
+
+        .chip:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(111, 168, 0, 0.18);
+        }
+
+        .chip.active {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            border-color: transparent;
+        }
+
+    .filter-toggle-group {
+        display: flex;
+        background: var(--ultra-light-green);
+        border-radius: 999px;
+        padding: 3px;
+        gap: 2px;
+    }
+
+        .filter-toggle-group .chip {
+            border: none;
+            background: transparent;
+        }
+
+            .filter-toggle-group .chip.active {
+                box-shadow: 0 3px 8px rgba(111, 168, 0, 0.25);
+            }
+
+    .filter-sort select {
+        border: 1px solid var(--light-green);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.82rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--deep-green);
+        background: #fff;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+
+        .filter-sort select:hover {
+            border-color: var(--primary-green);
+        }
+
+    .view-toggle {
+        display: flex;
+        gap: 4px;
+        background: var(--ultra-light-green);
+        border-radius: 10px;
+        padding: 3px;
+    }
+
+        .view-toggle button {
+            border: none;
+            background: transparent;
+            width: 32px;
+            height: 32px;
+            border-radius: 7px;
+            color: var(--dark-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .view-toggle button.active {
+                background: #fff;
+                box-shadow: 0 2px 6px rgba(111, 168, 0, 0.25);
+                color: var(--primary-green);
+            }
+
+    .filter-empty-msg {
+        display: none;
+        text-align: center;
+        padding: 50px 20px;
+        color: #74806a;
+        font-size: 0.95rem;
+        animation: fadeIn 0.4s ease;
+    }
+
+    /* ---------------- GRID ---------------- */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 28px;
+        padding: 4px 4px 40px;
+        transition: opacity 0.2s ease;
+    }
+
+        .product-grid.masonry-view {
+            display: block;
+            column-count: 4;
+            column-gap: 28px;
+        }
+
+            .product-grid.masonry-view .product-card {
+                break-inside: avoid;
+                margin-bottom: 28px;
+                width: 100%;
+            }
+
+    @@media (max-width: 1200px) {
+        .product-grid.masonry-view {
+            column-count: 3;
+        }
+    }
+
+    @@media (max-width: 860px) {
+        .product-grid.masonry-view {
+            column-count: 2;
+        }
+    }
+
+    @@media (max-width: 560px) {
+        .product-grid.masonry-view {
+            column-count: 1;
+        }
+    }
+
+    /* ---------------- CARD ---------------- */
+    .product-card {
+        position: relative;
+        background: #fff;
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 10px rgba(111, 168, 0, 0.08);
+        opacity: 0;
+        animation: cardIn 0.6s cubic-bezier(.2,.7,.3,1) forwards;
+        animation-delay: calc(var(--card-index) * 70ms);
+        transition: transform 0.35s cubic-bezier(.2,.8,.25,1.15), box-shadow 0.35s ease;
+        will-change: transform;
+        isolation: isolate;
+    }
+
+        .product-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 1.5px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--light-green), transparent 30%, transparent 70%, var(--primary-green));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 22px 40px -10px rgba(111, 168, 0, 0.32), 0 4px 14px rgba(111, 168, 0, 0.14);
+        }
+
+            .product-card:hover::before {
+                opacity: 1;
+            }
+
+        .product-card.fading-out {
+            opacity: 0 !important;
+            transform: scale(0.94) !important;
+            pointer-events: none;
+        }
+
+    .product-card__media {
+        position: relative;
+        background: var(--ultra-light-green);
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+    }
+
+        /* skeleton shimmer shown until image loads */
+        .product-card__media.loading::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: linear-gradient(100deg, var(--ultra-light-green) 30%, #ffffff 50%, var(--ultra-light-green) 70%);
+            background-size: 200% 100%;
+            animation: skeletonPulse 1.3s ease-in-out infinite;
+        }
+
+        .product-card__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: transform 0.55s cubic-bezier(.2,.8,.2,1), filter 0.4s ease, opacity 0.35s ease;
+        }
+
+            .product-card__media img.gallery-img {
+                position: absolute;
+                inset: 0;
+            }
+
+            .product-card__media img.loaded {
+                opacity: 1;
+            }
+
+    .product-card:hover .product-card__media img.active-img {
+        transform: scale(1.12) rotate(0.4deg);
+        filter: brightness(1.03);
+    }
+
+    .product-card__media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(20,30,5,0.35) 100%);
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        z-index: 1;
+    }
+
+    .product-card:hover .product-card__media::after {
+        opacity: 1;
+    }
+
+    .product-card__shine {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+        background-size: 220% 100%;
+        background-position: -200% 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .product-card:hover .product-card__shine {
+        opacity: 1;
+        animation: shimmerSweep 1s ease forwards;
+    }
+
+    /* image gallery dots */
+    .gallery-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+        z-index: 4;
+    }
+
+        .gallery-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.65);
+            transition: all 0.25s ease;
+        }
+
+            .gallery-dots span.active {
+                background: #fff;
+                width: 16px;
+                border-radius: 999px;
+            }
+
+    /* badges */
+    .product-card__badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 6px 12px;
+        border-radius: 999px;
+        color: #fff;
+        background: var(--deep-green);
+        text-transform: uppercase;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+        z-index: 4;
+        animation: floatBadge 2.6s ease-in-out infinite;
+    }
+
+        .product-card__badge.bid {
+            background: var(--primary-green);
+            color: #23440a;
+            animation: pulseBid 2.2s ease-in-out infinite, floatBadge 2.6s ease-in-out infinite;
+        }
+
+        .product-card__badge.discount {
+            top: 12px;
+            left: auto;
+            right: 56px;
+            background: var(--danger-red);
+            animation: none;
+        }
+
+    /* used when discount badge and icons would overlap - shift discount below badge instead */
+    .product-card__ribbon {
+        position: absolute;
+        top: 14px;
+        right: -34px;
+        transform: rotate(45deg);
+        background: linear-gradient(135deg, var(--danger-red), #b8305e);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 4px 40px;
+        z-index: 5;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        letter-spacing: 0.03em;
+    }
+
+    .product-card__icons {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        gap: 7px;
+        z-index: 4;
+    }
+
+    .icon-btn {
+        position: relative;
+        width: 37px;
+        height: 37px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px);
+        border: 1px solid var(--light-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-green);
+        text-decoration: none;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        cursor: pointer;
+        transition: background 0.25s ease, color 0.25s ease, transform 0.25s cubic-bezier(.3,.7,.3,1.4), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .icon-btn:hover {
+            background: var(--primary-green);
+            color: #fff;
+            border-color: var(--primary-green);
+            transform: scale(1.15) rotate(-6deg);
+            box-shadow: 0 6px 14px var(--glow-green);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.9);
+        }
+
+        .icon-btn.wishlist-btn:hover {
+            background: var(--danger-red);
+            border-color: var(--danger-red);
+            color: #fff;
+            box-shadow: 0 6px 14px rgba(224, 68, 124, 0.4);
+        }
+
+            .icon-btn.wishlist-btn:hover i::before {
+                content: "\f415";
+            }
+
+        .icon-btn.wishlist-btn.liked i {
+            animation: heartPop 0.45s ease;
+        }
+
+        .icon-btn.wishlist-btn.liked {
+            background: var(--danger-red);
+            border-color: var(--danger-red);
+            color: #fff;
+        }
+
+            .icon-btn.wishlist-btn.liked i::before {
+                content: "\f415";
+            }
+
+    .product-card__body {
+        padding: 18px 20px 4px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card__title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--deep-green);
+        margin: 0 0 3px;
+        transition: color 0.25s ease, transform 0.25s ease;
+    }
+
+    .product-card:hover .product-card__title {
+        color: var(--dark-green);
+        transform: translateX(2px);
+    }
+
+    .product-card__category {
+        font-size: 0.76rem;
+        color: var(--dark-green);
+        font-weight: 600;
+        margin-bottom: 9px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .product-card__desc {
+        font-size: 0.85rem;
+        color: #5a6650;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 10px;
+        min-height: 2.4em;
+    }
+
+    .stock-flag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--amber);
+        background: #fff6e6;
+        border: 1px solid #ffe1ab;
+        padding: 3px 9px;
+        border-radius: 999px;
+        margin-bottom: 10px;
+        width: fit-content;
+        animation: floatBadge 2.4s ease-in-out infinite;
+    }
+
+    .countdown {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #b8305e;
+        background: #fdeaf0;
+        border: 1px solid #f6c6d6;
+        padding: 4px 10px;
+        border-radius: 999px;
+        margin-bottom: 10px;
+        width: fit-content;
+    }
+
+    .product-card__meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .price-wrap {
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+    }
+
+    .product-card__price {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark-green);
+        transition: transform 0.25s ease;
+    }
+
+    .product-card__price--original {
+        font-size: 0.85rem;
+        color: #a3ad96;
+        text-decoration: line-through;
+        font-weight: 500;
+    }
+
+    .product-card:hover .product-card__price {
+        transform: scale(1.05);
+    }
+
+    .product-card__qty {
+        font-size: 0.76rem;
+        color: #74806a;
+        background: var(--ultra-light-green);
+        padding: 4px 11px;
+        border-radius: 999px;
+        white-space: nowrap;
+        transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    .product-card:hover .product-card__qty {
+        background: var(--light-green);
+        transform: translateY(-1px);
+    }
+
+    .product-card__bidinfo {
+        background: var(--ultra-light-green);
+        border: 1px dashed var(--light-green);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 0.76rem;
+        color: #4a5a2e;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 10px;
+        transition: border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .product-card:hover .product-card__bidinfo {
+        border-color: var(--primary-green);
+        background: #eaf7d2;
+    }
+
+    .product-card__bidinfo strong {
+        color: var(--dark-green);
+    }
+
+    .product-card__footer {
+        padding: 0 20px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-action {
+        position: relative;
+        flex: 1;
+        text-align: center;
+        padding: 11px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        text-decoration: none;
+        border: none;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: background 0.25s ease, transform 0.18s ease, box-shadow 0.25s ease;
+    }
+
+        .btn-action::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -60%;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-20deg);
+            transition: left 0.5s ease;
+        }
+
+        .btn-action:hover::before {
+            left: 130%;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(111, 168, 0, 0.32);
+        }
+
+        .btn-action:active {
+            transform: translateY(-1px) scale(0.97);
+        }
+
+    .btn-buy {
+        background: linear-gradient(135deg, var(--dark-green), #587f00);
+    }
+
+        .btn-buy:hover {
+            background: linear-gradient(135deg, #7cbf00, var(--dark-green));
+            color: #fff;
+        }
+
+    .btn-bid {
+        background: linear-gradient(135deg, var(--primary-green), #a0e030);
+        color: #23440a;
+    }
+
+        .btn-bid:hover {
+            background: linear-gradient(135deg, #9fdb1a, var(--primary-green));
+            color: #23440a;
+        }
+
+    .ripple-dot {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.55);
+        transform: scale(0);
+        pointer-events: none;
+        animation: ripple 0.6s ease-out forwards;
+    }
+
+    /* ---------------- QUICK VIEW MODAL ---------------- */
+    .qv-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 10, 0.5);
+        backdrop-filter: blur(3px);
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.25s ease;
+    }
+
+        .qv-overlay.open {
+            display: flex;
+        }
+
+    .qv-modal {
+        background: #fff;
+        border-radius: 20px;
+        max-width: 780px;
+        width: 100%;
+        max-height: 88vh;
+        overflow: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        position: relative;
+        animation: popIn 0.3s cubic-bezier(.2,.8,.25,1.1);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+    }
+
+    @@media (max-width: 640px) {
+        .qv-modal {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .qv-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--light-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        transition: all 0.2s ease;
+    }
+
+        .qv-close:hover {
+            background: var(--danger-red);
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+    .qv-media {
+        background: var(--ultra-light-green);
+        position: relative;
+        min-height: 260px;
+    }
+
+        .qv-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .qv-body {
+        padding: 30px 28px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .qv-category {
+        color: var(--dark-green);
+        font-weight: 600;
+        font-size: 0.78rem;
+        margin-bottom: 6px;
+    }
+
+    .qv-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--deep-green);
+        margin-bottom: 10px;
+    }
+
+    .qv-desc {
+        font-size: 0.9rem;
+        color: #5a6650;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+
+    .qv-price {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--dark-green);
+        margin-bottom: 14px;
+    }
+
+    .qv-bidinfo {
+        background: var(--ultra-light-green);
+        border: 1px dashed var(--light-green);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .qv-actions {
+        margin-top: auto;
+        display: flex;
+        gap: 10px;
+    }
+
+    /* ---------------- TOASTS ---------------- */
+    .toast-stack {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 300;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toast {
+        background: #fff;
+        border: 1px solid var(--light-green);
+        border-left: 4px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-size: 0.85rem;
+        color: var(--deep-green);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: toastIn 0.3s cubic-bezier(.2,.8,.25,1.1);
+        min-width: 220px;
+    }
+
+        .toast.leaving {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        .toast i {
+            color: var(--primary-green);
+            font-size: 1rem;
+        }
+
+        .toast.danger {
+            border-left-color: var(--danger-red);
+        }
+
+            .toast.danger i {
+                color: var(--danger-red);
+            }
+
+    /* ---------------- WISHLIST FLOATING COUNTER ---------------- */
+    .wishlist-fab {
+        position: fixed;
+        bottom: 28px;
+        left: 28px;
+        z-index: 150;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 10px 24px rgba(111,168,0,0.35);
+        text-decoration: none;
+        transition: transform 0.25s cubic-bezier(.3,.7,.3,1.3);
+    }
+
+        .wishlist-fab:hover {
+            transform: scale(1.1) rotate(-6deg);
+            color: #fff;
+        }
+
+    .wishlist-fab__count {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: var(--danger-red);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #fff;
+    }
+
+        .wishlist-fab__count.bump {
+            animation: badgeBounce 0.4s ease;
+        }
+
+    /* ---------------- RECENTLY VIEWED ---------------- */
+    .recently-viewed {
+        margin-top: 10px;
+        padding: 30px 4px 50px;
+        display: none;
+    }
+
+        .recently-viewed.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .recently-viewed h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--deep-green);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .rv-strip {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .rv-item {
+        flex: 0 0 150px;
+        background: #fff;
+        border: 1px solid var(--light-green);
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .rv-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(111,168,0,0.2);
+            color: inherit;
+        }
+
+        .rv-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+
+    .rv-item__name {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--deep-green);
+        padding: 8px 10px 10px;
+    }
+
+    /* ---------------- EMPTY STATE ---------------- */
+    .empty-state {
+        text-align: center;
+        padding: 70px 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+        .empty-state svg {
+            margin-bottom: 18px;
+            animation: floatSlow 3.4s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--deep-green);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #74806a;
+            font-size: 0.9rem;
+        }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .product-card, .gallery-header, .gallery-header .accent-line, .product-card__badge, .product-card__badge.bid,
+        .product-card__shine, .filter-bar, .stock-flag, .toast, .empty-state svg, .wishlist-fab__count.bump {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .product-card, .product-card__media img, .icon-btn, .btn-action, .product-card__title,
+        .product-card__price, .product-card__qty, .product-card__bidinfo {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="gallery-page">
+    <div class="gallery-header">
+        <h1>Explore Our Collection</h1>
+        <p>Handpicked pieces, ready to buy or bid on</p>
+        <div class="accent-line"></div>
+    </div>
+
+    @if (!hasProducts)
+    {
+        <div class="empty-state">
+            <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="70" cy="70" r="70" fill="#f0fae6" />
+                <rect x="35" y="50" width="70" height="55" rx="8" fill="#d4f09b" />
+                <rect x="45" y="60" width="50" height="35" rx="4" fill="#ffffff" />
+                <path d="M45 90 L62 72 L74 84 L84 72 L95 90 Z" fill="#88d200" />
+                <circle cx="58" cy="70" r="5" fill="#6fa800" />
+            </svg>
+            <h3>No products here yet</h3>
+            <p>Check back soon — new pieces are added regularly.</p>
+        </div>
+    }
+    else
+    {
+        <div class="filter-bar">
+            <div class="filter-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Search products...">
+            </div>
+
+            <div class="filter-chips" id="categoryChips">
+                <button class="chip active" data-category="all">All</button>
+                @foreach (var cat in categories)
+                {
+                    <button class="chip" data-category="@cat">@cat</button>
+                }
+            </div>
+
+            <div class="filter-toggle-group" id="typeToggle">
+                <button class="chip active" data-type="all">All</button>
+                <button class="chip" data-type="buy">Buy Now</button>
+                <button class="chip" data-type="bid">On Bid</button>
+            </div>
+
+            <div class="filter-sort">
+                <select id="sortSelect">
+                    <option value="newest">Newest</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                </select>
+            </div>
+
+            <div class="view-toggle" id="viewToggle">
+                <button class="active" data-view="grid" title="Grid view"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+                <button data-view="masonry" title="Masonry view"><i class="bi bi-layout-wtf"></i></button>
+            </div>
+        </div>
+
+        <div class="filter-empty-msg" id="filterEmptyMsg">
+            <i class="bi bi-emoji-frown" style="font-size:1.6rem;color:var(--dark-green);"></i>
+            <p style="margin-top:8px;">No products match your filters.</p>
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            @foreach (var item in Model)
+            {
+                bool isBid = item.AvailableForBid == "Yes";
+                i++;
+
+                // Optional fields — read safely via reflection so the view still compiles
+                // even if these properties don't exist on your Product model.
+                var image2 = SafeProp(item, "Image2");
+                var image3 = SafeProp(item, "Image3");
+                var originalPriceRaw = SafeProp(item, "OriginalPrice");
+                var createdRaw = SafeProp(item, "CreatedDate") ?? SafeProp(item, "DateAdded");
+
+                var images = new List<string>();
+                if (!string.IsNullOrEmpty(item.Image1)) { images.Add(item.Image1); }
+                if (!string.IsNullOrEmpty(image2)) { images.Add(image2); }
+                if (!string.IsNullOrEmpty(image3)) { images.Add(image3); }
+                if (images.Count == 0) { images.Add(Url.Content("~/images/no-image.png")); }
+
+                decimal originalPrice = 0;
+                bool hasDiscount = decimal.TryParse(originalPriceRaw, out originalPrice) && originalPrice > (decimal)item.price;
+                int discountPct = hasDiscount ? (int)Math.Round((1 - ((decimal)item.price / originalPrice)) * 100) : 0;
+
+                bool lowStock = item.quantity > 0 && item.quantity <= LOW_STOCK_THRESHOLD;
+
+                long sortKey = i;
+                DateTime createdParsed;
+                if (DateTime.TryParse(createdRaw, out createdParsed)) { sortKey = createdParsed.Ticks; }
+
+                var buyUrl = Url.Action("Buynowlogic", new { id = item.Id });
+                var bidUrl = Url.Action("BidLogic", new { id = item.Id });
+                var viewUrl = Url.Action("Viewproductdetails", new { id = item.Id });
+                var wishlistUrl = Url.Action("AddtoWishlistlogic", "user", new { id = item.Id });
+
+                <div class="product-card"
+                     style="--card-index:@i"
+                     data-id="@item.Id"
+                     data-name="@item.Name.ToLower()"
+                     data-category="@(item.SubCategory != null ? item.SubCategory.Name : "")"
+                     data-type="@(isBid ? "bid" : "buy")"
+                     data-price="@item.price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-sortkey="@sortKey"
+                     data-view-url="@viewUrl"
+                     data-name-display="@item.Name"
+                     data-desc="@item.Description"
+                     data-image="@images[0]"
+                     data-category-display="@(item.SubCategory != null ? item.SubCategory.Name : "")"
+                     @(isBid? Html.Raw($"data-bidstart=\"{item.BidStartDate:dd MMM}\" data-bidend-display=\"{item.BidEndDate:dd MMM}\" data-bidprice=\"{item.BidPrice.ToString("C")}\" data-status=\"{item.Status}\" data-bidend-iso=\"{item.BidEndDate:o}\" data-action-url=\"{bidUrl}\" data-action-label=\"Start Bidding\" data-action-icon=\"bi-hammer\"") : Html.Raw($"data-action-url=\"{buyUrl}\" data-action-label=\"Buy Now\" data-action-icon=\"bi-bag-check\""))>
+
+                    <div class="product-card__media loading">
+                        @for (int imgIdx = 0; imgIdx < images.Count; imgIdx++)
+                        {
+                            <img src="@images[imgIdx]"
+                                 alt="@item.Name"
+                                 class="gallery-img @(imgIdx == 0 ? "active-img" : "")"
+                                 style="opacity:@(imgIdx == 0 ? "1" : "0")"
+                                 onload="this.classList.add('loaded'); this.closest('.product-card__media').classList.remove('loading');"
+                                 onerror="this.closest('.product-card__media').classList.remove('loading');">
+                        }
+                        <div class="product-card__shine"></div>
+
+                        @if (images.Count > 1)
+                        {
+                            <div class="gallery-dots">
+                                @for (int d = 0; d < images.Count; d++)
+                                {
+                                    <span class="@(d == 0 ? "active" : "")"></span>
+                                }
+                            </div>
+                        }
+
+                        @if (isBid)
+                        {
+                            <span class="product-card__badge bid"><i class="bi bi-hammer"></i> On Bid</span>
+                        }
+                        else
+                        {
+                            <span class="product-card__badge"><i class="bi bi-bag-check"></i> Buy Now</span>
+                        }
+
+                        @if (hasDiscount)
+                        {
+                            <div class="product-card__ribbon">-@discountPct%</div>
+                        }
+
+                        <div class="product-card__icons">
+                            <a href="@wishlistUrl" class="icon-btn wishlist-btn" title="Add to wishlist" data-wishlist-link>
+                                <i class="bi bi-heart"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="product-card__body">
+                        <p class="product-card__title">@Html.DisplayFor(modelItem => item.Name)</p>
+                        <p class="product-card__category">
+                            <i class="bi bi-tag"></i> @Html.DisplayFor(modelItem => item.SubCategory.Name)
+                        </p>
+                        <p class="product-card__desc">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                        @if (lowStock)
+                        {
+                            <span class="stock-flag"><i class="bi bi-exclamation-triangle-fill"></i> Only @item.quantity left!</span>
+                        }
+
+                        @if (isBid)
+                        {
+                            <span class="countdown" data-countdown="@item.BidEndDate.ToString("o")">
+                                <i class="bi bi-clock-fill"></i> <span class="countdown-text">calculating...</span>
+                            </span>
+                        }
+
+                        <div class="product-card__meta">
+                            <div class="price-wrap">
+                                <span class="product-card__price">@item.price.ToString("C")</span>
+                                @if (hasDiscount)
+                                {
+                                    <span class="product-card__price--original">@originalPrice.ToString("C")</span>
+                                }
+                            </div>
+                            <span class="product-card__qty"><i class="bi bi-box-seam"></i> Qty: @item.quantity</span>
+                        </div>
+
+                        @if (isBid)
+                        {
+                            <div class="product-card__bidinfo">
+                                <span>Starts: <strong>@item.BidStartDate.ToString("dd MMM")</strong></span>
+                                <span>Ends: <strong>@item.BidEndDate.ToString("dd MMM")</strong></span>
+                                <span>Current bid: <strong>@item.BidPrice.ToString("C")</strong></span>
+                                <span>Status: <strong>@item.Status</strong></span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="product-card__footer">
+                        <a href="javascript:void(0)" class="icon-btn quick-view-btn" title="Quick view">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        @if (isBid)
+                        {
+                            <a asp-action="BidLogic" asp-route-id="@item.Id" class="btn-action btn-bid">
+                                <i class="bi bi-hammer"></i> Start Bidding
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Buynowlogic" asp-route-id="@item.Id" class="btn-action btn-buy">
+                                <i class="bi bi-bag-check"></i> Buy Now
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="recently-viewed" id="recentlyViewed">
+            <h2><i class="bi bi-clock-history"></i> Recently viewed</h2>
+            <div class="rv-strip" id="rvStrip"></div>
+        </div>
+    }
+</div>
+
+<!-- Quick view modal -->
+<div class="qv-overlay" id="qvOverlay">
+    <div class="qv-modal">
+        <div class="qv-close" id="qvClose"><i class="bi bi-x-lg"></i></div>
+        <div class="qv-media"><img id="qvImage" src="" alt=""></div>
+        <div class="qv-body">
+            <span class="qv-category" id="qvCategory"></span>
+            <h3 class="qv-title" id="qvTitle"></h3>
+            <p class="qv-desc" id="qvDesc"></p>
+            <div class="qv-price" id="qvPrice"></div>
+            <div class="qv-bidinfo" id="qvBidInfo" style="display:none;"></div>
+            <div class="qv-actions">
+                <a href="#" id="qvActionBtn" class="btn-action btn-buy"></a>
+                <a href="#" id="qvViewFullBtn" class="icon-btn" title="Full details"><i class="bi bi-arrow-up-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Floating wishlist counter -->
+<a href="#" class="wishlist-fab" id="wishlistFab" title="Wishlist">
+    <i class="bi bi-heart-fill"></i>
+    <span class="wishlist-fab__count" id="wishlistCount">0</span>
+</a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var grid = document.getElementById('productGrid');
+        var cards = Array.prototype.slice.call(document.querySelectorAll('.product-card'));
+
+        /* ---------- entrance animation on scroll ---------- */
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            cards.forEach(function (card) { observer.observe(card); });
+        }
+
+        /* ---------- ripple on action buttons ---------- */
+        document.querySelectorAll('.btn-action').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                var rect = btn.getBoundingClientRect();
+                var dot = document.createElement('span');
+                var size = Math.max(rect.width, rect.height);
+                dot.className = 'ripple-dot';
+                dot.style.width = dot.style.height = size + 'px';
+                dot.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                dot.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                btn.appendChild(dot);
+                setTimeout(function () { dot.remove(); }, 650);
+            });
+        });
+
+        /* ---------- toast helper ---------- */
+        function showToast(message, iconClass, variant) {
+            var stack = document.getElementById('toastStack');
+            var toast = document.createElement('div');
+            toast.className = 'toast' + (variant === 'danger' ? ' danger' : '');
+            toast.innerHTML = '<i class="bi ' + (iconClass || 'bi-check-circle-fill') + '"></i><span>' + message + '</span>';
+            stack.appendChild(toast);
+            setTimeout(function () {
+                toast.classList.add('leaving');
+                setTimeout(function () { toast.remove(); }, 300);
+            }, 2600);
+        }
+
+        /* ---------- wishlist counter ---------- */
+        var wishlistCountEl = document.getElementById('wishlistCount');
+        var wishlistCount = parseInt(localStorage.getItem('wishlistCount') || '0', 10);
+        wishlistCountEl.textContent = wishlistCount;
+
+        function bumpWishlistCount() {
+            wishlistCount++;
+            localStorage.setItem('wishlistCount', wishlistCount);
+            wishlistCountEl.textContent = wishlistCount;
+            wishlistCountEl.classList.remove('bump');
+            void wishlistCountEl.offsetWidth;
+            wishlistCountEl.classList.add('bump');
+        }
+
+        /* ---------- wishlist add (AJAX, no page navigation) ---------- */
+        document.querySelectorAll('[data-wishlist-link]').forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                var href = link.getAttribute('href');
+                link.classList.add('liked');
+
+                fetch(href, { method: 'GET', credentials: 'same-origin' })
+                    .then(function () {
+                        showToast('Added to your wishlist', 'bi-heart-fill');
+                        bumpWishlistCount();
+                    })
+                    .catch(function () {
+                        showToast('Could not update wishlist', 'bi-exclamation-triangle-fill', 'danger');
+                    });
+            });
+        });
+
+        /* ---------- image gallery cycling on hover ---------- */
+        cards.forEach(function (card) {
+            var imgs = card.querySelectorAll('.gallery-img');
+            var dots = card.querySelectorAll('.gallery-dots span');
+            if (imgs.length < 2) return;
+
+            var idx = 0;
+            var interval = null;
+
+            function setActive(newIdx) {
+                imgs.forEach(function (im, k) {
+                    im.style.opacity = k === newIdx ? '1' : '0';
+                    im.classList.toggle('active-img', k === newIdx);
+                });
+                dots.forEach(function (d, k) { d.classList.toggle('active', k === newIdx); });
+                idx = newIdx;
+            }
+
+            card.addEventListener('mouseenter', function () {
+                interval = setInterval(function () {
+                    setActive((idx + 1) % imgs.length);
+                }, 900);
+            });
+
+            card.addEventListener('mouseleave', function () {
+                clearInterval(interval);
+                setActive(0);
+            });
+        });
+
+        /* ---------- bid countdown timers ---------- */
+        var countdownEls = document.querySelectorAll('[data-countdown]');
+        function updateCountdowns() {
+            countdownEls.forEach(function (el) {
+                var end = new Date(el.getAttribute('data-countdown')).getTime();
+                var now = Date.now();
+                var diff = end - now;
+                var textEl = el.querySelector('.countdown-text');
+                if (diff <= 0) {
+                    textEl.textContent = 'Bid ended';
+                    return;
+                }
+                var d = Math.floor(diff / 86400000);
+                var h = Math.floor((diff % 86400000) / 3600000);
+                var m = Math.floor((diff % 3600000) / 60000);
+                var s = Math.floor((diff % 60000) / 1000);
+                textEl.textContent = d > 0 ? (d + 'd ' + h + 'h left') : (h > 0 ? (h + 'h ' + m + 'm left') : (m + 'm ' + s + 's left'));
+            });
+        }
+        if (countdownEls.length) {
+            updateCountdowns();
+            setInterval(updateCountdowns, 1000);
+        }
+
+        /* ---------- filter / search / sort / category chips ---------- */
+        var searchInput = document.getElementById('searchInput');
+        var categoryChips = document.getElementById('categoryChips');
+        var typeToggle = document.getElementById('typeToggle');
+        var sortSelect = document.getElementById('sortSelect');
+        var emptyMsg = document.getElementById('filterEmptyMsg');
+
+        var state = { search: '', category: 'all', type: 'all', sort: 'newest' };
+
+        function applyFilters() {
+            var visibleCount = 0;
+            cards.forEach(function (card) {
+                var matchesSearch = !state.search ||
+                    card.getAttribute('data-name').indexOf(state.search) !== -1 ||
+                    card.getAttribute('data-category').toLowerCase().indexOf(state.search) !== -1;
+                var matchesCategory = state.category === 'all' || card.getAttribute('data-category') === state.category;
+                var matchesType = state.type === 'all' || card.getAttribute('data-type') === state.type;
+
+                var show = matchesSearch && matchesCategory && matchesType;
+                card.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+
+            // sort visible cards
+            var sorted = cards.slice().sort(function (a, b) {
+                if (state.sort === 'price-asc') return parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price'));
+                if (state.sort === 'price-desc') return parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price'));
+                return parseFloat(b.getAttribute('data-sortkey')) - parseFloat(a.getAttribute('data-sortkey'));
+            });
+            sorted.forEach(function (card) { grid.appendChild(card); });
+
+            emptyMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            grid.style.display = visibleCount === 0 ? 'none' : (grid.classList.contains('masonry-view') ? 'block' : 'grid');
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                state.search = searchInput.value.trim().toLowerCase();
+                applyFilters();
+            });
+        }
+
+        if (categoryChips) {
+            categoryChips.addEventListener('click', function (e) {
+                var btn = e.target.closest('.chip');
+                if (!btn) return;
+                categoryChips.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
+                btn.classList.add('active');
+                state.category = btn.getAttribute('data-category');
+                applyFilters();
+            });
+        }
+
+        if (typeToggle) {
+            typeToggle.addEventListener('click', function (e) {
+                var btn = e.target.closest('.chip');
+                if (!btn) return;
+                typeToggle.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
+                btn.classList.add('active');
+                state.type = btn.getAttribute('data-type');
+                applyFilters();
+            });
+        }
+
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function () {
+                state.sort = sortSelect.value;
+                applyFilters();
+            });
+        }
+
+        if (grid) applyFilters();
+
+        /* ---------- grid / masonry view toggle ---------- */
+        var viewToggle = document.getElementById('viewToggle');
+        if (viewToggle) {
+            viewToggle.addEventListener('click', function (e) {
+                var btn = e.target.closest('button');
+                if (!btn) return;
+                viewToggle.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                grid.classList.toggle('masonry-view', btn.getAttribute('data-view') === 'masonry');
+            });
+        }
+
+        /* ---------- quick view modal ---------- */
+        var qvOverlay = document.getElementById('qvOverlay');
+        var qvImage = document.getElementById('qvImage');
+        var qvCategory = document.getElementById('qvCategory');
+        var qvTitle = document.getElementById('qvTitle');
+        var qvDesc = document.getElementById('qvDesc');
+        var qvPrice = document.getElementById('qvPrice');
+        var qvBidInfo = document.getElementById('qvBidInfo');
+        var qvActionBtn = document.getElementById('qvActionBtn');
+        var qvViewFullBtn = document.getElementById('qvViewFullBtn');
+        var qvClose = document.getElementById('qvClose');
+
+        function openQuickView(card) {
+            qvImage.src = card.getAttribute('data-image');
+            qvImage.alt = card.getAttribute('data-name-display');
+            qvCategory.textContent = card.getAttribute('data-category-display');
+            qvTitle.textContent = card.getAttribute('data-name-display');
+            qvDesc.textContent = card.getAttribute('data-desc');
+            qvPrice.textContent = card.querySelector('.product-card__price').textContent;
+
+            var isBidCard = card.getAttribute('data-type') === 'bid';
+            if (isBidCard) {
+                qvBidInfo.style.display = 'grid';
+                qvBidInfo.innerHTML =
+                    '<span>Starts: <strong>' + card.getAttribute('data-bidstart') + '</strong></span>' +
+                    '<span>Ends: <strong>' + card.getAttribute('data-bidend-display') + '</strong></span>' +
+                    '<span>Current bid: <strong>' + card.getAttribute('data-bidprice') + '</strong></span>' +
+                    '<span>Status: <strong>' + card.getAttribute('data-status') + '</strong></span>';
+            } else {
+                qvBidInfo.style.display = 'none';
+            }
+
+            qvActionBtn.href = card.getAttribute('data-action-url');
+            qvActionBtn.className = 'btn-action ' + (isBidCard ? 'btn-bid' : 'btn-buy');
+            qvActionBtn.innerHTML = '<i class="bi ' + card.getAttribute('data-action-icon') + '"></i> ' + card.getAttribute('data-action-label');
+            qvViewFullBtn.href = card.getAttribute('data-view-url');
+
+            qvOverlay.classList.add('open');
+            saveRecentlyViewed(card);
+        }
+
+        document.querySelectorAll('.quick-view-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                openQuickView(btn.closest('.product-card'));
+            });
+        });
+
+        qvClose.addEventListener('click', function () { qvOverlay.classList.remove('open'); });
+        qvOverlay.addEventListener('click', function (e) { if (e.target === qvOverlay) qvOverlay.classList.remove('open'); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') qvOverlay.classList.remove('open'); });
+
+        /* ---------- recently viewed strip (localStorage) ---------- */
+        var RV_KEY = 'recentlyViewedProducts';
+        var RV_MAX = 8;
+
+        function saveRecentlyViewed(card) {
+            var entry = {
+                id: card.getAttribute('data-id'),
+                name: card.getAttribute('data-name-display'),
+                image: card.getAttribute('data-image'),
+                price: card.querySelector('.product-card__price').textContent,
+                url: card.getAttribute('data-view-url')
+            };
+            var list = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+            list = list.filter(function (it) { return it.id !== entry.id; });
+            list.unshift(entry);
+            if (list.length > RV_MAX) list = list.slice(0, RV_MAX);
+            localStorage.setItem(RV_KEY, JSON.stringify(list));
+            renderRecentlyViewed();
+        }
+
+        function renderRecentlyViewed() {
+            var list = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+            var section = document.getElementById('recentlyViewed');
+            var strip = document.getElementById('rvStrip');
+            if (!section || !strip) return;
+
+            if (list.length === 0) {
+                section.classList.remove('show');
+                return;
+            }
+
+            strip.innerHTML = list.map(function (it) {
+                return '<a class="rv-item" href="' + it.url + '">' +
+                    '<img src="' + it.image + '" alt="' + it.name + '">' +
+                    '<div class="rv-item__name">' + it.name + '</div>' +
+                    '</a>';
+            }).join('');
+            section.classList.add('show');
+        }
+
+        renderRecentlyViewed();
+    });
+</script>

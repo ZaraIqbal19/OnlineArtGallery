@@ -26,7 +26,6 @@
         --success-bg: #e6f4ea;
     }
 
-    /* Hide scrollbar */
     ::-webkit-scrollbar {
         width: 0px;
         background: transparent;
@@ -95,7 +94,6 @@
         box-shadow: 0 28px 70px rgba(136, 210, 0, 0.20);
     }
 
-    /* ===== TYPOGRAPHY & ACCENTS ===== */
     .text-green-accent {
         color: var(--primary-green);
     }
@@ -320,7 +318,7 @@
         color: var(--success-color);
     }
 
-    /* ===== ENHANCED SUCCESS POPUP ===== */
+    /* ===== SUCCESS POPUP ===== */
     .success-popup-overlay {
         display: none;
         position: fixed;
@@ -765,7 +763,7 @@
         }
     }
 
-    /* ===== RIBBON DECORATION ===== */
+    /* ===== RIBBON ===== */
     .card-badge-ribbon {
         position: absolute;
         top: 20px;
@@ -794,7 +792,6 @@
         }
     }
 
-    /* ===== ANIMATIONS ===== */
     @@keyframes float {
         0%, 100% {
             transform: translateY(0px);
@@ -913,6 +910,125 @@
             font-size: 0.7rem;
         }
 
+    /* ===== IMAGE UPLOAD ===== */
+    .image-drop-zone {
+        border: 2px dashed var(--light-green);
+        border-radius: var(--border-radius-sm);
+        background: var(--ultra-light-green);
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .image-drop-zone:hover, .image-drop-zone.dragover {
+            border-color: var(--primary-green);
+            background: #e8f5e0;
+            transform: scale(1.005);
+        }
+
+        .image-drop-zone.is-invalid {
+            border-color: var(--error-color);
+            background: var(--error-bg);
+            animation: invalidShake 0.5s ease;
+        }
+
+        .image-drop-zone.is-valid {
+            border-color: var(--success-color);
+            background: var(--success-bg);
+        }
+
+        .image-drop-zone .drop-icon {
+            font-size: 2.5rem;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .image-drop-zone:hover .drop-icon {
+            transform: translateY(-4px) scale(1.1);
+        }
+
+        .image-drop-zone .drop-text {
+            font-weight: 600;
+            color: #2d3d24;
+            margin-bottom: 4px;
+        }
+
+        .image-drop-zone .drop-subtext {
+            font-size: 0.8rem;
+            color: #7a8a7a;
+        }
+
+    #categoryImageInput {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .image-preview-wrapper {
+        display: none;
+        position: relative;
+        margin-top: 14px;
+        animation: categoryBoxPop 0.4s ease;
+    }
+
+        .image-preview-wrapper.show {
+            display: inline-block;
+        }
+
+    .image-preview-box {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(136, 210, 0, 0.2);
+        border: 3px solid var(--primary-green);
+    }
+
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .image-preview-remove {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--error-color);
+        color: white;
+        border: 3px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        transition: transform 0.2s ease;
+    }
+
+        .image-preview-remove:hover {
+            transform: scale(1.15) rotate(90deg);
+        }
+
+    .image-preview-filename {
+        font-size: 0.8rem;
+        color: #4a6a5a;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     /* ===== RESPONSIVE ===== */
     @@media (max-width: 576px) {
         .card-green-white {
@@ -1029,7 +1145,7 @@
                 </div>
 
                 <!-- ========== FORM ========== -->
-                <form asp-controller="Admin" asp-action="AddCategorylogic" method="post" id="categoryForm" novalidate>
+                <form asp-controller="Admin" asp-action="AddCategorylogic" method="post" id="categoryForm" enctype="multipart/form-data" novalidate>
                     @Html.AntiForgeryToken()
 
                     <!-- Validation Summary -->
@@ -1075,6 +1191,41 @@
                         </div>
                     </div>
 
+                    <!-- ===== CATEGORY IMAGE ===== -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fa-regular fa-image"></i> Category Image <span class="text-danger">*</span>
+                            <span class="validation-rules">
+                                <i class="fa-regular fa-circle-check me-1"></i> JPG, PNG or WEBP · Max 2MB
+                            </span>
+                        </label>
+
+                        <div class="image-drop-zone" id="imageDropZone">
+                            <input type="file" name="CategoryImageFile" id="categoryImageInput" accept=".jpg,.jpeg,.png,.webp" />
+                            <div class="drop-icon"><i class="fa-regular fa-cloud-arrow-up"></i></div>
+                            <div class="drop-text">Click or drag an image here</div>
+                            <div class="drop-subtext">One image only · JPG, PNG, WEBP (max 2MB)</div>
+                        </div>
+
+                        <div class="invalid-feedback" id="imageInvalid" style="display: none;">
+                            <i class="fa-regular fa-circle-exclamation"></i> <span id="imageInvalidText">Please select a category image.</span>
+                        </div>
+                        <span asp-validation-for="Categoryimage" class="text-danger small"></span>
+
+                        <div class="image-preview-wrapper" id="imagePreviewWrapper">
+                            <div class="image-preview-box">
+                                <img id="imagePreviewImg" src="" alt="Preview">
+                                <div class="image-preview-remove" id="imageRemoveBtn" title="Remove image">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </div>
+                            </div>
+                            <div class="image-preview-filename">
+                                <i class="fa-regular fa-file-image text-green-accent"></i>
+                                <span id="imageFileName"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ===== TIPS SECTION ===== -->
                     <div class="bg-green-soft p-3 rounded-4 mb-4" style="border: 1px solid var(--light-green);">
                         <div class="d-flex align-items-center gap-2 mb-2">
@@ -1099,7 +1250,7 @@
                             </li>
                             <li class="d-flex align-items-center gap-2" style="font-size: 0.85rem; color: #4a5568;">
                                 <i class="fas fa-circle text-green-accent" style="font-size: 0.5rem;"></i>
-                                Think about how visitors will browse
+                                Upload a clear, high-quality representative image
                             </li>
                         </ul>
                     </div>
@@ -1124,7 +1275,7 @@
     </div>
 </div>
 
-<!-- ===== ENHANCED SUCCESS POPUP ===== -->
+<!-- ===== SUCCESS POPUP ===== -->
 <div class="success-popup-overlay" id="successPopup">
     <div class="success-popup">
         <button class="popup-close" onclick="closeSuccessPopup()">
@@ -1205,27 +1356,121 @@
         const maxLength = 50;
         const minLength = 3;
 
-        // ===== VALIDATION FUNCTIONS =====
+        // ===== IMAGE UPLOAD ELEMENTS =====
+        const imageDropZone = document.getElementById('imageDropZone');
+        const categoryImageInput = document.getElementById('categoryImageInput');
+        const imageInvalid = document.getElementById('imageInvalid');
+        const imageInvalidText = document.getElementById('imageInvalidText');
+        const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
+        const imagePreviewImg = document.getElementById('imagePreviewImg');
+        const imageFileName = document.getElementById('imageFileName');
+        const imageRemoveBtn = document.getElementById('imageRemoveBtn');
+
+        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        const maxImageSize = 2 * 1024 * 1024; // 2MB
+
+        // ===== NAME VALIDATION =====
         function validateCategoryName(value) {
             if (!value || value.trim().length === 0) {
                 return { valid: false, message: 'Category name is required.' };
             }
-
             if (value.trim().length < minLength) {
                 return { valid: false, message: 'Category name must be at least ' + minLength + ' characters.' };
             }
-
             if (value.trim().length > maxLength) {
                 return { valid: false, message: 'Maximum ' + maxLength + ' characters allowed.' };
             }
-
             const regex = /^[a-zA-Z\s]+$/;
             if (!regex.test(value.trim())) {
                 return { valid: false, message: 'Only letters and spaces are allowed. No numbers or special characters.' };
             }
-
             return { valid: true, message: '' };
         }
+
+        // ===== IMAGE VALIDATION =====
+        function validateImageFile(file) {
+            if (!file) {
+                return { valid: false, message: 'Please select a category image.' };
+            }
+            if (!allowedImageTypes.includes(file.type)) {
+                return { valid: false, message: 'Only JPG, PNG, or WEBP images are allowed.' };
+            }
+            if (file.size > maxImageSize) {
+                return { valid: false, message: 'Image size must not exceed 2MB.' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreviewImg.src = e.target.result;
+                imagePreviewWrapper.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+            imageFileName.textContent = file.name;
+        }
+
+        function clearImagePreview() {
+            imagePreviewImg.src = '';
+            imagePreviewWrapper.classList.remove('show');
+            imageFileName.textContent = '';
+            categoryImageInput.value = '';
+            imageDropZone.classList.remove('is-valid', 'is-invalid');
+        }
+
+        // ===== FILE SELECTED =====
+        categoryImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            const result = validateImageFile(file);
+
+            if (!result.valid) {
+                imageDropZone.classList.add('is-invalid');
+                imageDropZone.classList.remove('is-valid');
+                imageInvalid.style.display = 'flex';
+                imageInvalidText.textContent = result.message;
+                imagePreviewWrapper.classList.remove('show');
+                return;
+            }
+
+            imageDropZone.classList.remove('is-invalid');
+            imageDropZone.classList.add('is-valid');
+            imageInvalid.style.display = 'none';
+            showImagePreview(file);
+        });
+
+        // ===== REMOVE IMAGE =====
+        imageRemoveBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            clearImagePreview();
+        });
+
+        // ===== DRAG & DROP (single image only) =====
+        ['dragenter', 'dragover'].forEach(evt => {
+            imageDropZone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                imageDropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            imageDropZone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                imageDropZone.classList.remove('dragover');
+            });
+        });
+
+        imageDropZone.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const dt = new DataTransfer();
+                dt.items.add(files[0]); // only first file, even if multiple dropped
+                categoryImageInput.files = dt.files;
+                categoryImageInput.dispatchEvent(new Event('change'));
+            }
+        });
 
         // ===== CREATE CONFETTI =====
         function createConfetti() {
@@ -1275,6 +1520,8 @@
                 nameValid.style.display = 'none';
                 charCount.textContent = '0';
                 charCounter.classList.remove('limit-reached');
+                clearImagePreview();
+                imageInvalid.style.display = 'none';
                 submitBtn.innerHTML = '<i class="fa fa-plus me-2"></i> <span id="submitText">Create Category</span>';
                 submitBtn.disabled = false;
             }, 400);
@@ -1351,15 +1598,16 @@
             clearValidation();
             let isValid = true;
 
+            // Name validation
             const nameVal = nameInput.value.trim();
-            const result = validateCategoryName(nameVal);
+            const nameResult = validateCategoryName(nameVal);
 
-            if (!result.valid) {
+            if (!nameResult.valid) {
                 nameInput.classList.add('is-invalid');
                 nameInput.classList.remove('is-valid');
                 nameInvalid.style.display = 'flex';
                 nameValid.style.display = 'none';
-                nameInvalidText.textContent = result.message;
+                nameInvalidText.textContent = nameResult.message;
                 isValid = false;
             } else {
                 nameInput.classList.remove('is-invalid');
@@ -1368,10 +1616,26 @@
                 nameValid.style.display = 'flex';
             }
 
+            // Image validation
+            const imageResult = validateImageFile(categoryImageInput.files[0]);
+            if (!imageResult.valid) {
+                imageDropZone.classList.add('is-invalid');
+                imageDropZone.classList.remove('is-valid');
+                imageInvalid.style.display = 'flex';
+                imageInvalidText.textContent = imageResult.message;
+                isValid = false;
+            } else {
+                imageDropZone.classList.remove('is-invalid');
+                imageDropZone.classList.add('is-valid');
+                imageInvalid.style.display = 'none';
+            }
+
             if (!isValid) {
                 event.preventDefault();
                 event.stopPropagation();
-                nameInput.focus();
+                if (!nameResult.valid) {
+                    nameInput.focus();
+                }
                 return;
             }
 
@@ -1382,42 +1646,50 @@
         // ===== SHOW SERVER-SIDE ERRORS =====
         @if (!ViewData.ModelState.IsValid)
         {
-                <text>
-                    var errors = @Html.Raw(Json.Serialize(ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
-                    if (errors && errors.length > 0) {
-                        var summary = document.getElementById('validationSummary');
-                        if (summary) {
-                            summary.style.display = 'block';
-                            var span = summary.querySelector('span');
-                            if (span) {
-                                span.textContent = errors.join(' | ');
+                    <text>
+                        var errors = @Html.Raw(Json.Serialize(ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                        if (errors && errors.length > 0) {
+                            var summary = document.getElementById('validationSummary');
+                            if (summary) {
+                                summary.style.display = 'block';
+                                var span = summary.querySelector('span');
+                                if (span) {
+                                    span.textContent = errors.join(' | ');
+                                }
+                            }
+
+                            var nameError = '@Html.Raw(ViewData.ModelState["Name"]?.Errors.FirstOrDefault()?.ErrorMessage ?? "")';
+                            if (nameError) {
+                                nameInput.classList.add('is-invalid');
+                                nameInput.classList.remove('is-valid');
+                                nameInvalid.style.display = 'flex';
+                                nameValid.style.display = 'none';
+                                nameInvalidText.textContent = nameError;
+                                if (serverError) serverError.textContent = nameError;
+                            }
+
+                            var imageError = '@Html.Raw(ViewData.ModelState["Categoryimage"]?.Errors.FirstOrDefault()?.ErrorMessage ?? "")';
+                            if (imageError) {
+                                imageDropZone.classList.add('is-invalid');
+                                imageDropZone.classList.remove('is-valid');
+                                imageInvalid.style.display = 'flex';
+                                imageInvalidText.textContent = imageError;
                             }
                         }
-
-                        var nameError = '@Html.Raw(ViewData.ModelState["Name"]?.Errors.FirstOrDefault()?.ErrorMessage ?? "")';
-                        if (nameError) {
-                            nameInput.classList.add('is-invalid');
-                            nameInput.classList.remove('is-valid');
-                            nameInvalid.style.display = 'flex';
-                            nameValid.style.display = 'none';
-                            nameInvalidText.textContent = nameError;
-                            if (serverError) serverError.textContent = nameError;
-                        }
-                    }
-                </text>
+                    </text>
         }
 
         // ===== SHOW SUCCESS POPUP ON SUCCESS =====
         @if (ViewBag.Message != null)
         {
-                <text>
-                    var categoryName = '@Html.Raw(ViewBag.CategoryName ?? "Category")';
-                    var message = '@Html.Raw(ViewBag.Message)';
+                    <text>
+                        var categoryName = '@Html.Raw(ViewBag.CategoryName ?? "Category")';
+                        var message = '@Html.Raw(ViewBag.Message)';
 
-                    setTimeout(function() {
-                        showSuccessPopup(message, categoryName);
-                    }, 500);
-                </text>
+                        setTimeout(function() {
+                            showSuccessPopup(message, categoryName);
+                        }, 500);
+                    </text>
         }
 
         // ===== CLICK OUTSIDE TO CLOSE =====
