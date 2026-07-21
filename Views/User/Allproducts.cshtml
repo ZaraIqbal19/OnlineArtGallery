@@ -50,7 +50,17 @@
     .gallery-page {
         padding-top: 100px;
         font-family: 'Inter', sans-serif;
+        position: relative;
     }
+
+        .gallery-page::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 12% 0%, rgba(136, 210, 0, 0.09), transparent 42%), radial-gradient(circle at 88% 8%, rgba(111, 168, 0, 0.07), transparent 38%);
+            pointer-events: none;
+        }
 
     /* ---------------- HEADER ---------------- */
     .gallery-header {
@@ -323,6 +333,24 @@
             border-color: transparent;
         }
 
+        .chip:focus-visible,
+        .filter-sort select:focus-visible {
+            outline: 2px solid var(--dark-green);
+            outline-offset: 2px;
+        }
+
+    .results-count {
+        font-size: 0.82rem;
+        color: #74806a;
+        margin: -14px 2px 18px;
+        font-weight: 500;
+    }
+
+        .results-count strong {
+            color: var(--deep-green);
+            font-weight: 700;
+        }
+
     .filter-toggle-group {
         display: flex;
         background: var(--ultra-light-green);
@@ -337,6 +365,8 @@
         }
 
             .filter-toggle-group .chip.active {
+                background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+                color: #fff;
                 box-shadow: 0 3px 8px rgba(111, 168, 0, 0.25);
             }
 
@@ -356,34 +386,6 @@
             border-color: var(--primary-green);
         }
 
-    .view-toggle {
-        display: flex;
-        gap: 4px;
-        background: var(--ultra-light-green);
-        border-radius: 10px;
-        padding: 3px;
-    }
-
-        .view-toggle button {
-            border: none;
-            background: transparent;
-            width: 32px;
-            height: 32px;
-            border-radius: 7px;
-            color: var(--dark-green);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-            .view-toggle button.active {
-                background: #fff;
-                box-shadow: 0 2px 6px rgba(111, 168, 0, 0.25);
-                color: var(--primary-green);
-            }
-
     .filter-empty-msg {
         display: none;
         text-align: center;
@@ -397,39 +399,10 @@
     .product-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        grid-auto-rows: 1fr;
         gap: 28px;
         padding: 4px 4px 40px;
         transition: opacity 0.2s ease;
-    }
-
-        .product-grid.masonry-view {
-            display: block;
-            column-count: 4;
-            column-gap: 28px;
-        }
-
-            .product-grid.masonry-view .product-card {
-                break-inside: avoid;
-                margin-bottom: 28px;
-                width: 100%;
-            }
-
-    @@media (max-width: 1200px) {
-        .product-grid.masonry-view {
-            column-count: 3;
-        }
-    }
-
-    @@media (max-width: 860px) {
-        .product-grid.masonry-view {
-            column-count: 2;
-        }
-    }
-
-    @@media (max-width: 560px) {
-        .product-grid.masonry-view {
-            column-count: 1;
-        }
     }
 
     /* ---------------- CARD ---------------- */
@@ -440,6 +413,7 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        height: 100%;
         box-shadow: 0 2px 10px rgba(111, 168, 0, 0.08);
         opacity: 0;
         animation: cardIn 0.6s cubic-bezier(.2,.7,.3,1) forwards;
@@ -664,6 +638,11 @@
             transform: scale(0.9);
         }
 
+        .icon-btn:focus-visible {
+            outline: 2px solid var(--dark-green);
+            outline-offset: 2px;
+        }
+
         .icon-btn.wishlist-btn:hover {
             background: var(--danger-red);
             border-color: var(--danger-red);
@@ -720,6 +699,18 @@
         gap: 4px;
     }
 
+    .new-pill {
+        margin-left: 2px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
     .product-card__desc {
         font-size: 0.85rem;
         color: #5a6650;
@@ -760,6 +751,23 @@
         border-radius: 999px;
         margin-bottom: 10px;
         width: fit-content;
+        transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+        .countdown.urgent {
+            border-color: var(--danger-red);
+            background: #fbdce6;
+            animation: pulseUrgent 1.4s ease-in-out infinite;
+        }
+
+    @@keyframes pulseUrgent {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(224, 68, 124, 0.35);
+        }
+
+        50% {
+            box-shadow: 0 0 0 6px rgba(224, 68, 124, 0);
+        }
     }
 
     .product-card__meta {
@@ -771,8 +779,23 @@
 
     .price-wrap {
         display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .price-wrap__row {
+        display: flex;
         align-items: baseline;
         gap: 7px;
+    }
+
+    .product-card__price-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--dark-green);
+        opacity: 0.75;
     }
 
     .product-card__price {
@@ -809,6 +832,7 @@
         transform: translateY(-1px);
     }
 
+    /* Bid details block — laid out as clear label/value rows so nothing runs together */
     .product-card__bidinfo {
         background: var(--ultra-light-green);
         border: 1px dashed var(--light-green);
@@ -819,7 +843,7 @@
         margin-bottom: 12px;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 6px 10px;
+        gap: 8px 14px;
         transition: border-color 0.25s ease, background 0.25s ease;
     }
 
@@ -828,8 +852,22 @@
         background: #eaf7d2;
     }
 
+    .product-card__bidinfo span {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
     .product-card__bidinfo strong {
         color: var(--dark-green);
+    }
+
+    /* Buy-now cards get the same info-box treatment (in solid border) so they
+       fill the same footprint as the bid-info box instead of leaving blank space */
+    .product-card__buyinfo {
+        border-style: solid;
     }
 
     .product-card__footer {
@@ -837,6 +875,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-top: auto;
     }
 
     .btn-action {
@@ -1030,8 +1069,14 @@
         margin-bottom: 16px;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 8px 14px;
     }
+
+        .qv-bidinfo span {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+        }
 
     .qv-actions {
         margin-top: auto;
@@ -1083,53 +1128,6 @@
                 color: var(--danger-red);
             }
 
-    /* ---------------- WISHLIST FLOATING COUNTER ---------------- */
-    .wishlist-fab {
-        position: fixed;
-        bottom: 28px;
-        left: 28px;
-        z-index: 150;
-        width: 54px;
-        height: 54px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        box-shadow: 0 10px 24px rgba(111,168,0,0.35);
-        text-decoration: none;
-        transition: transform 0.25s cubic-bezier(.3,.7,.3,1.3);
-    }
-
-        .wishlist-fab:hover {
-            transform: scale(1.1) rotate(-6deg);
-            color: #fff;
-        }
-
-    .wishlist-fab__count {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        background: var(--danger-red);
-        color: #fff;
-        font-size: 0.7rem;
-        font-weight: 700;
-        min-width: 20px;
-        height: 20px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 4px;
-        border: 2px solid #fff;
-    }
-
-        .wishlist-fab__count.bump {
-            animation: badgeBounce 0.4s ease;
-        }
-
     /* ---------------- RECENTLY VIEWED ---------------- */
     .recently-viewed {
         margin-top: 10px;
@@ -1142,52 +1140,139 @@
             animation: fadeIn 0.5s ease;
         }
 
-        .recently-viewed h2 {
+    .rv-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+        .rv-header h2 {
             font-family: 'Poppins', sans-serif;
             font-size: 1.2rem;
             font-weight: 700;
             color: var(--deep-green);
-            margin-bottom: 14px;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+    .rv-clear {
+        border: 1px solid var(--light-green);
+        background: #fff;
+        color: var(--dark-green);
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 6px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+        .rv-clear:hover {
+            background: var(--danger-red);
+            border-color: var(--danger-red);
+            color: #fff;
         }
 
     .rv-strip {
         display: flex;
         gap: 16px;
         overflow-x: auto;
-        padding-bottom: 8px;
+        padding: 2px 2px 10px;
+        scroll-snap-type: x proximity;
     }
 
+        .rv-strip::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .rv-strip::-webkit-scrollbar-thumb {
+            background: var(--light-green);
+            border-radius: 999px;
+        }
+
     .rv-item {
-        flex: 0 0 150px;
+        position: relative;
+        flex: 0 0 160px;
         background: #fff;
         border: 1px solid var(--light-green);
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
         text-decoration: none;
         color: inherit;
+        scroll-snap-align: start;
+        box-shadow: 0 2px 8px rgba(111, 168, 0, 0.07);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
         .rv-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(111,168,0,0.2);
+            box-shadow: 0 12px 22px rgba(111,168,0,0.22);
             color: inherit;
         }
 
-        .rv-item img {
+    .rv-item__media {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        background: var(--ultra-light-green);
+        overflow: hidden;
+    }
+
+        .rv-item__media img {
             width: 100%;
-            height: 100px;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+    .rv-item:hover .rv-item__media img {
+        transform: scale(1.08);
+    }
+
+    .rv-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(20, 30, 10, 0.55);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        cursor: pointer;
+        z-index: 2;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+        .rv-remove:hover {
+            background: var(--danger-red);
+            transform: scale(1.1);
         }
 
     .rv-item__name {
         font-size: 0.78rem;
         font-weight: 600;
         color: var(--deep-green);
-        padding: 8px 10px 10px;
+        padding: 8px 10px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rv-item__price {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--dark-green);
+        padding: 0 10px 10px;
     }
 
     /* ---------------- EMPTY STATE ---------------- */
@@ -1217,7 +1302,7 @@
 
     @@media (prefers-reduced-motion: reduce) {
         .product-card, .gallery-header, .gallery-header .accent-line, .product-card__badge, .product-card__badge.bid,
-        .product-card__shine, .filter-bar, .stock-flag, .toast, .empty-state svg, .wishlist-fab__count.bump {
+        .product-card__shine, .filter-bar, .stock-flag, .toast, .empty-state svg, .countdown.urgent {
             animation: none !important;
             opacity: 1 !important;
         }
@@ -1268,7 +1353,7 @@
 
             <div class="filter-toggle-group" id="typeToggle">
                 <button class="chip active" data-type="all">All</button>
-                <button class="chip" data-type="buy">Buy Now</button>
+                <button class="chip" asp-action="Placeorder" asp-controller="" data-type="buy">Buy Now</button>
                 <button class="chip" data-type="bid">On Bid</button>
             </div>
 
@@ -1279,12 +1364,9 @@
                     <option value="price-desc">Price: High to Low</option>
                 </select>
             </div>
-
-            <div class="view-toggle" id="viewToggle">
-                <button class="active" data-view="grid" title="Grid view"><i class="bi bi-grid-3x3-gap-fill"></i></button>
-                <button data-view="masonry" title="Masonry view"><i class="bi bi-layout-wtf"></i></button>
-            </div>
         </div>
+
+        <p class="results-count" id="resultsCount"></p>
 
         <div class="filter-empty-msg" id="filterEmptyMsg">
             <i class="bi bi-emoji-frown" style="font-size:1.6rem;color:var(--dark-green);"></i>
@@ -1310,15 +1392,28 @@
                 if (!string.IsNullOrEmpty(image3)) { images.Add(image3); }
                 if (images.Count == 0) { images.Add(Url.Content("~/images/no-image.png")); }
 
+                // Auction items are priced via BidPrice, not item.price (which is typically
+                // unset/0 for bid-only listings) — use the right figure for display and sorting.
+                decimal displayPrice = isBid ? (decimal)item.BidPrice : (decimal)item.price;
+
                 decimal originalPrice = 0;
-                bool hasDiscount = decimal.TryParse(originalPriceRaw, out originalPrice) && originalPrice > (decimal)item.price;
+                bool hasDiscount = !isBid && decimal.TryParse(originalPriceRaw, out originalPrice) && originalPrice > (decimal)item.price;
                 int discountPct = hasDiscount ? (int)Math.Round((1 - ((decimal)item.price / originalPrice)) * 100) : 0;
 
                 bool lowStock = item.quantity > 0 && item.quantity <= LOW_STOCK_THRESHOLD;
 
                 long sortKey = i;
                 DateTime createdParsed;
-                if (DateTime.TryParse(createdRaw, out createdParsed)) { sortKey = createdParsed.Ticks; }
+                bool hasCreatedDate = DateTime.TryParse(createdRaw, out createdParsed);
+                if (hasCreatedDate) { sortKey = createdParsed.Ticks; }
+                bool isNew = hasCreatedDate && (DateTime.Now - createdParsed).TotalDays <= 14;
+
+                // Fields for the Buy Now info box — mirrors the bid info box so both
+                // card types fill the same amount of space instead of leaving a gap.
+                string categoryName = item.SubCategory != null ? item.SubCategory.Name : "Uncategorized";
+                string availabilityText = item.quantity <= 0 ? "Sold Out" : (lowStock ? "Low Stock" : "In Stock");
+                string pricingText = hasDiscount ? ("-" + discountPct + "% Off") : "Standard Price";
+                string listedText = hasCreatedDate ? createdParsed.ToString("dd MMM yyyy") : "—";
 
                 var buyUrl = Url.Action("Buynowlogic", new { id = item.Id });
                 var bidUrl = Url.Action("BidLogic", new { id = item.Id });
@@ -1331,7 +1426,7 @@
                      data-name="@item.Name.ToLower()"
                      data-category="@(item.SubCategory != null ? item.SubCategory.Name : "")"
                      data-type="@(isBid ? "bid" : "buy")"
-                     data-price="@item.price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-price="@displayPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                      data-sortkey="@sortKey"
                      data-view-url="@viewUrl"
                      data-name-display="@item.Name"
@@ -1376,17 +1471,24 @@
                             <div class="product-card__ribbon">-@discountPct%</div>
                         }
 
-                        <div class="product-card__icons">
-                            <a href="@wishlistUrl" class="icon-btn wishlist-btn" title="Add to wishlist" data-wishlist-link>
-                                <i class="bi bi-heart"></i>
-                            </a>
-                        </div>
+                        @if (!isBid)
+                        {
+                            <div class="product-card__icons">
+                                <a href="@wishlistUrl" class="icon-btn wishlist-btn" title="Add to wishlist" data-wishlist-link>
+                                    <i class="bi bi-heart"></i>
+                                </a>
+                            </div>
+                        }
                     </div>
 
                     <div class="product-card__body">
                         <p class="product-card__title">@Html.DisplayFor(modelItem => item.Name)</p>
                         <p class="product-card__category">
                             <i class="bi bi-tag"></i> @Html.DisplayFor(modelItem => item.SubCategory.Name)
+                            @if (isNew)
+                            {
+                                <span class="new-pill">New</span>
+                            }
                         </p>
                         <p class="product-card__desc">@Html.DisplayFor(modelItem => item.Description)</p>
 
@@ -1404,11 +1506,17 @@
 
                         <div class="product-card__meta">
                             <div class="price-wrap">
-                                <span class="product-card__price">@item.price.ToString("C")</span>
-                                @if (hasDiscount)
+                                @if (isBid)
                                 {
-                                    <span class="product-card__price--original">@originalPrice.ToString("C")</span>
+                                    <span class="product-card__price-label">Current bid</span>
                                 }
+                                <div class="price-wrap__row">
+                                    <span class="product-card__price">@displayPrice.ToString("C")</span>
+                                    @if (hasDiscount)
+                                    {
+                                        <span class="product-card__price--original">@originalPrice.ToString("C")</span>
+                                    }
+                                </div>
                             </div>
                             <span class="product-card__qty"><i class="bi bi-box-seam"></i> Qty: @item.quantity</span>
                         </div>
@@ -1416,10 +1524,19 @@
                         @if (isBid)
                         {
                             <div class="product-card__bidinfo">
-                                <span>Starts: <strong>@item.BidStartDate.ToString("dd MMM")</strong></span>
-                                <span>Ends: <strong>@item.BidEndDate.ToString("dd MMM")</strong></span>
-                                <span>Current bid: <strong>@item.BidPrice.ToString("C")</strong></span>
-                                <span>Status: <strong>@item.Status</strong></span>
+                                <span>Starts <strong>@item.BidStartDate.ToString("dd MMM")</strong></span>
+                                <span>Ends <strong>@item.BidEndDate.ToString("dd MMM")</strong></span>
+                                <span>Bid <strong>@item.BidPrice.ToString("C")</strong></span>
+                                <span>Status <strong>@item.Status</strong></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="product-card__bidinfo product-card__buyinfo">
+                                <span>Availability <strong>@availabilityText</strong></span>
+                                <span>Category <strong>@categoryName</strong></span>
+                                <span>Pricing <strong>@pricingText</strong></span>
+                                <span>Listed <strong>@listedText</strong></span>
                             </div>
                         }
                     </div>
@@ -1431,13 +1548,13 @@
 
                         @if (isBid)
                         {
-                            <a asp-action="BidLogic" asp-route-id="@item.Id" class="btn-action btn-bid">
+                            <a asp-action="Placebid" asp-controller="user" asp-route-id="@item.Id" class="btn-action btn-bid">
                                 <i class="bi bi-hammer"></i> Start Bidding
                             </a>
                         }
                         else
                         {
-                            <a asp-action="Buynowlogic" asp-route-id="@item.Id" class="btn-action btn-buy">
+                            <a asp-action="Placeorder" asp-route-id="@item.Id" class="btn-action btn-buy">
                                 <i class="bi bi-bag-check"></i> Buy Now
                             </a>
                         }
@@ -1447,7 +1564,10 @@
         </div>
 
         <div class="recently-viewed" id="recentlyViewed">
-            <h2><i class="bi bi-clock-history"></i> Recently viewed</h2>
+            <div class="rv-header">
+                <h2><i class="bi bi-clock-history"></i> Recently viewed</h2>
+                <button class="rv-clear" id="rvClearAll"><i class="bi bi-trash3"></i> Clear all</button>
+            </div>
             <div class="rv-strip" id="rvStrip"></div>
         </div>
     }
@@ -1475,16 +1595,12 @@
 <!-- Toast container -->
 <div class="toast-stack" id="toastStack"></div>
 
-<!-- Floating wishlist counter -->
-<a href="#" class="wishlist-fab" id="wishlistFab" title="Wishlist">
-    <i class="bi bi-heart-fill"></i>
-    <span class="wishlist-fab__count" id="wishlistCount">0</span>
-</a>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var grid = document.getElementById('productGrid');
         var cards = Array.prototype.slice.call(document.querySelectorAll('.product-card'));
+        // ids of every product currently in the catalog (used to prune stale "recently viewed" entries)
+        var validIds = cards.map(function (c) { return c.getAttribute('data-id'); });
 
         /* ---------- entrance animation on scroll ---------- */
         if ('IntersectionObserver' in window) {
@@ -1527,20 +1643,6 @@
             }, 2600);
         }
 
-        /* ---------- wishlist counter ---------- */
-        var wishlistCountEl = document.getElementById('wishlistCount');
-        var wishlistCount = parseInt(localStorage.getItem('wishlistCount') || '0', 10);
-        wishlistCountEl.textContent = wishlistCount;
-
-        function bumpWishlistCount() {
-            wishlistCount++;
-            localStorage.setItem('wishlistCount', wishlistCount);
-            wishlistCountEl.textContent = wishlistCount;
-            wishlistCountEl.classList.remove('bump');
-            void wishlistCountEl.offsetWidth;
-            wishlistCountEl.classList.add('bump');
-        }
-
         /* ---------- wishlist add (AJAX, no page navigation) ---------- */
         document.querySelectorAll('[data-wishlist-link]').forEach(function (link) {
             link.addEventListener('click', function (e) {
@@ -1551,7 +1653,6 @@
                 fetch(href, { method: 'GET', credentials: 'same-origin' })
                     .then(function () {
                         showToast('Added to your wishlist', 'bi-heart-fill');
-                        bumpWishlistCount();
                     })
                     .catch(function () {
                         showToast('Could not update wishlist', 'bi-exclamation-triangle-fill', 'danger');
@@ -1599,6 +1700,7 @@
                 var textEl = el.querySelector('.countdown-text');
                 if (diff <= 0) {
                     textEl.textContent = 'Bid ended';
+                    el.classList.remove('urgent');
                     return;
                 }
                 var d = Math.floor(diff / 86400000);
@@ -1606,6 +1708,7 @@
                 var m = Math.floor((diff % 3600000) / 60000);
                 var s = Math.floor((diff % 60000) / 1000);
                 textEl.textContent = d > 0 ? (d + 'd ' + h + 'h left') : (h > 0 ? (h + 'h ' + m + 'm left') : (m + 'm ' + s + 's left'));
+                el.classList.toggle('urgent', diff <= 86400000);
             });
         }
         if (countdownEls.length) {
@@ -1619,6 +1722,8 @@
         var typeToggle = document.getElementById('typeToggle');
         var sortSelect = document.getElementById('sortSelect');
         var emptyMsg = document.getElementById('filterEmptyMsg');
+        var resultsCount = document.getElementById('resultsCount');
+        var totalCards = cards.length;
 
         var state = { search: '', category: 'all', type: 'all', sort: 'newest' };
 
@@ -1645,7 +1750,13 @@
             sorted.forEach(function (card) { grid.appendChild(card); });
 
             emptyMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            grid.style.display = visibleCount === 0 ? 'none' : (grid.classList.contains('masonry-view') ? 'block' : 'grid');
+            grid.style.display = visibleCount === 0 ? 'none' : 'grid';
+
+            if (resultsCount) {
+                resultsCount.innerHTML = visibleCount === totalCards
+                    ? '<strong>' + visibleCount + '</strong> piece' + (visibleCount === 1 ? '' : 's') + ' in the collection'
+                    : 'Showing <strong>' + visibleCount + '</strong> of ' + totalCards + ' pieces';
+            }
         }
 
         if (searchInput) {
@@ -1686,18 +1797,6 @@
 
         if (grid) applyFilters();
 
-        /* ---------- grid / masonry view toggle ---------- */
-        var viewToggle = document.getElementById('viewToggle');
-        if (viewToggle) {
-            viewToggle.addEventListener('click', function (e) {
-                var btn = e.target.closest('button');
-                if (!btn) return;
-                viewToggle.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
-                btn.classList.add('active');
-                grid.classList.toggle('masonry-view', btn.getAttribute('data-view') === 'masonry');
-            });
-        }
-
         /* ---------- quick view modal ---------- */
         var qvOverlay = document.getElementById('qvOverlay');
         var qvImage = document.getElementById('qvImage');
@@ -1716,16 +1815,17 @@
             qvCategory.textContent = card.getAttribute('data-category-display');
             qvTitle.textContent = card.getAttribute('data-name-display');
             qvDesc.textContent = card.getAttribute('data-desc');
-            qvPrice.textContent = card.querySelector('.product-card__price').textContent;
 
             var isBidCard = card.getAttribute('data-type') === 'bid';
+            qvPrice.textContent = (isBidCard ? 'Current bid: ' : '') + card.querySelector('.product-card__price').textContent;
+
             if (isBidCard) {
                 qvBidInfo.style.display = 'grid';
                 qvBidInfo.innerHTML =
-                    '<span>Starts: <strong>' + card.getAttribute('data-bidstart') + '</strong></span>' +
-                    '<span>Ends: <strong>' + card.getAttribute('data-bidend-display') + '</strong></span>' +
-                    '<span>Current bid: <strong>' + card.getAttribute('data-bidprice') + '</strong></span>' +
-                    '<span>Status: <strong>' + card.getAttribute('data-status') + '</strong></span>';
+                    '<span>Starts <strong>' + card.getAttribute('data-bidstart') + '</strong></span>' +
+                    '<span>Ends <strong>' + card.getAttribute('data-bidend-display') + '</strong></span>' +
+                    '<span>Current bid <strong>' + card.getAttribute('data-bidprice') + '</strong></span>' +
+                    '<span>Status <strong>' + card.getAttribute('data-status') + '</strong></span>';
             } else {
                 qvBidInfo.style.display = 'none';
             }
@@ -1753,6 +1853,22 @@
         var RV_KEY = 'recentlyViewedProducts';
         var RV_MAX = 8;
 
+        function getRvList() {
+            var list = [];
+            try { list = JSON.parse(localStorage.getItem(RV_KEY) || '[]'); } catch (e) { list = []; }
+
+            // Prune any entries for products that no longer exist in the catalog
+            // (deleted / removed products should never linger in "Recently viewed").
+            if (validIds.length) {
+                var pruned = list.filter(function (it) { return validIds.indexOf(it.id) !== -1; });
+                if (pruned.length !== list.length) {
+                    list = pruned;
+                    localStorage.setItem(RV_KEY, JSON.stringify(list));
+                }
+            }
+            return list;
+        }
+
         function saveRecentlyViewed(card) {
             var entry = {
                 id: card.getAttribute('data-id'),
@@ -1761,7 +1877,7 @@
                 price: card.querySelector('.product-card__price').textContent,
                 url: card.getAttribute('data-view-url')
             };
-            var list = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+            var list = getRvList();
             list = list.filter(function (it) { return it.id !== entry.id; });
             list.unshift(entry);
             if (list.length > RV_MAX) list = list.slice(0, RV_MAX);
@@ -1769,24 +1885,49 @@
             renderRecentlyViewed();
         }
 
+        function removeRecentlyViewed(id) {
+            var list = getRvList().filter(function (it) { return it.id !== id; });
+            localStorage.setItem(RV_KEY, JSON.stringify(list));
+            renderRecentlyViewed();
+        }
+
         function renderRecentlyViewed() {
-            var list = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+            var list = getRvList();
             var section = document.getElementById('recentlyViewed');
             var strip = document.getElementById('rvStrip');
             if (!section || !strip) return;
 
             if (list.length === 0) {
                 section.classList.remove('show');
+                strip.innerHTML = '';
                 return;
             }
 
             strip.innerHTML = list.map(function (it) {
                 return '<a class="rv-item" href="' + it.url + '">' +
-                    '<img src="' + it.image + '" alt="' + it.name + '">' +
+                    '<button type="button" class="rv-remove" data-remove-id="' + it.id + '" title="Remove"><i class="bi bi-x-lg"></i></button>' +
+                    '<div class="rv-item__media"><img src="' + it.image + '" alt="' + it.name + '"></div>' +
                     '<div class="rv-item__name">' + it.name + '</div>' +
+                    '<div class="rv-item__price">' + it.price + '</div>' +
                     '</a>';
             }).join('');
             section.classList.add('show');
+
+            strip.querySelectorAll('[data-remove-id]').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeRecentlyViewed(btn.getAttribute('data-remove-id'));
+                });
+            });
+        }
+
+        var rvClearAll = document.getElementById('rvClearAll');
+        if (rvClearAll) {
+            rvClearAll.addEventListener('click', function () {
+                localStorage.setItem(RV_KEY, JSON.stringify([]));
+                renderRecentlyViewed();
+            });
         }
 
         renderRecentlyViewed();

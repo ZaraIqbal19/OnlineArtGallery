@@ -1,0 +1,2231 @@
+@model Art_Gallery.Models.Product
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Place Bid";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+    // Controller must set:
+    // ViewBag.PreviousBids = bridge.auctionDetails
+    //          .Include(b => b.User)
+    //          .Where(b => b.ProductId == id)
+    //          .OrderByDescending(b => b.bidamount)
+    //          .ToList();
+    var previousBids = ViewBag.PreviousBids as List<Art_Gallery.Models.AuctionDetails>;
+
+    // Controller must set:
+    // ViewBag.RelatedBidProducts = bridge.products
+    //          .Where(p => p.AvailableForBid == "Yes" && p.Id != id)
+    //          .Take(8).ToList();
+    var relatedBidProducts = ViewBag.RelatedBidProducts as List<Art_Gallery.Models.Product>;
+
+    // Optional: ViewBag.RelatedBidCounts = Dictionary<int productId, int bidCount>
+    // Used to show a "Hot" badge on related items with many bids. Safe to omit.
+    var relatedBidCounts = ViewBag.RelatedBidCounts as Dictionary<int, int>;
+
+    float startingBid = Model.BidPrice;
+    float highestBid = (previousBids != null && previousBids.Count > 0)
+        ? previousBids.Max(b => b.bidamount)
+        : startingBid;
+
+    // TODO: replace with your actual minimum bid increment business rule (currently a placeholder).
+    // Keep this value in sync with the MinBidIncrement constant in the controller.
+    float minIncrement = 50f;
+    float minNextBid = highestBid + minIncrement;
+
+    var now = DateTime.Now;
+    var bidStart = Model.BidStartDate.ToDateTime(TimeOnly.MinValue);
+    var bidEnd = Model.BidEndDate.ToDateTime(TimeOnly.MaxValue);
+    bool hasStarted = now >= bidStart;
+    bool hasEnded = now > bidEnd;
+    bool biddingOpen = Model.AvailableForBid == "Yes" && hasStarted && !hasEnded;
+
+    // Current user / winning-bidder detection
+    var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    var topBid = (previousBids != null && previousBids.Count > 0) ? previousBids[0] : null;
+    bool isCurrentUserTopBidder = topBid != null && !string.IsNullOrEmpty(currentUserId) && topBid.UserId == currentUserId;
+    bool currentUserHasBid = previousBids != null && !string.IsNullOrEmpty(currentUserId) && previousBids.Any(b => b.UserId == currentUserId);
+    bool currentUserOutbid = currentUserHasBid && !isCurrentUserTopBidder;
+
+    // Closed-with-winner state (for the richer "auction ended" card)
+    bool closedWithWinner = hasEnded && topBid != null;
+
+    Func<string, string> imgUrl = (img) =>
+    {
+        if (string.IsNullOrWhiteSpace(img))
+        {
+            return Url.Content("~/images/no-image.png");
+        }
+        var clean = img.Replace("\\", "/").TrimStart('/');
+        if (clean.StartsWith("images/products/", StringComparison.OrdinalIgnoreCase))
+        {
+            return Url.Content("~/" + clean);
+        }
+        return Url.Content("~/images/products/" + clean);
+    };
+
+    var images = new List<string>();
+    if (!string.IsNullOrEmpty(Model.Image1)) { images.Add(Model.Image1); }
+    if (!string.IsNullOrEmpty(Model.Image2)) { images.Add(Model.Image2); }
+    if (!string.IsNullOrEmpty(Model.Image3)) { images.Add(Model.Image3); }
+
+    var jsImagesJson = "[" + string.Join(",", images.Select(i => "\"" + imgUrl(i).Replace("\"", "\\\"") + "\"")) + "]";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+
+    :root {
+        --primary: #88d200;
+        --primary-dark: #6fa800;
+        --primary-light: #d4f09b;
+        --primary-ultralight: #f0fae6;
+        --danger: #dc3545;
+        --warning: #e0a800;
+        --silver: #b8bfc7;
+        --bronze: #cd8b52;
+        --radius-sm: 10px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-pill: 30px;
+    }
+
+    body {
+        background: var(--primary-ultralight);
+        padding-bottom: 78px; /* room for the always-on sticky bid bar */
+    }
+
+    .visually-hidden {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .page-top-spacer {
+        height: 28px;
+    }
+
+    .breadcrumb-premium {
+        max-width: 1140px;
+        margin: 0 auto 18px;
+        padding: 0 12px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+        .breadcrumb-premium a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+            .breadcrumb-premium a:hover {
+                text-decoration: underline;
+            }
+
+    /* ===== PERSISTENT STATUS BADGE (follows scroll) ===== */
+    .persistent-status-badge {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 1400;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: var(--radius-pill);
+        font-size: 12.5px;
+        font-weight: 700;
+        box-shadow: 0 8px 22px rgba(0,0,0,.16);
+        animation: fadeIn .3s ease;
+    }
+
+        .persistent-status-badge.show {
+            display: flex;
+        }
+
+        .persistent-status-badge.winning {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .persistent-status-badge.outbid {
+            background: #fff3cd;
+            color: #7a5c00;
+        }
+
+    @@media (max-width: 767.98px) {
+        .persistent-status-badge {
+            top: auto;
+            bottom: 94px;
+            right: 14px;
+        }
+    }
+
+    /* ===== SUCCESS / ERROR BANNER ===== */
+    .success-banner, .error-banner {
+        max-width: 1140px;
+        margin: 0 auto 20px;
+        padding: 0 12px;
+    }
+
+        .success-banner .alert-inner, .error-banner .alert-inner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #fff;
+            border-radius: var(--radius-md);
+            padding: 18px 24px;
+            box-shadow: 0 10px 30px rgba(136,210,0,.18);
+            border: 1px solid rgba(136,210,0,.20);
+            animation: slideAlert .6s cubic-bezier(.4,0,.2,1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .error-banner .alert-inner {
+            box-shadow: 0 10px 30px rgba(220,53,69,.14);
+            border: 1px solid rgba(220,53,69,.20);
+        }
+
+        .success-banner .alert-inner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+        }
+
+        .error-banner .alert-inner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--danger), #a72834);
+        }
+
+    @@keyframes slideAlert {
+        from {
+            opacity: 0;
+            transform: translateX(-24px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .success-icon-pop, .error-icon-pop {
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 20px;
+        animation: popIcon .5s cubic-bezier(.34,1.56,.64,1) .1s both;
+    }
+
+    .success-icon-pop {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    .error-icon-pop {
+        background: linear-gradient(135deg, var(--danger), #a72834);
+    }
+
+    @@keyframes popIcon {
+        0% {
+            transform: scale(0);
+        }
+
+        70% {
+            transform: scale(1.15);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .success-banner h6, .error-banner h6 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 2px 0;
+    }
+
+    .success-banner h6 {
+        color: var(--primary-dark);
+    }
+
+    .error-banner h6 {
+        color: var(--danger);
+    }
+
+    .success-banner p, .error-banner p {
+        font-size: 13.5px;
+        color: #495057;
+        margin: 0;
+    }
+
+    .success-banner .close-btn, .error-banner .close-btn {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: #adb5bd;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /* ===== CARD ===== */
+    .bid-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(136,210,0,.16);
+        animation: fadeIn .5s ease;
+        border: 1px solid rgba(136,210,0,.10);
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== GALLERY ===== */
+    .product-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        background: var(--primary-ultralight);
+    }
+
+        .product-image-wrapper.img-loading::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--primary-ultralight) 25%, var(--primary-light) 50%, var(--primary-ultralight) 75%);
+            background-size: 200% 100%;
+            animation: shimmerLoad 1.4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+    @@keyframes shimmerLoad {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .product-image {
+        width: 100%;
+        height: 380px;
+        object-fit: cover;
+        display: block;
+        cursor: zoom-in;
+        opacity: 0;
+        transition: opacity .4s ease, transform .5s ease;
+    }
+
+        .product-image.loaded {
+            opacity: 1;
+        }
+
+        .product-image:hover {
+            transform: scale(1.03);
+        }
+
+    .image-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #1a1a1a;
+        color: white;
+        padding: 8px 20px;
+        border-radius: var(--radius-pill);
+        font-weight: 600;
+        font-size: 13px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .image-badge.live {
+            background: var(--primary);
+        }
+
+        .image-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            display: inline-block;
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+
+    @@keyframes pulseDot {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: .4;
+            transform: scale(.7);
+        }
+    }
+
+    .gallery-nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.85);
+        border: none;
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all .3s ease;
+        z-index: 3;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+
+    .product-image-wrapper:hover .gallery-nav-arrow {
+        opacity: 1;
+    }
+
+    .gallery-nav-arrow.prev {
+        left: 16px;
+    }
+
+    .gallery-nav-arrow.next {
+        right: 16px;
+    }
+
+    .gallery-nav-arrow:hover {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 28px 24px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.65));
+        color: white;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+        .image-overlay h3 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 22px;
+            text-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+
+        .image-overlay p {
+            margin: 0;
+            opacity: .92;
+            font-size: 13.5px;
+        }
+
+    .thumbnail-gallery {
+        display: flex;
+        gap: 10px;
+        padding: 14px 22px;
+        background: var(--primary-ultralight);
+        border-top: 1px solid var(--primary-light);
+        flex-wrap: wrap;
+    }
+
+    .thumbnail {
+        width: 74px;
+        height: 74px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all .3s ease, opacity .3s ease;
+        opacity: 0;
+    }
+
+        .thumbnail.loaded {
+            opacity: 1;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.06);
+            border-color: var(--primary);
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(136,210,0,.30);
+        }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 22px 22px 6px;
+    }
+
+    .info-box {
+        background: var(--primary-ultralight);
+        padding: 13px 15px;
+        border-radius: var(--radius-sm);
+        border-left: 4px solid var(--primary);
+    }
+
+        .info-box .info-label {
+            display: block;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #5c6b4a;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .info-box .info-value {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+    /* ===== WINNER CARD (closed with a winner) ===== */
+    .winner-card {
+        margin: 20px 22px 0;
+        background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
+        border-radius: var(--radius-md);
+        padding: 20px 24px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+        .winner-card .winner-trophy {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .winner-card .winner-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            opacity: .75;
+        }
+
+        .winner-card .winner-name {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .winner-card .winner-amount {
+            margin-left: auto;
+            text-align: right;
+        }
+
+            .winner-card .winner-amount .amt {
+                font-size: 22px;
+                font-weight: 800;
+                color: var(--primary-light);
+            }
+
+    /* ===== BID HISTORY ===== */
+    .bid-history-section {
+        padding: 20px 22px 10px;
+    }
+
+        .bid-history-section h5 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 14px;
+        }
+
+    .bid-history-list {
+        max-height: 320px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-right: 4px;
+    }
+
+        .bid-history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bid-history-list::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 10px;
+        }
+
+    .bid-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--primary-ultralight);
+        border-radius: var(--radius-sm);
+        padding: 11px 14px;
+        transition: all .25s ease;
+    }
+
+        .bid-row:hover {
+            background: var(--primary-light);
+            transform: translateX(3px);
+        }
+
+        .bid-row.top-bid {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .bid-row.mine {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+
+    .bid-rank {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .bid-row.top-bid .bid-rank {
+        background: var(--primary-light);
+        color: #1a1a1a;
+    }
+
+    .bid-row.rank-silver .bid-rank {
+        background: var(--silver);
+        color: #fff;
+    }
+
+    .bid-row.rank-bronze .bid-rank {
+        background: var(--bronze);
+        color: #fff;
+    }
+
+    .bid-row .bid-user {
+        flex: 1;
+        font-size: 13.5px;
+        font-weight: 600;
+    }
+
+    .bid-row .bid-amount {
+        font-weight: 800;
+        font-size: 14.5px;
+        color: var(--primary-dark);
+    }
+
+    .bid-row.top-bid .bid-amount {
+        color: var(--primary-light);
+    }
+
+    .bid-status-pill {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: var(--radius-pill);
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        background: var(--primary-light);
+        color: var(--primary-dark);
+    }
+
+    .bid-row.top-bid .bid-status-pill {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .no-bids-note {
+        text-align: center;
+        padding: 24px;
+        color: #6c757d;
+        font-size: 13.5px;
+    }
+
+        .no-bids-note i {
+            animation: bounceHand 1.8s ease-in-out infinite;
+            display: block;
+        }
+
+    @@keyframes bounceHand {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-6px);
+        }
+    }
+
+    /* ===== RELATED BID ITEMS STRIP ===== */
+    .related-bid-section {
+        padding: 12px 22px 26px;
+        border-top: 1px solid var(--primary-light);
+        margin-top: 14px;
+    }
+
+        .related-bid-section h5 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+    .related-bid-scroll {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+        .related-bid-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .related-bid-scroll::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 10px;
+        }
+
+    .related-bid-card {
+        position: relative;
+        flex: 0 0 150px;
+        background: var(--primary-ultralight);
+        border: 1px solid var(--primary-light);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        transition: all .25s ease;
+    }
+
+        .related-bid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 22px rgba(136,210,0,.20);
+            border-color: var(--primary);
+            color: inherit;
+        }
+
+        .related-bid-card img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+        }
+
+        .related-bid-card .hot-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: linear-gradient(135deg, #ff7a45, #d9480f);
+            color: #fff;
+            font-size: 9.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 3px 8px rgba(217,72,15,.35);
+        }
+
+        .related-bid-card .rb-body {
+            padding: 8px 10px;
+        }
+
+        .related-bid-card .rb-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .related-bid-card .rb-price {
+            font-size: 11.5px;
+            color: var(--primary-dark);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+    /* ===== RIGHT COLUMN ===== */
+    .bid-right-col {
+        background: white;
+        padding: 40px 42px;
+    }
+
+    .current-bid-panel {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: var(--radius-md);
+        padding: 22px 26px;
+        color: #fff;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bid-status-ribbon {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: var(--radius-pill);
+        margin-bottom: 12px;
+    }
+
+        .bid-status-ribbon.winning {
+            background: rgba(255,255,255,.25);
+            color: #fff;
+        }
+
+        .bid-status-ribbon.outbid {
+            background: #fff3cd;
+            color: #7a5c00;
+        }
+
+    .current-bid-panel .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        opacity: .9;
+    }
+
+    .current-bid-panel .amount {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-top: 2px;
+        display: inline-block;
+    }
+
+    .pulse {
+        animation: pulseValue .5s ease;
+    }
+
+    @@keyframes pulseValue {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .countdown-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .countdown-chip {
+        background: rgba(255,255,255,.18);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        text-align: center;
+        min-width: 58px;
+    }
+
+        .countdown-chip.on-light {
+            background: #fff;
+            border: 1px solid var(--primary-light);
+        }
+
+            .countdown-chip.on-light .num {
+                color: var(--primary-dark);
+            }
+
+            .countdown-chip.on-light .unit {
+                color: #6c757d;
+            }
+
+        .countdown-chip .num {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .countdown-chip .unit {
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: .85;
+        }
+
+    .starts-in-box {
+        background: var(--primary-ultralight);
+        border: 1px solid var(--primary-light);
+        border-radius: var(--radius-sm);
+        padding: 16px 18px;
+        margin-bottom: 20px;
+    }
+
+        .starts-in-box .starts-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .status-banner {
+        background: #fff5f5;
+        border: 1px solid #f3c9c9;
+        color: #a33;
+        border-radius: var(--radius-sm);
+        padding: 14px 18px;
+        font-size: 13.5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .status-banner.pending {
+            background: var(--primary-ultralight);
+            border-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+    .form-control {
+        border-radius: var(--radius-sm);
+        padding: 13px 16px;
+        border: 2px solid var(--primary-light);
+        font-size: 17px;
+        font-weight: 700;
+        transition: all .3s ease;
+    }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(136,210,0,.15);
+        }
+
+        .form-control.is-valid {
+            border-color: var(--primary);
+            background-color: #fbfff2;
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            background-color: #fff6f6;
+        }
+
+    .bid-input-wrap {
+        position: relative;
+    }
+
+        .bid-input-wrap .currency-prefix {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: #6c757d;
+            font-size: 15px;
+        }
+
+        .bid-input-wrap input {
+            padding-left: 48px;
+        }
+
+    .field-error-msg {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--danger);
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+        .field-error-msg.show {
+            display: flex;
+            animation: shakeError .35s ease;
+        }
+
+    @@keyframes shakeError {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .field-success-msg {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--primary-dark);
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+        .field-success-msg.show {
+            display: flex;
+        }
+
+    .quick-bid-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .quick-bid-btn {
+        background: var(--primary-ultralight);
+        border: 2px solid var(--primary-light);
+        color: var(--primary-dark);
+        font-weight: 700;
+        font-size: 12px;
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        transition: all .25s ease;
+        line-height: 1.3;
+        text-align: center;
+    }
+
+        .quick-bid-btn .qb-total {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            opacity: .75;
+        }
+
+        .quick-bid-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+    .terms-box {
+        background: #fff;
+        border-left: 5px solid var(--primary);
+        padding: 16px 18px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(136,210,0,.15);
+        font-size: 13px;
+        margin-top: 20px;
+    }
+
+    .bid-btn {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: var(--radius-sm);
+        color: white;
+        width: 100%;
+        margin-top: 18px;
+        transition: all .3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+        .bid-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(136,210,0,.40);
+            color: #fff;
+        }
+
+        .bid-btn:disabled {
+            background: #cfd8c3;
+            color: #f4f4f4;
+            cursor: not-allowed;
+        }
+
+        .bid-btn .btn-loader {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .bid-btn .btn-loader i {
+                animation: spin 1s linear infinite;
+            }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .text-brand {
+        color: var(--primary-dark) !important;
+    }
+
+    /* ===== CONFIRM MODAL ===== */
+    .confirm-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2200;
+        padding: 20px;
+    }
+
+        .confirm-modal-overlay.active {
+            display: flex;
+            animation: fadeIn .25s ease;
+        }
+
+    .confirm-modal {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        max-width: 420px;
+        width: 100%;
+        padding: 28px 26px;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        animation: popIcon .3s cubic-bezier(.34,1.56,.64,1);
+    }
+
+        .confirm-modal .cm-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .confirm-modal h5 {
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .confirm-modal p {
+            font-size: 13.5px;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+
+        .confirm-modal .cm-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin: 14px 0 20px;
+        }
+
+        .confirm-modal .cm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-modal .cm-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .confirm-modal .cm-cancel {
+            background: var(--primary-ultralight);
+            color: #495057;
+        }
+
+        .confirm-modal .cm-confirm {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+        }
+
+    /* ===== LIGHTBOX ===== */
+    .lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 40px;
+    }
+
+        .lightbox-overlay.active {
+            display: flex;
+            animation: fadeIn .3s ease;
+        }
+
+        .lightbox-overlay img {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 20px 60px rgba(0,0,0,.5);
+        }
+
+    .lightbox-close {
+        position: absolute;
+        top: 24px;
+        right: 28px;
+        background: rgba(255,255,255,.15);
+        border: none;
+        color: #fff;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+        .lightbox-close:hover {
+            background: var(--primary);
+        }
+
+    .lightbox-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.15);
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+        .lightbox-nav:hover {
+            background: var(--primary);
+        }
+
+        .lightbox-nav.prev {
+            left: 24px;
+        }
+
+        .lightbox-nav.next {
+            right: 24px;
+        }
+
+    .lightbox-counter {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        font-size: 13px;
+        background: rgba(255,255,255,.12);
+        padding: 6px 16px;
+        border-radius: var(--radius-pill);
+    }
+
+    /* ===== OUTBID TOAST ===== */
+    .outbid-toast {
+        position: fixed;
+        bottom: 96px;
+        right: 24px;
+        background: #fff;
+        border-left: 5px solid var(--warning);
+        padding: 14px 20px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 12px 30px rgba(0,0,0,.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 2100;
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all .35s ease;
+        font-size: 13.5px;
+        color: #1a1a1a;
+        font-weight: 500;
+        max-width: 320px;
+    }
+
+        .outbid-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .outbid-toast i {
+            color: var(--warning);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+    /* ===== STICKY BID BAR (now shown on all screen sizes) ===== */
+    .mobile-bid-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1500;
+        background: #fff;
+        padding: 12px 16px;
+        box-shadow: 0 -8px 24px rgba(0,0,0,.10);
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+        .mobile-bid-bar .mob-label {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .mobile-bid-bar .mob-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .mobile-bid-bar button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            padding: 12px 26px;
+            border-radius: var(--radius-sm);
+            white-space: nowrap;
+        }
+
+            .mobile-bid-bar button:disabled {
+                background: #cfd8c3;
+                color: #f4f4f4;
+                cursor: not-allowed;
+            }
+
+    @@media (max-width: 767.98px) {
+        .product-image {
+            height: 240px;
+        }
+
+        .bid-right-col {
+            padding: 26px 20px;
+        }
+
+        .current-bid-panel .amount {
+            font-size: 26px;
+        }
+    }
+
+</style>
+
+<div class="page-top-spacer"></div>
+
+<!-- Persistent winning/outbid badge, follows scroll -->
+<div class="persistent-status-badge" id="persistentStatusBadge"></div>
+
+<div class="breadcrumb-premium">
+    <a asp-controller="Home" asp-action="Index">Home</a>
+    <i class="fa-solid fa-chevron-right mx-2" style="font-size:10px;"></i>
+    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
+    <i class="fa-solid fa-chevron-right mx-2" style="font-size:10px;"></i>
+    <span>Place Bid</span>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="success-banner">
+        <div class="alert-inner" id="successAlert">
+            <div class="success-icon-pop"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <h6>Bid Placed Successfully!</h6>
+                <p>@TempData["SuccessMessage"]</p>
+            </div>
+            <button type="button" class="close-btn" onclick="document.getElementById('successAlert').style.display='none'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="error-banner">
+        <div class="alert-inner" id="errorAlert">
+            <div class="error-icon-pop"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div>
+                <h6>Bid Not Placed</h6>
+                <p>@TempData["ErrorMessage"]</p>
+            </div>
+            <button type="button" class="close-btn" onclick="document.getElementById('errorAlert').style.display='none'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+}
+
+<div class="container pb-5">
+
+    <div class="bid-card">
+
+        <div class="row g-0">
+
+            <!-- LEFT COLUMN: Image + Gallery + Bid History + Related -->
+            <div class="col-lg-6">
+
+                <div class="product-image-wrapper img-loading" id="mainImageWrapper">
+                    <img id="mainImage"
+                         src="@imgUrl(images.Count > 0 ? images[0] : null)"
+                         class="product-image"
+                         alt="@Model.Name"
+                         onload="this.classList.add('loaded'); this.closest('.product-image-wrapper').classList.remove('img-loading');"
+                         onclick="openLightbox()">
+
+                    @if (biddingOpen)
+                    {
+                        <div class="image-badge live"><span class="dot"></span> Bidding Live</div>
+                    }
+                    else if (!hasStarted)
+                    {
+                        <div class="image-badge"><i class="fa-regular fa-clock"></i> Starts Soon</div>
+                    }
+                    else
+                    {
+                        <div class="image-badge"><i class="fa-regular fa-flag-checkered"></i> Bidding Closed</div>
+                    }
+
+                    @if (images.Count > 1)
+                    {
+                        <button type="button" class="gallery-nav-arrow prev" onclick="prevImage(event)" aria-label="Previous image">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="gallery-nav-arrow next" onclick="nextImage(event)" aria-label="Next image">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    }
+
+                    <div class="image-overlay">
+                        <h3><i class="fa-solid fa-gavel me-2"></i>@Model.Name</h3>
+                        <p>@(Model.SubCategory?.Name ?? "Category") · Seller: @(Model.User?.UserName ?? "N/A")</p>
+                    </div>
+                </div>
+
+                @if (images.Count > 1)
+                {
+                    <div class="thumbnail-gallery" role="tablist" aria-label="Product images">
+                        @for (int i = 0; i < images.Count; i++)
+                        {
+                            <img src="@imgUrl(images[i])"
+                                 class="thumbnail @(i == 0 ? "active" : "")"
+                                 onclick="showImage(@i)"
+                                 onload="this.classList.add('loaded')"
+                                 loading="lazy"
+                                 role="tab"
+                                 tabindex="0"
+                                 onkeypress="if(event.key==='Enter'){showImage(@i)}"
+                                 aria-selected="@(i == 0 ? "true" : "false")"
+                                 alt="View image @(i + 1) of @images.Count for @Model.Name">
+                        }
+                    </div>
+                }
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-tag me-1"></i>Starting Bid</span>
+                        <span class="info-value">Rs @Model.BidPrice.ToString("N0")</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-calendar me-1"></i>Bid Start</span>
+                        <span class="info-value">@Model.BidStartDate.ToString("dd MMM yyyy")</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-calendar-check me-1"></i>Bid End</span>
+                        <span class="info-value">@Model.BidEndDate.ToString("dd MMM yyyy")</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-cubes me-1"></i>Quantity</span>
+                        <span class="info-value">@Model.quantity</span>
+                    </div>
+                </div>
+
+                @if (closedWithWinner)
+                {
+                    <div class="winner-card">
+                        <div class="winner-trophy"><i class="fa-solid fa-trophy"></i></div>
+                        <div>
+                            <div class="winner-label">Winning Bidder</div>
+                            <div class="winner-name">@(topBid.User?.UserName ?? "Anonymous")</div>
+                        </div>
+                        <div class="winner-amount">
+                            <div class="winner-label">Final Bid</div>
+                            <div class="amt">Rs @topBid.bidamount.ToString("N0")</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Bid History -->
+                <div class="bid-history-section">
+                    <h5><i class="fa-solid fa-clock-rotate-left me-2"></i>Previous Bids</h5>
+
+                    <div class="bid-history-list" id="bidHistoryList">
+                        @if (previousBids != null && previousBids.Count > 0)
+                        {
+                            @for (int i = 0; i < previousBids.Count; i++)
+                            {
+                                var bid = previousBids[i];
+                                bool isMine = !string.IsNullOrEmpty(currentUserId) && bid.UserId == currentUserId;
+                                string rankClass = i == 0 ? "top-bid" : (i == 1 ? "rank-silver" : (i == 2 ? "rank-bronze" : ""));
+                                <div class="bid-row @rankClass @(isMine ? "mine" : "")">
+                                    <div class="bid-rank">@(i == 0 ? "??" : ("#" + (i + 1)))</div>
+                                    <div class="bid-user">@(bid.User?.UserName ?? "Anonymous")@(isMine ? " (You)" : "")</div>
+                                    <div class="bid-status-pill">@(bid.bidstatus ?? "Pending")</div>
+                                    <div class="bid-amount">Rs @bid.bidamount.ToString("N0")</div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-bids-note" id="noBidsNote">
+                                <i class="fa-regular fa-hand-point-up fa-2x mb-2"></i>
+                                No bids yet — be the first to place one!
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Related bid-enabled products -->
+                @if (relatedBidProducts != null && relatedBidProducts.Count > 0)
+                {
+                    <div class="related-bid-section">
+                        <h5><i class="fa-solid fa-fire me-2"></i>Other Items Up For Bid</h5>
+                        <div class="related-bid-scroll">
+                            @foreach (var item in relatedBidProducts)
+                            {
+                                int bidCount = relatedBidCounts != null && relatedBidCounts.ContainsKey(item.Id) ? relatedBidCounts[item.Id] : 0;
+                                <a asp-action="Placebid" asp-route-id="@item.Id" class="related-bid-card">
+                                    @if (bidCount >= 5)
+                                    {
+                                        <span class="hot-badge"><i class="fa-solid fa-fire"></i> Hot</span>
+                                    }
+                                    <img src="@imgUrl(item.Image1)" alt="@item.Name" loading="lazy">
+                                    <div class="rb-body">
+                                        <div class="rb-name">@item.Name</div>
+                                        <div class="rb-price">From Rs @item.BidPrice.ToString("N0")</div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <!-- RIGHT COLUMN: Bid Form -->
+            <div class="col-lg-6 bid-right-col">
+
+                <div class="current-bid-panel">
+                    <div id="bidStatusRibbon">
+                        @if (isCurrentUserTopBidder)
+                        {
+                            <div class="bid-status-ribbon winning"><i class="fa-solid fa-trophy"></i> You're winning!</div>
+                        }
+                        else if (currentUserOutbid)
+                        {
+                            <div class="bid-status-ribbon outbid"><i class="fa-solid fa-triangle-exclamation"></i> You've been outbid</div>
+                        }
+                    </div>
+
+                    <div class="label">Current Highest Bid</div>
+                    <div class="amount" id="highestBidDisplay">Rs @highestBid.ToString("N0")</div>
+                    <span class="visually-hidden" id="highestBidAnnounce" aria-live="polite"></span>
+
+                    @if (biddingOpen)
+                    {
+                        <div class="countdown-row" id="countdownRow" data-end="@bidEnd.ToString("yyyy-MM-ddTHH:mm:ss")">
+                            <div class="countdown-chip"><span class="num" id="cdDays">--</span><span class="unit">Days</span></div>
+                            <div class="countdown-chip"><span class="num" id="cdHours">--</span><span class="unit">Hrs</span></div>
+                            <div class="countdown-chip"><span class="num" id="cdMinutes">--</span><span class="unit">Min</span></div>
+                            <div class="countdown-chip"><span class="num" id="cdSeconds">--</span><span class="unit">Sec</span></div>
+                        </div>
+                        <span class="visually-hidden" id="countdownAnnounce" aria-live="polite"></span>
+                    }
+                </div>
+
+                @if (!hasStarted)
+                {
+                    <div class="starts-in-box" id="startCountdownRow" data-start="@bidStart.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        <div class="starts-label"><i class="fa-regular fa-hourglass-half"></i> Bidding Starts In</div>
+                        <div class="countdown-row">
+                            <div class="countdown-chip on-light"><span class="num" id="startDays">--</span><span class="unit">Days</span></div>
+                            <div class="countdown-chip on-light"><span class="num" id="startHours">--</span><span class="unit">Hrs</span></div>
+                            <div class="countdown-chip on-light"><span class="num" id="startMinutes">--</span><span class="unit">Min</span></div>
+                            <div class="countdown-chip on-light"><span class="num" id="startSeconds">--</span><span class="unit">Sec</span></div>
+                        </div>
+                    </div>
+                }
+
+                @if (!biddingOpen)
+                {
+                    <div class="status-banner">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        @if (!hasStarted)
+                        {
+                            <span>Bidding hasn't started yet. It opens on @Model.BidStartDate.ToString("dd MMM yyyy").</span>
+                        }
+                        else if (closedWithWinner)
+                        {
+                            <span>Bidding has closed. This item sold to @(topBid.User?.UserName ?? "the top bidder") for Rs @topBid.bidamount.ToString("N0").</span>
+                        }
+                        else
+                        {
+                            <span>Bidding has closed for this item. No bids were placed.</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="status-banner pending" id="minBidNotice">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Your bid must be at least Rs <span id="minBidText">@minNextBid.ToString("N0")</span> (current highest + Rs @minIncrement.ToString("N0") minimum increment).</span>
+                    </div>
+                }
+
+                <form asp-controller="user" asp-action="Placebidlogic" asp-route-id="@Model.Id" method="post" id="bidForm" novalidate>
+
+                    <label class="fw-semibold small text-uppercase text-secondary mb-2 d-block">
+                        <i class="fa-solid fa-gavel me-1"></i>Your Bid Amount
+                    </label>
+
+                    <div class="bid-input-wrap">
+                        <span class="currency-prefix">Rs</span>
+                        <input type="text"
+                               inputmode="decimal"
+                               name="bidamount"
+                               id="BidAmount"
+                               class="form-control"
+                               placeholder="@(((int)minNextBid))"
+                               @(biddingOpen ? "" : "disabled")>
+                    </div>
+
+                    <div class="field-error-msg" id="bidError">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="bidErrorText">Bid must be a number of at least Rs @minNextBid.ToString("N0").</span>
+                    </div>
+                    <div class="field-success-msg" id="bidSuccess">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Great — this bid beats the current highest.</span>
+                    </div>
+
+                    <div class="quick-bid-row" id="quickBidRow">
+                        <button type="button" class="quick-bid-btn" data-inc="100">+ Rs 100</button>
+                        <button type="button" class="quick-bid-btn" data-inc="500">+ Rs 500</button>
+                        <button type="button" class="quick-bid-btn" data-inc="1000">+ Rs 1,000</button>
+                        <button type="button" class="quick-bid-btn" data-inc="5000">+ Rs 5,000</button>
+                    </div>
+
+                    <div class="terms-box">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="bidTermsCheck" @(biddingOpen ? "" : "disabled")>
+                            <label class="form-check-label" for="bidTermsCheck">
+                                I understand this bid is binding and cannot be withdrawn once placed.
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn bid-btn" id="submitBidBtn" disabled>
+                        <span class="btn-text"><i class="fa-solid fa-gavel"></i> Place Bid</span>
+                        <span class="btn-loader"><i class="fa-solid fa-spinner"></i> Placing your bid...</span>
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close image viewer"><i class="fa-solid fa-xmark"></i></button>
+    @if (images.Count > 1)
+    {
+        <button class="lightbox-nav prev" onclick="prevImage(event)" aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="lightbox-nav next" onclick="nextImage(event)" aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
+    }
+    <img id="lightboxImage" src="" alt="@Model.Name">
+    @if (images.Count > 1)
+    {
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+    }
+</div>
+
+<!-- ===== BID CONFIRMATION MODAL ===== -->
+<div class="confirm-modal-overlay" id="confirmModalOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="confirm-modal">
+        <div class="cm-icon"><i class="fa-solid fa-gavel"></i></div>
+        <h5 id="confirmModalTitle">Confirm Your Bid</h5>
+        <p>You're about to place a binding bid on <strong>@Model.Name</strong>.</p>
+        <div class="cm-amount" id="confirmModalAmount">Rs 0</div>
+        <p style="font-size:12px; color:#6c757d;">This bid cannot be withdrawn once placed.</p>
+        <div class="cm-actions">
+            <button type="button" class="cm-btn cm-cancel" id="confirmModalCancel">Cancel</button>
+            <button type="button" class="cm-btn cm-confirm" id="confirmModalConfirm">Confirm Bid</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== OUTBID TOAST ===== -->
+<div class="outbid-toast" id="outbidToast">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span id="outbidToastText">You've been outbid — someone placed a higher bid.</span>
+</div>
+
+<!-- ===== STICKY BID BAR (all screen sizes) ===== -->
+<div class="mobile-bid-bar">
+    <div>
+        <div class="mob-label">Current Highest</div>
+        <div class="mob-value" id="mobHighestBid">Rs @highestBid.ToString("N0")</div>
+    </div>
+    <button type="button" id="mobileBidBtn" @(biddingOpen ? "" : "disabled") onclick="document.getElementById('BidAmount').scrollIntoView({behavior:'smooth', block:'center'}); document.getElementById('BidAmount').focus();">
+        Bid Now
+    </button>
+</div>
+
+<script>
+
+    // ===== GALLERY / LIGHTBOX =====
+    const productImages = @Html.Raw(string.IsNullOrEmpty(jsImagesJson) ? "[]" : jsImagesJson);
+    let currentIndex = 0;
+
+    const mainImage = document.getElementById('mainImage');
+    const mainImageWrapper = document.getElementById('mainImageWrapper');
+    const lightboxOverlay = document.getElementById('lightboxOverlay');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    let lastFocusedBeforeLightbox = null;
+
+    function showImage(index) {
+        if (productImages.length === 0) { return; }
+        currentIndex = (index + productImages.length) % productImages.length;
+        const src = productImages[currentIndex];
+
+        mainImage.classList.remove('loaded');
+        mainImageWrapper.classList.add('img-loading');
+        mainImage.src = src;
+
+        document.querySelectorAll('.thumbnail').forEach((t, i) => {
+            t.classList.toggle('active', i === currentIndex);
+            t.setAttribute('aria-selected', i === currentIndex ? 'true' : 'false');
+        });
+
+        if (lightboxOverlay.classList.contains('active')) { updateLightboxImage(); }
+    }
+
+    function nextImage(e) { if (e) { e.stopPropagation(); } showImage(currentIndex + 1); }
+    function prevImage(e) { if (e) { e.stopPropagation(); } showImage(currentIndex - 1); }
+
+    function openLightbox() {
+        if (productImages.length === 0) { return; }
+        lastFocusedBeforeLightbox = document.activeElement;
+        updateLightboxImage();
+        lightboxOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.querySelector('.lightbox-close').focus();
+    }
+
+    function closeLightbox() {
+        lightboxOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        if (lastFocusedBeforeLightbox) { lastFocusedBeforeLightbox.focus(); }
+    }
+
+    function updateLightboxImage() {
+        lightboxImage.src = productImages[currentIndex];
+        if (lightboxCounter) { lightboxCounter.innerText = (currentIndex + 1) + ' / ' + productImages.length; }
+    }
+
+    lightboxOverlay.addEventListener('click', function (e) {
+        if (e.target === lightboxOverlay) { closeLightbox(); }
+    });
+
+    // Simple focus trap while the lightbox is open
+    lightboxOverlay.addEventListener('keydown', function (e) {
+        if (!lightboxOverlay.classList.contains('active')) { return; }
+        if (e.key === 'Tab') {
+            const focusable = lightboxOverlay.querySelectorAll('button');
+            if (focusable.length === 0) { return; }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault(); last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault(); first.focus();
+            }
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!lightboxOverlay.classList.contains('active')) { return; }
+        if (e.key === 'Escape') { closeLightbox(); }
+        if (e.key === 'ArrowRight') { nextImage(); }
+        if (e.key === 'ArrowLeft') { prevImage(); }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ===== SERVER-RENDERED STATE (updated live by polling below) =====
+        let highestBid = @highestBid.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const minIncrement = @minIncrement.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const biddingOpen = @(biddingOpen ? "true" : "false");
+        const currentUserId = @Html.Raw(string.IsNullOrEmpty(currentUserId) ? "null" : "\"" + currentUserId.Replace("\"", "\\\"") + "\"");
+        let userWasTopBidder = @(isCurrentUserTopBidder ? "true" : "false");
+
+        // NOTE: LiveStatus must be implemented on the SAME controller as Placebid/Placebidlogic ("user"),
+        // e.g.: [HttpGet] public IActionResult LiveStatus(int id) => Json(new { highestBid, highestBidderId, bids });
+        const liveStatusUrl = '@Url.Action("LiveStatus", "user", new { id = Model.Id })';
+        let pollingEnabled = true;
+        const pollingIntervalMs = 12000;
+        let pollTimer = null;
+
+        const bidInput = document.getElementById('BidAmount');
+        const bidError = document.getElementById('bidError');
+        const bidSuccess = document.getElementById('bidSuccess');
+        const termsCheck = document.getElementById('bidTermsCheck');
+        const submitBtn = document.getElementById('submitBidBtn');
+        const mobileBidBtn = document.getElementById('mobileBidBtn');
+        const form = document.getElementById('bidForm');
+
+        const highestBidDisplay = document.getElementById('highestBidDisplay');
+        const highestBidAnnounce = document.getElementById('highestBidAnnounce');
+        const mobHighestBid = document.getElementById('mobHighestBid');
+        const minBidText = document.getElementById('minBidText');
+        const bidStatusRibbon = document.getElementById('bidStatusRibbon');
+        const bidHistoryList = document.getElementById('bidHistoryList');
+        const outbidToast = document.getElementById('outbidToast');
+        const persistentBadge = document.getElementById('persistentStatusBadge');
+        const quickBidRow = document.getElementById('quickBidRow');
+
+        const state = { amount: false, terms: false };
+
+        function updateSubmitState() {
+            const valid = biddingOpen && state.amount && state.terms;
+            submitBtn.disabled = !valid;
+            if (mobileBidBtn) { mobileBidBtn.disabled = !biddingOpen; }
+        }
+
+        function minNextBid() { return highestBid + minIncrement; }
+
+        function formatMoney(n) { return Math.round(n).toLocaleString(); }
+
+        function validateAmount() {
+            bidInput.value = bidInput.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+
+            const val = parseFloat(bidInput.value);
+            const valid = !isNaN(val) && val >= minNextBid();
+
+            bidInput.classList.remove('is-valid', 'is-invalid');
+            bidError.classList.remove('show');
+            bidSuccess.classList.remove('show');
+
+            if (bidInput.value.length === 0) {
+                // neutral
+            } else if (valid) {
+                bidInput.classList.add('is-valid');
+                bidSuccess.classList.add('show');
+            } else {
+                bidInput.classList.add('is-invalid');
+                bidError.classList.add('show');
+            }
+
+            state.amount = valid;
+            updateSubmitState();
+        }
+
+        if (bidInput) {
+            bidInput.addEventListener('keydown', function (e) {
+                const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', '.'];
+                if (allowed.includes(e.key)) { return; }
+                if (!/^[0-9]$/.test(e.key)) { e.preventDefault(); }
+            });
+
+            bidInput.addEventListener('input', validateAmount);
+            bidInput.addEventListener('blur', validateAmount);
+        }
+
+        // ===== QUICK BID BUTTONS (show resulting total, stay in sync with live highest) =====
+        function refreshQuickBidLabels() {
+            if (!quickBidRow) { return; }
+            quickBidRow.querySelectorAll('.quick-bid-btn').forEach(btn => {
+                const inc = parseFloat(btn.dataset.inc);
+                const total = highestBid + inc;
+                btn.innerHTML = '+ Rs ' + formatMoney(inc) + '<span class="qb-total">? Rs ' + formatMoney(total) + '</span>';
+            });
+        }
+        refreshQuickBidLabels();
+
+        if (quickBidRow) {
+            quickBidRow.querySelectorAll('.quick-bid-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    if (!biddingOpen) { return; }
+                    const inc = parseFloat(this.dataset.inc);
+                    bidInput.value = (highestBid + inc).toFixed(0);
+                    validateAmount();
+                });
+            });
+        }
+
+        if (termsCheck) {
+            termsCheck.addEventListener('change', function () {
+                state.terms = this.checked;
+                updateSubmitState();
+            });
+        }
+
+        // ===== CONFIRMATION MODAL BEFORE SUBMIT =====
+        const confirmOverlay = document.getElementById('confirmModalOverlay');
+        const confirmAmount = document.getElementById('confirmModalAmount');
+        const confirmCancelBtn = document.getElementById('confirmModalCancel');
+        const confirmConfirmBtn = document.getElementById('confirmModalConfirm');
+        let pendingSubmit = false;
+
+        form.addEventListener('submit', function (e) {
+            if (pendingSubmit) { return; } // user already confirmed, let it go through
+
+            validateAmount();
+            if (!termsCheck.checked) { state.terms = false; }
+
+            if (!(biddingOpen && state.amount && state.terms)) {
+                e.preventDefault();
+                updateSubmitState();
+                return;
+            }
+
+            // Intercept and show the confirm modal instead of submitting immediately
+            e.preventDefault();
+            confirmAmount.innerText = 'Rs ' + formatMoney(parseFloat(bidInput.value));
+            confirmOverlay.classList.add('active');
+            confirmConfirmBtn.focus();
+        });
+
+        confirmCancelBtn.addEventListener('click', function () {
+            confirmOverlay.classList.remove('active');
+        });
+
+        confirmOverlay.addEventListener('click', function (e) {
+            if (e.target === confirmOverlay) { confirmOverlay.classList.remove('active'); }
+        });
+
+        confirmConfirmBtn.addEventListener('click', function () {
+            confirmOverlay.classList.remove('active');
+            pendingSubmit = true;
+
+            submitBtn.querySelector('.btn-text').style.display = 'none';
+            submitBtn.querySelector('.btn-loader').style.display = 'flex';
+            submitBtn.disabled = true;
+
+            form.submit();
+        });
+
+        // ===== END-OF-AUCTION COUNTDOWN =====
+        const countdownRow = document.getElementById('countdownRow');
+        const countdownAnnounce = document.getElementById('countdownAnnounce');
+        let countdownTimer = null;
+        let lastAnnouncedMinute = null;
+
+        if (countdownRow) {
+            const endDate = new Date(countdownRow.dataset.end);
+            const cdDays = document.getElementById('cdDays');
+            const cdHours = document.getElementById('cdHours');
+            const cdMinutes = document.getElementById('cdMinutes');
+            const cdSeconds = document.getElementById('cdSeconds');
+
+            function tick() {
+                const diff = endDate - new Date();
+                if (diff <= 0) {
+                    cdDays.innerText = '00'; cdHours.innerText = '00';
+                    cdMinutes.innerText = '00'; cdSeconds.innerText = '00';
+                    clearInterval(countdownTimer);
+                    // Bidding just ended client-side — lock the form so users can't submit stale bids
+                    submitBtn.disabled = true;
+                    if (mobileBidBtn) { mobileBidBtn.disabled = true; }
+                    bidInput.disabled = true;
+                    termsCheck.disabled = true;
+                    return;
+                }
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / (1000 * 60)) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                cdDays.innerText = String(d).padStart(2, '0');
+                cdHours.innerText = String(h).padStart(2, '0');
+                cdMinutes.innerText = String(m).padStart(2, '0');
+                cdSeconds.innerText = String(s).padStart(2, '0');
+
+                // Throttle screen-reader announcements to once per minute, not every second
+                if (countdownAnnounce && m !== lastAnnouncedMinute) {
+                    lastAnnouncedMinute = m;
+                    countdownAnnounce.innerText = d + ' days ' + h + ' hours ' + m + ' minutes remaining';
+                }
+            }
+
+            tick();
+            countdownTimer = setInterval(tick, 1000);
+        }
+
+        // ===== START-OF-AUCTION COUNTDOWN =====
+        const startCountdownRow = document.getElementById('startCountdownRow');
+        if (startCountdownRow) {
+            const startDate = new Date(startCountdownRow.dataset.start);
+            const sDays = document.getElementById('startDays');
+            const sHours = document.getElementById('startHours');
+            const sMinutes = document.getElementById('startMinutes');
+            const sSeconds = document.getElementById('startSeconds');
+
+            function startTick() {
+                const diff = startDate - new Date();
+                if (diff <= 0) {
+                    sDays.innerText = '00'; sHours.innerText = '00';
+                    sMinutes.innerText = '00'; sSeconds.innerText = '00';
+                    clearInterval(startTimer);
+                    // Bidding just opened client-side — refresh so the form unlocks
+                    location.reload();
+                    return;
+                }
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / (1000 * 60)) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                sDays.innerText = String(d).padStart(2, '0');
+                sHours.innerText = String(h).padStart(2, '0');
+                sMinutes.innerText = String(m).padStart(2, '0');
+                sSeconds.innerText = String(s).padStart(2, '0');
+            }
+
+            startTick();
+            var startTimer = setInterval(startTick, 1000);
+        }
+
+        // ===== OUTBID TOAST =====
+        let outbidToastTimer;
+        function showOutbidToast(text) {
+            document.getElementById('outbidToastText').innerText = text;
+            outbidToast.classList.add('show');
+            clearTimeout(outbidToastTimer);
+            outbidToastTimer = setTimeout(() => outbidToast.classList.remove('show'), 6000);
+        }
+
+        // ===== PULSE + COUNT-UP HELPERS =====
+        function pulse(el) {
+            el.classList.remove('pulse');
+            void el.offsetWidth;
+            el.classList.add('pulse');
+        }
+
+        function animateCountUp(el, fromValue, toValue) {
+            const duration = 500;
+            const start = performance.now();
+            function frame(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const current = fromValue + (toValue - fromValue) * progress;
+                el.innerText = 'Rs ' + formatMoney(current);
+                if (progress < 1) { requestAnimationFrame(frame); }
+                else { el.innerText = 'Rs ' + formatMoney(toValue); }
+            }
+            requestAnimationFrame(frame);
+        }
+
+        // ===== PERSISTENT STATUS BADGE =====
+        function updatePersistentBadge(isTop, hadBidBefore) {
+            if (isTop) {
+                persistentBadge.className = 'persistent-status-badge winning show';
+                persistentBadge.innerHTML = '<i class="fa-solid fa-trophy"></i> Winning';
+            } else if (currentUserId && hadBidBefore) {
+                persistentBadge.className = 'persistent-status-badge outbid show';
+                persistentBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Outbid';
+            } else {
+                persistentBadge.className = 'persistent-status-badge';
+                persistentBadge.innerHTML = '';
+            }
+        }
+        updatePersistentBadge(userWasTopBidder, bidHistoryList.querySelector('.bid-row.mine') !== null);
+
+        // ===== RE-RENDER BID HISTORY FROM LIVE DATA =====
+        function renderBidHistory(bids) {
+            if (!bids || bids.length === 0) {
+                bidHistoryList.innerHTML = '<div class="no-bids-note" id="noBidsNote"><i class="fa-regular fa-hand-point-up fa-2x mb-2"></i>No bids yet — be the first to place one!</div>';
+                return;
+            }
+            let html = '';
+            bids.forEach((bid, i) => {
+                const rankClass = i === 0 ? 'top-bid' : (i === 1 ? 'rank-silver' : (i === 2 ? 'rank-bronze' : ''));
+                const isMine = currentUserId && bid.userId === currentUserId;
+                html += '<div class="bid-row ' + rankClass + ' ' + (isMine ? 'mine' : '') + '">'
+                    + '<div class="bid-rank">' + (i === 0 ? '??' : ('#' + (i + 1))) + '</div>'
+                    + '<div class="bid-user">' + (bid.userName || 'Anonymous') + (isMine ? ' (You)' : '') + '</div>'
+                    + '<div class="bid-status-pill">' + (bid.status || 'Pending') + '</div>'
+                    + '<div class="bid-amount">Rs ' + formatMoney(bid.amount) + '</div>'
+                    + '</div>';
+            });
+            bidHistoryList.innerHTML = html;
+        }
+
+        // ===== UPDATE RIBBON =====
+        function updateRibbon(topBidderId) {
+            const isTop = currentUserId && topBidderId === currentUserId;
+            const hadBidBefore = bidHistoryList.querySelector('.bid-row.mine') !== null;
+
+            if (isTop) {
+                bidStatusRibbon.innerHTML = '<div class="bid-status-ribbon winning"><i class="fa-solid fa-trophy"></i> You are winning!</div>';
+            } else if (currentUserId && hadBidBefore) {
+                bidStatusRibbon.innerHTML = '<div class="bid-status-ribbon outbid"><i class="fa-solid fa-triangle-exclamation"></i> You have been outbid</div>';
+            } else {
+                bidStatusRibbon.innerHTML = '';
+            }
+            updatePersistentBadge(isTop, hadBidBefore);
+        }
+
+        // ===== LIVE POLLING (pauses while the tab is hidden) =====
+        async function pollBidStatus() {
+            if (!pollingEnabled || !biddingOpen || document.hidden) { return; }
+            try {
+                const res = await fetch(liveStatusUrl, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) { return; }
+                const data = await res.json();
+                if (typeof data.highestBid !== 'number') { return; }
+
+                const changed = data.highestBid !== highestBid;
+                const wasTop = userWasTopBidder;
+                const isTopNow = currentUserId && data.highestBidderId === currentUserId;
+                const previousHighest = highestBid;
+
+                highestBid = data.highestBid;
+
+                if (changed) {
+                    animateCountUp(highestBidDisplay, previousHighest, highestBid);
+                    mobHighestBid.innerText = 'Rs ' + formatMoney(highestBid);
+                    if (highestBidAnnounce) { highestBidAnnounce.innerText = 'New highest bid: Rs ' + formatMoney(highestBid); }
+                    pulse(highestBidDisplay);
+                    pulse(mobHighestBid);
+                    refreshQuickBidLabels();
+                } else {
+                    highestBidDisplay.innerText = 'Rs ' + formatMoney(highestBid);
+                    mobHighestBid.innerText = 'Rs ' + formatMoney(highestBid);
+                }
+
+                if (minBidText) { minBidText.innerText = formatMoney(minNextBid()); }
+
+                if (Array.isArray(data.bids)) { renderBidHistory(data.bids); }
+
+                updateRibbon(data.highestBidderId);
+
+                if (wasTop && !isTopNow && changed) {
+                    showOutbidToast('You have been outbid — new highest is Rs ' + formatMoney(highestBid) + '.');
+                }
+                userWasTopBidder = isTopNow;
+
+                if (bidInput.value.length > 0) { validateAmount(); }
+            } catch (err) {
+                // Silently ignore — endpoint may not exist yet, or the network hiccuped.
+            }
+        }
+
+        function startPolling() {
+            if (pollTimer) { return; }
+            if (pollingEnabled && biddingOpen) {
+                pollBidStatus();
+                pollTimer = setInterval(pollBidStatus, pollingIntervalMs);
+            }
+        }
+
+        function stopPolling() {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        }
+
+        // Pause polling while the tab is in the background, resume when it's visible again
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) { stopPolling(); }
+            else { startPolling(); }
+        });
+
+        startPolling();
+
+        // Initialize
+        updateSubmitState();
+    });
+
+</script>

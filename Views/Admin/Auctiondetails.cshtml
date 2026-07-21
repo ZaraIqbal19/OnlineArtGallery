@@ -1,58 +1,43 @@
-@model IEnumerable<Art_Gallery.Models.Product>
+@model IEnumerable<Art_Gallery.Models.AuctionDetails>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Auction List";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@functions {
+    // Image1 sometimes ends up saved as a full disk path (e.g. C:\Users\...\products\file.jpg)
+    // instead of just the filename, which breaks the <img> src. This pulls out just the
+    // filename regardless of how it was stored, so it always resolves under wwwroot/images/products.
+    string GetProductImageFileName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+        var normalized = raw.Replace('\\', '/');
+        var fileName = normalized.Substring(normalized.LastIndexOf('/') + 1);
+        return fileName;
+    }
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
 <style>
-    /* ===== everything scoped under .products-page so it can't leak into the admin shell ===== */
-    .products-page {
+    /* ===== everything scoped under .auctions-page so it can't leak into the admin shell ===== */
+    .auctions-page {
         font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
         padding: 1.5rem 0;
     }
 
-        .products-page *,
-        .products-page *::before,
-        .products-page *::after {
+        .auctions-page *,
+        .auctions-page *::before,
+        .auctions-page *::after {
             box-sizing: border-box;
         }
 
-        .products-page .container-cust {
+        .auctions-page .container-cust {
             max-width: 1280px;
             margin: 0 auto;
         }
 
-        /* ----- alerts ----- */
-        .products-page .alert-cust {
-            border: none;
-            border-radius: 16px;
-            padding: 14px 22px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-            animation: fadeSlideProd 0.4s ease;
-        }
-
-        .products-page .alert-success-cust {
-            background: #f0fae6;
-            color: #4c7800;
-            border-left: 6px solid #88d200;
-        }
-
-        .products-page .alert-danger-cust {
-            background: #fff5f5;
-            color: #a51b1b;
-            border-left: 6px solid #dc3545;
-        }
-
         /* ----- main card / glass effect ----- */
-        .products-page .admin-card {
+        .auctions-page .admin-card {
             background: rgba(255, 255, 255, 0.97);
             border-radius: 2rem;
             padding: 2rem 1.8rem 1.8rem 1.8rem;
@@ -62,7 +47,7 @@
             overflow: hidden;
         }
 
-            .products-page .admin-card::before {
+            .auctions-page .admin-card::before {
                 content: "";
                 position: absolute;
                 top: 0;
@@ -73,7 +58,7 @@
             }
 
         /* ----- header ----- */
-        .products-page .header-section {
+        .auctions-page .header-section {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -84,13 +69,13 @@
             border-bottom: 2px solid rgba(136, 210, 0, 0.18);
         }
 
-        .products-page .brand-head {
+        .auctions-page .brand-head {
             display: flex;
             align-items: center;
             gap: 0.9rem;
         }
 
-        .products-page .brand-icon {
+        .auctions-page .brand-icon {
             background: #88d200;
             width: 48px;
             height: 48px;
@@ -105,12 +90,12 @@
             flex-shrink: 0;
         }
 
-            .products-page .brand-icon:hover {
+            .auctions-page .brand-icon:hover {
                 transform: rotate(-6deg) scale(1.04);
                 background: #6fa800;
             }
 
-        .products-page .heading-green {
+        .auctions-page .heading-green {
             font-weight: 700;
             font-size: 1.85rem;
             letter-spacing: -0.5px;
@@ -122,7 +107,7 @@
             flex-wrap: wrap;
         }
 
-            .products-page .heading-green span {
+            .auctions-page .heading-green span {
                 background: #88d200;
                 color: white;
                 font-size: 0.85rem;
@@ -132,14 +117,14 @@
                 letter-spacing: 0.3px;
             }
 
-        .products-page .header-actions {
+        .auctions-page .header-actions {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .products-page .status-badge {
+        .auctions-page .status-badge {
             background: white;
             border: 1.5px solid #88d200;
             color: #6fa800;
@@ -151,42 +136,19 @@
             white-space: nowrap;
         }
 
-            .products-page .status-badge i {
+            .auctions-page .status-badge i {
                 color: #88d200;
                 margin-right: 6px;
             }
 
-        .products-page .btn-add-customer {
-            background: linear-gradient(135deg, #88d200, #6fa800);
-            color: white;
-            border: none;
-            border-radius: 60px;
-            padding: 0.55rem 1.4rem;
-            font-weight: 600;
-            font-size: 0.82rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.3);
-            transition: all 0.25s;
-            white-space: nowrap;
-        }
-
-            .products-page .btn-add-customer:hover {
-                transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 12px 24px rgba(111, 168, 0, 0.4);
-                color: white;
-            }
-
-        .products-page .btn-export {
+        .auctions-page .btn-export {
             background: white;
             color: #6fa800;
             border: 1.5px solid #88d200;
             border-radius: 60px;
-            padding: 0.5rem 1.3rem;
+            padding: 0.55rem 1.4rem;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -196,22 +158,22 @@
             white-space: nowrap;
         }
 
-            .products-page .btn-export:hover {
+            .auctions-page .btn-export:hover {
                 background: #88d200;
                 color: white;
                 transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 10px 20px rgba(136, 210, 0, 0.28);
+                box-shadow: 0 12px 24px rgba(111, 168, 0, 0.4);
             }
 
         /* ----- stat cards ----- */
-        .products-page .stats-row {
+        .auctions-page .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 14px;
             margin-bottom: 1.4rem;
         }
 
-        .products-page .stat-card {
+        .auctions-page .stat-card {
             background: #f0fae6;
             border: 1px solid #d4f09b;
             border-radius: 16px;
@@ -222,13 +184,13 @@
             transition: all 0.25s;
         }
 
-            .products-page .stat-card:hover {
+            .auctions-page .stat-card:hover {
                 background: #d4f09b;
                 transform: translateY(-3px);
                 box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
             }
 
-        .products-page .stat-icon {
+        .auctions-page .stat-icon {
             width: 40px;
             height: 40px;
             border-radius: 12px;
@@ -242,14 +204,14 @@
             box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
         }
 
-        .products-page .stat-value {
+        .auctions-page .stat-value {
             font-weight: 700;
             font-size: 1.25rem;
             color: #1a1a1a;
             line-height: 1.1;
         }
 
-        .products-page .stat-label {
+        .auctions-page .stat-label {
             font-size: 0.76rem;
             color: #5c7a2e;
             font-weight: 600;
@@ -257,7 +219,7 @@
         }
 
         /* ----- toolbar / search ----- */
-        .products-page .toolbar-row {
+        .auctions-page .toolbar-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -266,7 +228,7 @@
             margin-bottom: 1.1rem;
         }
 
-        .products-page .search-box {
+        .auctions-page .search-box {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -279,17 +241,17 @@
             transition: all 0.2s;
         }
 
-            .products-page .search-box:focus-within {
+            .auctions-page .search-box:focus-within {
                 border-color: #88d200;
                 background: white;
                 box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
             }
 
-            .products-page .search-box i {
+            .auctions-page .search-box i {
                 color: #6fa800;
             }
 
-            .products-page .search-box input {
+            .auctions-page .search-box input {
                 border: none;
                 outline: none;
                 background: transparent;
@@ -298,60 +260,58 @@
                 color: #1a1a1a;
             }
 
-        .products-page .toolbar-right {
+        .auctions-page .toolbar-right {
             display: flex;
             align-items: center;
             gap: 14px;
             flex-wrap: wrap;
         }
 
-        .products-page .result-count {
+        .auctions-page .result-count {
             font-size: 0.8rem;
             color: #5c7a2e;
             font-weight: 600;
             white-space: nowrap;
         }
 
-        /* ----- table ----- */
-        .products-page .table-responsive-cust {
-            border-radius: 1.6rem;
-            overflow-x: auto;
-            overflow-y: auto;
-            max-height: 520px;
-            padding-bottom: 6px;
-            scrollbar-width: thin;
-            scrollbar-color: #88d200 #eef6de;
+        .auctions-page .scroll-hint {
+            font-size: 0.78rem;
+            color: #6fa800;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
 
-            .products-page .table-responsive-cust::-webkit-scrollbar {
-                height: 10px;
-                width: 10px;
+        /* ----- table (drag-to-scroll, no bottom scrollbar hassle) ----- */
+        .auctions-page .table-responsive-cust {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+            cursor: grab;
+            user-select: none;
+        }
+
+            .auctions-page .table-responsive-cust::-webkit-scrollbar {
+                display: none;
             }
 
-            .products-page .table-responsive-cust::-webkit-scrollbar-track {
-                background: #eef6de;
-                border-radius: 20px;
+            .auctions-page .table-responsive-cust.dragging {
+                cursor: grabbing;
             }
 
-            .products-page .table-responsive-cust::-webkit-scrollbar-thumb {
-                background: linear-gradient(90deg, #88d200, #6fa800);
-                border-radius: 20px;
-                border: 2px solid #eef6de;
-            }
-
-                .products-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
-                    background: #6fa800;
-                }
-
-        .products-page .table-green-white {
+        .auctions-page .table-green-white {
             border-collapse: separate;
             border-spacing: 0 10px;
             width: 100%;
-            min-width: 700px;
+            min-width: 1050px;
             margin-bottom: 0;
         }
 
-            .products-page .table-green-white thead th {
+            .auctions-page .table-green-white thead th {
                 background: #88d200;
                 color: white;
                 font-weight: 600;
@@ -361,57 +321,66 @@
                 padding: 15px 18px;
                 border: none;
                 transition: background 0.2s;
-                position: sticky;
-                top: 0;
-                z-index: 2;
-                text-align: center;
+                text-align: left;
+                vertical-align: middle;
+                white-space: nowrap;
             }
 
-                .products-page .table-green-white thead th:first-child {
+                .auctions-page .table-green-white thead th .th-inner {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .auctions-page .table-green-white thead th.text-end .th-inner {
+                    justify-content: flex-end;
+                }
+
+                .auctions-page .table-green-white thead th:first-child {
                     border-radius: 20px 0 0 20px;
                     padding-left: 26px;
                 }
 
-                .products-page .table-green-white thead th:last-child {
+                .auctions-page .table-green-white thead th:last-child {
                     border-radius: 0 20px 20px 0;
                     padding-right: 26px;
                 }
 
-                .products-page .table-green-white thead th:hover {
-                    background: #6fa800;
+                .auctions-page .table-green-white thead th.text-end {
+                    text-align: right;
                 }
 
-                .products-page .table-green-white thead th i.fa-fw-lead {
-                    margin-right: 6px;
+                .auctions-page .table-green-white thead th i.fa-fw-lead {
+                    margin-right: 0;
                     opacity: 0.9;
                 }
 
-                .products-page .table-green-white thead th.sortable {
+                .auctions-page .table-green-white thead th.sortable {
                     cursor: pointer;
                     user-select: none;
                 }
 
-                    .products-page .table-green-white thead th.sortable .sort-icon {
+                    .auctions-page .table-green-white thead th.sortable .sort-icon {
                         margin-left: 6px;
                         font-size: 0.63rem;
                         opacity: 0.6;
                         transition: opacity 0.2s, transform 0.2s;
                     }
 
-                    .products-page .table-green-white thead th.sortable:hover .sort-icon {
+                    .auctions-page .table-green-white thead th.sortable:hover .sort-icon {
                         opacity: 1;
                     }
 
-                .products-page .table-green-white thead th.sort-asc .sort-icon,
-                .products-page .table-green-white thead th.sort-desc .sort-icon {
+                .auctions-page .table-green-white thead th.sort-asc .sort-icon,
+                .auctions-page .table-green-white thead th.sort-desc .sort-icon {
                     opacity: 1;
                 }
 
-                .products-page .table-green-white thead th.sort-desc .sort-icon {
+                .auctions-page .table-green-white thead th.sort-desc .sort-icon {
                     transform: rotate(180deg);
                 }
 
-        .products-page .empty-state-row td {
+        .auctions-page .empty-state-row td {
             text-align: center;
             padding: 40px 20px !important;
             color: #8a9a6e;
@@ -420,25 +389,25 @@
             border-radius: 20px !important;
         }
 
-        .products-page .empty-state-row i {
+        .auctions-page .empty-state-row i {
             display: block;
             font-size: 2rem;
             color: #d4f09b;
             margin-bottom: 10px;
         }
 
-        .products-page .table-green-white tbody tr {
+        .auctions-page .table-green-white tbody tr {
             background: white;
             border-radius: 18px;
             box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
             transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
             border: 1px solid rgba(136, 210, 0, 0.06);
             opacity: 0;
-            animation: fadeSlideProd 0.45s forwards;
+            animation: fadeSlideAuctions 0.45s forwards;
             animation-delay: calc(0.05s * var(--i, 1));
         }
 
-    @@keyframes fadeSlideProd {
+    @@keyframes fadeSlideAuctions {
         0% {
             opacity: 0;
             transform: translateY(16px) scale(0.98);
@@ -450,125 +419,194 @@
         }
     }
 
-    .products-page .table-green-white tbody tr:hover {
+    .auctions-page .table-green-white tbody tr:hover {
         background: #fbffef;
         border-color: #d4f09b;
         transform: scale(1.006) translateY(-2px);
         box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
     }
 
-    .products-page .table-green-white tbody td {
-        padding: 16px 18px;
+    .auctions-page .table-green-white tbody td {
+        padding: 12px 18px;
         vertical-align: middle;
         border: none;
         background: transparent;
         font-size: 0.92rem;
-        text-align: center;
     }
 
-        .products-page .table-green-white tbody td:first-child {
+        .auctions-page .table-green-white tbody td:first-child {
             padding-left: 26px;
             border-radius: 18px 0 0 18px;
         }
 
-        .products-page .table-green-white tbody td:last-child {
+        .auctions-page .table-green-white tbody td:last-child {
             padding-right: 26px;
             border-radius: 0 18px 18px 0;
         }
 
-    .products-page .name-cell {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+        /* sticky image column so it stays visible while dragging/scrolling horizontally */
+        .auctions-page .table-green-white thead th:first-child,
+        .auctions-page .table-green-white tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #88d200;
+        }
+
+        .auctions-page .table-green-white tbody td:first-child {
+            background: white;
+            box-shadow: 4px 0 8px -4px rgba(111, 168, 0, 0.15);
+        }
+
+    .auctions-page .table-green-white tbody tr:hover td:first-child {
+        background: #fbffef;
     }
 
-    .products-page .prod-thumb {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
+    .auctions-page .product-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
         object-fit: cover;
-        flex-shrink: 0;
-        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.25);
+        border: 1.5px solid #d4f09b;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.18);
+        transition: transform 0.2s;
+        background: #f0fae6;
     }
 
-    .products-page .prod-thumb-placeholder {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #88d200, #6fa800);
-        color: white;
-        font-weight: 700;
-        font-size: 0.9rem;
+    .auctions-page .table-green-white tbody tr:hover .product-thumb {
+        transform: scale(1.06);
+    }
+
+    .auctions-page .thumb-fallback {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: #f0fae6;
+        border: 1.5px dashed #d4f09b;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
-        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+        color: #88d200;
+        font-size: 1.3rem;
     }
 
-    .products-page .prod-name {
+    .auctions-page .product-name-cell {
         font-weight: 700;
         color: #1a1a1a;
         transition: 0.15s;
         white-space: nowrap;
     }
 
-    .products-page .table-green-white tbody tr:hover .prod-name {
+    .auctions-page .table-green-white tbody tr:hover .product-name-cell {
         color: #6fa800;
     }
 
-    .products-page .prod-sub {
-        font-size: 0.78rem;
-        color: #8a9a6e;
-        font-weight: 500;
+    .auctions-page .customer-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    /* ----- status badges (kept prominent, per requirements) ----- */
-    .products-page .badge-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 60px;
-        font-size: 0.74rem;
+    .auctions-page .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: white;
         font-weight: 700;
-        letter-spacing: 0.3px;
-        text-transform: capitalize;
+        font-size: 0.78rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+        transition: transform 0.2s;
+    }
+
+    .auctions-page .table-green-white tbody tr:hover .user-avatar {
+        transform: scale(1.08);
+    }
+
+    .auctions-page .user-name {
+        font-weight: 700;
+        color: #1a1a1a;
+        transition: 0.15s;
         white-space: nowrap;
     }
 
-        .products-page .badge-status i {
-            font-size: 0.5rem;
+    .auctions-page .table-green-white tbody tr:hover .user-name {
+        color: #6fa800;
+    }
+
+    .auctions-page .info-pill {
+        background: #f0fae6;
+        color: #4c7800;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .auctions-page .table-green-white tbody tr:hover .info-pill {
+        background: #d4f09b;
+    }
+
+    .auctions-page .price-cell {
+        font-weight: 700;
+        color: #4c7800;
+        white-space: nowrap;
+    }
+
+    .auctions-page .status-badge-row {
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.76rem;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+        .auctions-page .status-badge-row.status-pending {
+            background: #fff6e0;
+            color: #a66a00;
         }
 
-        .products-page .badge-status.status-active {
-            background: #f0fae6;
+        .auctions-page .status-badge-row.status-won,
+        .auctions-page .status-badge-row.status-completed,
+        .auctions-page .status-badge-row.status-accepted {
+            background: #eaf7d6;
             color: #4c7800;
-            border: 1px solid #88d200;
         }
 
-        .products-page .badge-status.status-inactive {
-            background: #fff5f5;
+        .auctions-page .status-badge-row.status-cancelled,
+        .auctions-page .status-badge-row.status-rejected,
+        .auctions-page .status-badge-row.status-lost {
+            background: #fdeaea;
             color: #a51b1b;
-            border: 1px solid #f0c8c8;
         }
 
-        .products-page .badge-status.status-pending {
-            background: #fff8e6;
-            color: #a5720b;
-            border: 1px solid #f0dca8;
+        .auctions-page .status-badge-row.status-active,
+        .auctions-page .status-badge-row.status-outbid {
+            background: #e6f1fc;
+            color: #1a5fa5;
         }
 
     /* action buttons */
-    .products-page .actions-wrap {
+    .auctions-page .actions-wrap {
         display: flex;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         align-items: center;
         gap: 8px;
     }
 
-    .products-page .btn-action {
+    .auctions-page .btn-action {
         border-radius: 60px;
         padding: 8px 16px;
         font-weight: 600;
@@ -582,45 +620,29 @@
         text-decoration: none;
         line-height: 1;
         cursor: pointer;
-        white-space: nowrap;
-        flex-shrink: 0;
     }
 
-    .products-page .btn-edit {
-        background: white;
-        color: #6fa800;
-        border: 1.5px solid #88d200;
+    .auctions-page .btn-details {
+        background: #88d200;
+        color: white;
+        border-color: #88d200;
     }
 
-        .products-page .btn-edit:hover {
-            background: #88d200;
+        .auctions-page .btn-details:hover {
+            background: #6fa800;
+            border-color: #6fa800;
             color: white;
             transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.22);
-            border-color: #88d200;
+            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
         }
 
-    .products-page .btn-details {
-        background: white;
-        color: #495057;
-        border: 1.5px solid #dee2e6;
-    }
-
-        .products-page .btn-details:hover {
-            background: #495057;
-            color: white;
-            border-color: #495057;
-            transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 12px 20px rgba(73, 80, 87, 0.2);
-        }
-
-    .products-page .btn-delete {
+    .auctions-page .btn-delete {
         background: transparent;
         color: #a51b1b;
         border: 1.5px solid #f0c8c8;
     }
 
-        .products-page .btn-delete:hover {
+        .auctions-page .btn-delete:hover {
             background: #dc3545;
             color: white;
             border-color: #dc3545;
@@ -629,7 +651,7 @@
         }
 
     /* footer */
-    .products-page .table-footer {
+    .auctions-page .table-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -642,12 +664,12 @@
         gap: 10px;
     }
 
-        .products-page .table-footer i {
+        .auctions-page .table-footer i {
             color: #88d200;
             margin: 0 4px;
         }
 
-        .products-page .table-footer .pill {
+        .auctions-page .table-footer .pill {
             background: #f0fae6;
             padding: 0.2rem 1.2rem;
             border-radius: 60px;
@@ -656,13 +678,13 @@
             transition: 0.15s;
         }
 
-            .products-page .table-footer .pill:hover {
+            .auctions-page .table-footer .pill:hover {
                 background: #88d200;
                 color: white;
             }
 
     /* ===== DELETE MODAL ===== */
-    .products-page .delete-modal-overlay {
+    .auctions-page .delete-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -674,10 +696,10 @@
         display: none;
         align-items: center;
         justify-content: center;
-        animation: fadeInOverlayProd 0.3s ease;
+        animation: fadeInOverlayAuctions 0.3s ease;
     }
 
-    @@keyframes fadeInOverlayProd {
+    @@keyframes fadeInOverlayAuctions {
         from {
             opacity: 0;
         }
@@ -687,19 +709,19 @@
         }
     }
 
-    .products-page .delete-modal {
+    .auctions-page .delete-modal {
         background: #ffffff;
         border-radius: 24px;
         padding: 2.5rem;
         max-width: 440px;
         width: 90%;
         position: relative;
-        animation: modalSlideUpProd 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: modalSlideUpAuctions 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
         text-align: center;
     }
 
-    @@keyframes modalSlideUpProd {
+    @@keyframes modalSlideUpAuctions {
         from {
             transform: scale(0.8) translateY(40px);
             opacity: 0;
@@ -711,7 +733,7 @@
         }
     }
 
-    .products-page .delete-modal .modal-icon {
+    .auctions-page .delete-modal .modal-icon {
         width: 80px;
         height: 80px;
         background: linear-gradient(135deg, #fff5f5, #ffe8e8);
@@ -722,10 +744,10 @@
         margin: 0 auto 1.5rem;
         font-size: 2.5rem;
         color: #dc3545;
-        animation: pulseIconProd 1.5s ease-in-out infinite;
+        animation: pulseIconAuctions 1.5s ease-in-out infinite;
     }
 
-    @@keyframes pulseIconProd {
+    @@keyframes pulseIconAuctions {
         0%, 100% {
             transform: scale(1);
         }
@@ -735,21 +757,21 @@
         }
     }
 
-    .products-page .delete-modal h3 {
+    .auctions-page .delete-modal h3 {
         color: #1a1a2e;
         font-weight: 700;
         margin-bottom: 0.5rem;
         font-size: 1.5rem;
     }
 
-    .products-page .delete-modal p {
+    .auctions-page .delete-modal p {
         color: #6c757d;
         font-size: 0.95rem;
         line-height: 1.6;
         margin-bottom: 1.5rem;
     }
 
-    .products-page .delete-modal .name-highlight {
+    .auctions-page .delete-modal .order-id-highlight {
         color: #dc3545;
         font-weight: 700;
         background: #fff5f5;
@@ -758,13 +780,13 @@
         display: inline-block;
     }
 
-    .products-page .delete-modal .modal-actions {
+    .auctions-page .delete-modal .modal-actions {
         display: flex;
         gap: 12px;
         justify-content: center;
     }
 
-    .products-page .delete-modal .btn-cancel {
+    .auctions-page .delete-modal .btn-cancel {
         background: #f1f3f5;
         color: #495057;
         border: none;
@@ -776,12 +798,12 @@
         flex: 1;
     }
 
-        .products-page .delete-modal .btn-cancel:hover {
+        .auctions-page .delete-modal .btn-cancel:hover {
             background: #e9ecef;
             transform: scale(1.02);
         }
 
-    .products-page .delete-modal .btn-confirm-delete {
+    .auctions-page .delete-modal .btn-confirm-delete {
         background: linear-gradient(135deg, #dc3545, #b02a37);
         color: #fff;
         border: none;
@@ -794,14 +816,14 @@
         box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
     }
 
-        .products-page .delete-modal .btn-confirm-delete:hover {
+        .auctions-page .delete-modal .btn-confirm-delete:hover {
             transform: scale(1.02) translateY(-2px);
             box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
             background: linear-gradient(135deg, #c82333, #a71d2a);
         }
 
     /* ===== SUCCESS TOAST ===== */
-    .products-page .toast-container-custom {
+    .auctions-page .toast-container-custom {
         position: fixed;
         top: 30px;
         right: 30px;
@@ -811,7 +833,7 @@
         pointer-events: none;
     }
 
-    .products-page .toast-success {
+    .auctions-page .toast-success {
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(10px);
         border-left: 8px solid #88d200;
@@ -825,10 +847,10 @@
         gap: 16px;
         opacity: 1;
         pointer-events: none;
-        animation: slideInRightProd 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: slideInRightAuctions 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @@keyframes slideInRightProd {
+    @@keyframes slideInRightAuctions {
         from {
             transform: translateX(120%) scale(0.9);
             opacity: 0;
@@ -840,17 +862,17 @@
         }
     }
 
-    .products-page .toast-success i {
+    .auctions-page .toast-success i {
         font-size: 2rem;
         color: #88d200;
         background: linear-gradient(135deg, #f0fae6, #d4f09b);
         padding: 12px;
         border-radius: 50%;
         box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
-        animation: checkBounceProd 0.6s ease;
+        animation: checkBounceAuctions 0.6s ease;
     }
 
-    @@keyframes checkBounceProd {
+    @@keyframes checkBounceAuctions {
         0% {
             transform: scale(0);
         }
@@ -868,27 +890,27 @@
         }
     }
 
-    .products-page .toast-success .toast-content {
+    .auctions-page .toast-success .toast-content {
         flex: 1;
     }
 
-    .products-page .toast-success .toast-title {
+    .auctions-page .toast-success .toast-title {
         font-weight: 700;
         color: #1a1a2e;
         font-size: 1rem;
     }
 
-    .products-page .toast-success .toast-message {
+    .auctions-page .toast-success .toast-message {
         color: #6c757d;
         font-size: 0.9rem;
         margin-top: 2px;
     }
 
-    .products-page .toast-success.hide {
-        animation: slideOutRightProd 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    .auctions-page .toast-success.hide {
+        animation: slideOutRightAuctions 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
     }
 
-    @@keyframes slideOutRightProd {
+    @@keyframes slideOutRightAuctions {
         from {
             transform: translateX(0) scale(1);
             opacity: 1;
@@ -900,11 +922,11 @@
         }
     }
 
-    .products-page .fade-out {
-        animation: fadeOutProd 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    .auctions-page .fade-out {
+        animation: fadeOutAuctions 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
     }
 
-    @@keyframes fadeOutProd {
+    @@keyframes fadeOutAuctions {
         0% {
             opacity: 1;
             transform: scale(1) translateY(0);
@@ -918,44 +940,44 @@
 
     /* responsive */
     @@media (max-width: 768px) {
-        .products-page .admin-card {
+        .auctions-page .admin-card {
             padding: 1.2rem;
         }
 
-        .products-page .heading-green {
+        .auctions-page .heading-green {
             font-size: 1.45rem;
         }
 
-        .products-page .brand-icon {
+        .auctions-page .brand-icon {
             width: 40px;
             height: 40px;
             font-size: 1.25rem;
         }
 
-        .products-page .table-green-white thead th,
-        .products-page .table-green-white tbody td {
-            padding: 12px 10px;
+        .auctions-page .table-green-white thead th,
+        .auctions-page .table-green-white tbody td {
+            padding: 10px 10px;
             font-size: 0.84rem;
         }
 
-        .products-page .btn-action {
+        .auctions-page .btn-action {
             padding: 6px 12px;
             font-size: 0.7rem;
         }
 
-        .products-page .actions-wrap {
+        .auctions-page .actions-wrap {
             gap: 4px;
         }
 
-        .products-page .table-green-white tbody td:first-child {
+        .auctions-page .table-green-white tbody td:first-child {
             padding-left: 14px;
         }
 
-        .products-page .table-green-white tbody td:last-child {
+        .auctions-page .table-green-white tbody td:last-child {
             padding-right: 14px;
         }
 
-        .products-page .toast-container-custom {
+        .auctions-page .toast-container-custom {
             top: 20px;
             right: 20px;
             left: 20px;
@@ -963,92 +985,104 @@
             max-width: unset;
         }
 
-        .products-page .delete-modal {
+        .auctions-page .delete-modal {
             padding: 2rem 1.5rem;
         }
 
-            .products-page .delete-modal .modal-actions {
+            .auctions-page .delete-modal .modal-actions {
                 flex-direction: column;
             }
 
-        .products-page .toolbar-row {
+        .auctions-page .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .auctions-page .toolbar-row {
             flex-direction: column;
             align-items: stretch;
         }
 
-        .products-page .search-box {
+        .auctions-page .search-box {
             max-width: unset;
         }
 
-        .products-page .toolbar-right {
+        .auctions-page .toolbar-right {
             justify-content: space-between;
         }
     }
 
     @@media (max-width: 576px) {
-        .products-page .header-section {
+        .auctions-page .header-section {
             flex-direction: column;
             align-items: start;
             gap: 0.8rem;
         }
 
-        .products-page .header-actions {
+        .auctions-page .header-actions {
             width: 100%;
             justify-content: space-between;
+        }
+
+        .auctions-page .stats-row {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 
 
-<div class="products-page">
+<div class="auctions-page">
     <div class="container-cust">
-
-        @if (TempData["Message"] != null)
-        {
-            <div class="alert-cust alert-success-cust">
-                <i class="fas fa-check-circle"></i> @TempData["Message"]
-            </div>
-        }
-        @if (TempData["Errormessage"] != null)
-        {
-            <div class="alert-cust alert-danger-cust">
-                <i class="fas fa-exclamation-circle"></i> @TempData["Errormessage"]
-            </div>
-        }
-
         <div class="admin-card">
 
             <!-- header -->
             <div class="header-section">
                 <div class="brand-head">
                     <div class="brand-icon">
-                        <i class="fas fa-box-open"></i>
+                        <i class="fas fa-gavel"></i>
                     </div>
                     <h1 class="heading-green">
-                        Products
+                        Auction List
                         <span>@Model.Count()</span>
                     </h1>
                 </div>
                 <div class="header-actions">
                     <div class="status-badge">
-                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> active
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> live
                     </div>
-                    <a asp-action="ExportProductsToExcel" asp-controller="Admin" class="btn-export">
+                    <a asp-action="ExportAuctionsToExcel" asp-controller="Admin" class="btn-export">
                         <i class="fas fa-file-excel"></i> Export to Excel
-                    </a>
-                    <a asp-action="Create" class="btn-add-customer">
-                        <i class="fas fa-plus"></i> Create New
                     </a>
                 </div>
             </div>
 
-            <!-- stat card -->
+            <!-- stat cards -->
             <div class="stats-row">
                 <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+                    <div class="stat-icon"><i class="fas fa-gavel"></i></div>
                     <div>
                         <div class="stat-value">@Model.Count()</div>
-                        <div class="stat-label">Total Products</div>
+                        <div class="stat-label">Total Auctions</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="stat-value">@Model.Count(a => a.bidstatus != null && a.bidstatus.ToLower() == "pending")</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="stat-value">@Model.Count(a => a.bidstatus != null && (a.bidstatus.ToLower() == "won" || a.bidstatus.ToLower() == "completed" || a.bidstatus.ToLower() == "accepted"))</div>
+                        <div class="stat-label">Won / Completed</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="stat-value">@Model.Count(a => a.Product != null && a.Product.BidEndDate >= DateOnly.FromDateTime(DateTime.Now))</div>
+                        <div class="stat-label">Active Auctions</div>
                     </div>
                 </div>
             </div>
@@ -1057,23 +1091,30 @@
             <div class="toolbar-row">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="prodSearch" placeholder="Search by name..." onkeyup="filterProducts()" />
+                    <input type="text" id="auctionSearch" placeholder="Search by product, bidder or status..." onkeyup="filterAuctions()" />
                 </div>
                 <div class="toolbar-right">
                     <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                    <span class="scroll-hint">
+                        <i class="fas fa-arrows-left-right"></i> click &amp; drag to scroll
+                    </span>
                 </div>
             </div>
 
             <!-- table -->
-            <div class="table-responsive-cust">
+            <div class="table-responsive-cust" id="auctionTableScroll">
                 <table class="table table-green-white">
                     <thead>
                         <tr>
-                            <th class="sortable" onclick="sortTable(0, this)"><i class="fas fa-tag fa-fw-lead"></i> @Html.DisplayNameFor(model => model.Name) <i class="fas fa-sort sort-icon"></i></th>
-                            <th class="sortable" onclick="sortTable(1, this)"><i class="fas fa-dollar-sign fa-fw-lead"></i> @Html.DisplayNameFor(model => model.price) <i class="fas fa-sort sort-icon"></i></th>
-                            <th class="sortable" onclick="sortTable(2, this)"><i class="fas fa-cubes fa-fw-lead"></i> @Html.DisplayNameFor(model => model.quantity) <i class="fas fa-sort sort-icon"></i></th>
-                            <th><i class="fas fa-circle-check fa-fw-lead"></i> @Html.DisplayNameFor(model => model.Status)</th>
-                            <th><i class="fas fa-bolt fa-fw-lead"></i> Actions</th>
+                            <th><span class="th-inner"><i class="fas fa-image fa-fw-lead"></i> Image</span></th>
+                            <th class="sortable" onclick="sortTable(1, this)"><span class="th-inner"><i class="fas fa-box-open fa-fw-lead"></i> Product <i class="fas fa-sort sort-icon"></i></span></th>
+                            <th><span class="th-inner"><i class="fas fa-layer-group fa-fw-lead"></i> Category</span></th>
+                            <th><span class="th-inner"><i class="fas fa-tags fa-fw-lead"></i> Sub Category</span></th>
+                            <th class="sortable" onclick="sortTable(4, this)"><span class="th-inner"><i class="fas fa-user fa-fw-lead"></i> Bidder <i class="fas fa-sort sort-icon"></i></span></th>
+                            <th class="sortable" onclick="sortTable(5, this)"><span class="th-inner"><i class="fas fa-rupee-sign fa-fw-lead"></i> Bid Amount <i class="fas fa-sort sort-icon"></i></span></th>
+                            <th><span class="th-inner"><i class="fas fa-info-circle fa-fw-lead"></i> Bid Status</span></th>
+                            <th class="sortable" onclick="sortTable(7, this)"><span class="th-inner"><i class="fas fa-calendar-alt fa-fw-lead"></i> Auction Ends <i class="fas fa-sort sort-icon"></i></span></th>
+                            <th class="text-end"><span class="th-inner"><i class="fas fa-bolt fa-fw-lead"></i> Action</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1083,44 +1124,47 @@
                         @foreach (var item in Model)
                         {
                             rowIndex++;
-                            var statusText = item.Status != null ? item.Status.ToString() : "Unknown";
-                            var statusClass = statusText.ToLower() switch
-                            {
-                                "active" or "available" or "approved" => "status-active",
-                                "inactive" or "unavailable" or "rejected" or "sold" => "status-inactive",
-                                _ => "status-pending"
-                            };
-                            <tr style="--i: @rowIndex;" data-prod-id="@item.Id" data-prod-name="@item.Name">
+                            var statusClass = (item.bidstatus ?? "").ToLower().Replace(" ", "-");
+                            var bidderName = item.User?.UserName ?? "";
+                            <tr style="--i: @rowIndex;" data-auction-id="@item.Id">
                                 <td>
-                                    <div class="name-cell">
-                                        @if (!string.IsNullOrEmpty(item.Image1))
-                                        {
-                                            <img src="@item.Image1" alt="@item.Name" class="prod-thumb" />
-                                        }
-                                        else
-                                        {
-                                            <div class="prod-thumb-placeholder">@(string.IsNullOrEmpty(item.Name) ? "?" : item.Name.Substring(0, 1).ToUpper())</div>
-                                        }
-                                        <div class="prod-name">@Html.DisplayFor(modelItem => item.Name)</div>
+                                    @{
+                                        var imgFile = GetProductImageFileName(item.Product?.Image1);
+                                    }
+                                    @if (!string.IsNullOrEmpty(imgFile))
+                                    {
+                                        <img src="~/images/products/@imgFile"
+                                             class="product-thumb"
+                                             onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-fallback',innerHTML:'<i class=\'fas fa-image\'></i>'}));" />
+                                    }
+                                    else
+                                    {
+                                        <div class="thumb-fallback"><i class="fas fa-image"></i></div>
+                                    }
+                                </td>
+                                <td><span class="product-name-cell">@item.Product?.Name</span></td>
+                                <td><span class="info-pill">@item.Product?.SubCategory?.category?.Name</span></td>
+                                <td><span class="info-pill">@item.Product?.SubCategory?.Name</span></td>
+                                <td>
+                                    <div class="customer-cell">
+                                        <div class="user-avatar">@(string.IsNullOrEmpty(bidderName) ? "?" : bidderName.Substring(0, 1).ToUpper())</div>
+                                        <span class="user-name">@bidderName</span>
                                     </div>
                                 </td>
-                                <td>@Html.DisplayFor(modelItem => item.price)</td>
-                                <td>@Html.DisplayFor(modelItem => item.quantity)</td>
+                                <td><span class="price-cell">Rs. @item.bidamount</span></td>
                                 <td>
-                                    <span class="badge-status @statusClass">
-                                        <i class="fas fa-circle"></i> @statusText
+                                    <span class="status-badge-row status-@statusClass">
+                                        <i class="fas fa-circle" style="font-size: 0.45rem;"></i> @item.bidstatus
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="actions-wrap" style="justify-content: center;">
-                                        <a asp-action="Editproduct" asp-route-id="@item.Id" class="btn btn-action btn-edit">
-                                            <i class="fas fa-pen"></i> Edit
-                                        </a>
-                                        <a asp-action="Viewproductdetails" asp-route-id="@item.Id" class="btn btn-action btn-details">
-                                            <i class="fas fa-eye"></i> Details
+                                <td><span class="info-pill">@item.Product?.BidEndDate.ToString("dd-MMM-yyyy")</span></td>
+                                <td style="text-align: right;">
+                                    <div class="actions-wrap" style="justify-content: flex-end;">
+                                        <a asp-action="Viewauctiondetails" asp-route-id="@item.Id" class="btn btn-action btn-details">
+                                            <i class="fas fa-eye"></i> View
                                         </a>
                                         <button type="button" class="btn btn-action btn-delete"
-                                                onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.Name))')">
+                                                onclick="openDeleteModal('@item.Id')">
                                             <i class="fas fa-trash-alt"></i> Delete
                                         </button>
                                     </div>
@@ -1128,9 +1172,9 @@
                             </tr>
                         }
                         <tr class="empty-state-row" id="noResultsRow" style="display: none;">
-                            <td colspan="5">
-                                <i class="fas fa-folder-open"></i>
-                                No matching products found.
+                            <td colspan="9">
+                                <i class="fas fa-inbox"></i>
+                                No matching auctions found.
                             </td>
                         </tr>
                     </tbody>
@@ -1140,10 +1184,10 @@
             <!-- footer -->
             <div class="table-footer">
                 <span>
-                    <i class="fas fa-arrow-right"></i> hover rows � click header to sort � green theme
+                    <i class="fas fa-arrow-right"></i> hover rows � click headers to sort � green theme
                 </span>
                 <span class="pill">
-                    <i class="fas fa-box-open"></i> @Model.Count() products
+                    <i class="fas fa-gavel"></i> @Model.Count() auctions
                 </span>
             </div>
 
@@ -1155,10 +1199,10 @@
             <div class="modal-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <h3>Delete Product?</h3>
+            <h3>Delete Auction Detail?</h3>
             <p>
-                Are you sure you want to delete
-                <span class="name-highlight" id="modalProdName">"Name"</span>?
+                Are you sure you want to delete auction
+                <span class="order-id-highlight" id="modalOrderId">#0</span>?
                 <br>
                 <small style="color: #dc3545; font-weight: 500;">
                     <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
@@ -1185,20 +1229,20 @@
             </div>
         </div>
     </div>
-</div> <!-- end products-page -->
+</div> <!-- end auctions-page -->
 
 <script>
-    let deleteProdId = null;
+    let deleteOrderId = null;
 
-    // Live search filter across the name column
-    function filterProducts() {
-        const query = document.getElementById('prodSearch').value.trim().toLowerCase();
-        const rows = document.querySelectorAll('.products-page .table-green-white tbody tr:not(#noResultsRow)');
+    // Live search filter across product, bidder and status columns
+    function filterAuctions() {
+        const query = document.getElementById('auctionSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.auctions-page .table-green-white tbody tr:not(#noResultsRow)');
         let visibleCount = 0;
 
         rows.forEach(row => {
-            const name = (row.getAttribute('data-prod-name') || '').toLowerCase();
-            const matches = name.includes(query);
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(query);
             row.style.display = matches ? '' : 'none';
             if (matches) visibleCount++;
         });
@@ -1210,7 +1254,7 @@
         if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
     }
 
-    // Click-to-sort table column
+    // Click-to-sort table columns
     let sortDirections = {};
     function sortTable(colIndex, headerEl) {
         const table = headerEl.closest('table');
@@ -1225,22 +1269,20 @@
         headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
 
         rows.sort((a, b) => {
-            const cellA = a.children[colIndex].textContent.trim().toLowerCase();
-            const cellB = b.children[colIndex].textContent.trim().toLowerCase();
-            const numA = parseFloat(cellA);
-            const numB = parseFloat(cellB);
-            if (!isNaN(numA) && !isNaN(numB)) {
-                return asc ? numA - numB : numB - numA;
-            }
-            return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            const cellA = a.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const cellB = b.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const numA = parseFloat(cellA), numB = parseFloat(cellB);
+            const bothNumeric = !isNaN(numA) && !isNaN(numB);
+            const cmp = bothNumeric ? (numA - numB) : cellA.localeCompare(cellB);
+            return asc ? cmp : -cmp;
         });
 
         rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
     }
 
-    function openDeleteModal(prodId, prodName) {
-        deleteProdId = prodId;
-        document.getElementById('modalProdName').textContent = `"${prodName}"`;
+    function openDeleteModal(auctionId) {
+        deleteOrderId = auctionId;
+        document.getElementById('modalOrderId').textContent = '#' + auctionId;
 
         const modal = document.getElementById('deleteModal');
         modal.style.display = 'flex';
@@ -1248,28 +1290,28 @@
         const modalContent = modal.querySelector('.delete-modal');
         modalContent.style.animation = 'none';
         setTimeout(() => {
-            modalContent.style.animation = 'modalSlideUpProd 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            modalContent.style.animation = 'modalSlideUpAuctions 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         }, 10);
     }
 
     function closeDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
-        deleteProdId = null;
+        deleteOrderId = null;
     }
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-        if (deleteProdId) {
-            const idToDelete = deleteProdId; // capture before closeDeleteModal() clears it
-            const row = document.querySelector(`tr[data-prod-id="${idToDelete}"]`);
+        if (deleteOrderId) {
+            const idToDelete = deleteOrderId; // capture before closeDeleteModal() clears it
+            const row = document.querySelector(`tr[data-auction-id="${idToDelete}"]`);
             closeDeleteModal();
-            showSuccessToast('Deleted!', 'The product was removed successfully.');
+            showSuccessToast('Deleted!', 'The auction detail was removed successfully.');
 
             if (row) {
                 row.classList.add('fade-out');
             }
 
             setTimeout(() => {
-                window.location.href = '@Url.Action("Deletelogic", "Admin")/' + idToDelete;
+                window.location.href = '@Url.Action("Deleteauctiondetaillogic", "Admin")/' + idToDelete;
             }, 900);
         }
     });
@@ -1295,7 +1337,7 @@
 
         toast.style.animation = 'none';
         setTimeout(() => {
-            toast.style.animation = 'slideInRightProd 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            toast.style.animation = 'slideInRightAuctions 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         }, 10);
 
         clearTimeout(window.toastTimeout);
@@ -1304,4 +1346,52 @@
             setTimeout(() => { toast.style.display = 'none'; }, 500);
         }, 4000);
     }
+
+    // ===== Click & drag horizontal scrolling for the table (no need to hunt for a scrollbar) =====
+    (function () {
+        const scroller = document.getElementById('auctionTableScroll');
+        if (!scroller) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeftStart;
+
+        scroller.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scroller.classList.add('dragging');
+            startX = e.pageX - scroller.offsetLeft;
+            scrollLeftStart = scroller.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mouseleave', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scroller.offsetLeft;
+            const walk = (x - startX);
+            scroller.scrollLeft = scrollLeftStart - walk;
+        });
+
+        // touch support
+        let touchStartX = 0;
+        let touchScrollStart = 0;
+        scroller.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX;
+            touchScrollStart = scroller.scrollLeft;
+        }, { passive: true });
+
+        scroller.addEventListener('touchmove', (e) => {
+            const dx = e.touches[0].pageX - touchStartX;
+            scroller.scrollLeft = touchScrollStart - dx;
+        }, { passive: true });
+    })();
 </script>

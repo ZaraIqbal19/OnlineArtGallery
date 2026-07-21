@@ -14,5 +14,7 @@ public class Art_GalleryUser : IdentityUser
     public string address { get; set; }
     public int age { get; set; }
 
+    public string Role { get; set; } = "User";
+
 }
 

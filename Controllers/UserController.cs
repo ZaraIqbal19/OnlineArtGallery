@@ -3,13 +3,13 @@ using Art_Gallery.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 using static System.Net.Mime.MediaTypeNames;
-
 namespace Art_Gallery.Controllers
 {
     public class UserController : Controller
@@ -118,7 +118,7 @@ namespace Art_Gallery.Controllers
 
             List<string> savedImagePaths = validImages.Select(SaveImage).ToList();
 
-            var product = new Product()
+            var product = new Models.Product()
             {
                 Name = Name,
                 Description = Description,
@@ -393,6 +393,159 @@ namespace Art_Gallery.Controllers
             return View(productdetails);
 
         }
+
+
+        public IActionResult Placeorder(int id)
+        {
+            var product = bridge.products
+                .Include(p => p.SubCategory)
+                .Include(p => p.User)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+            ViewBag.RelatedProducts = bridge.products
+                .Include(p => p.SubCategory)
+                .Include(p => p.User)
+                .Where(p => p.SubCategoryId == product.SubCategoryId && p.Id != product.Id)
+                .Take(3)
+                .ToList(); 
+
+
+            return View(product);
+        }
+        
+        public IActionResult Placeorderlogic(int ProductId, String ContactPhone,String ShippingAddress, int Quantity, int? WishlistId,String ModeofPayment) 
+
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+          var prodid=  bridge.products.Find(ProductId);
+
+            var price = prodid.price;
+            decimal pricePaid = Convert.ToDecimal(prodid.price) * Quantity;
+
+            if (ModeofPayment == "Card")
+            {
+                var paymentDetails = bridge.paymentDetails
+                    .FirstOrDefault(p => p.UserId == userid);
+
+                if (paymentDetails == null)
+                {
+                    TempData["Message"] = "Please add card details before ordering.";
+
+                    return RedirectToAction("Placeorder", new { id = ProductId });
+                }
+            }
+             var order =new Order()
+            {   
+                WishlistId = WishlistId,
+                ProductId=ProductId,
+                UserId=userid,
+                OrderDate = DateTime.Now,
+                ContactPhone=ContactPhone,
+                ShippingAddress=ShippingAddress,
+                Quantity=Quantity,
+                PricePaid=pricePaid,
+
+            };
+            bridge.orders.Add(order);
+            bridge.SaveChanges();
+
+            var payment = new Payment()
+            {
+                ModeofPayment=ModeofPayment,
+                OrderId=order.Id,
+            };
+            bridge.payments.Add(payment);
+            bridge.SaveChanges();
+            TempData["Orderpaymentmessage"] = "Your order has been placed successfully.";
+
+            return RedirectToAction("Placeorder", new { id = ProductId });
+        }
+
+
+        public IActionResult Placebid(int id)
+        {
+            var product = bridge.products
+                .Include(p => p.SubCategory)
+                .Include(p => p.User)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.PreviousBids = bridge.auctionDetails
+                .Include(b => b.User)
+                .Where(b => b.ProductId == id)
+                .OrderByDescending(b => b.bidamount)
+                .ToList();
+
+            ViewBag.RelatedBidProducts = bridge.products
+                .Where(p => p.SubCategoryId == product.SubCategoryId
+                         && p.Id != product.Id
+                         && p.AvailableForBid == "Yes")
+                .Take(8)
+                .ToList();
+
+            return View(product);
+        }
+
+    
+        public IActionResult Placebidlogic(int id, float bidamount)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var product = bridge.products.FirstOrDefault(p => p.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            if (product.AvailableForBid != "Yes")
+            {
+                TempData["ErrorMessage"] = "This item is not open for bidding.";
+                return RedirectToAction("Placebid", new { id });
+            }
+
+            var highestBid = bridge.auctionDetails
+                .Where(b => b.ProductId == id)
+                .Select(b => (float?)b.bidamount)
+                .Max() ?? product.BidPrice;
+
+            if (bidamount < highestBid + 50)
+            {
+                TempData["ErrorMessage"] = "Your bid must be higher than the current bid.";
+                return RedirectToAction("Placebid", new { id });
+            }
+
+            // Save the new bid
+            var newBid = new AuctionDetails
+            {
+                UserId = userId,
+                ProductId = id,
+                bidamount = bidamount,
+                bidstatus = "Pending"
+            };
+
+            product.BidPrice = bidamount;
+           
+
+
+
+            bridge.auctionDetails.Add(newBid);
+            bridge.SaveChanges();
+
+            TempData["SuccessMessage"] = "Your bid was placed successfully.";
+            return RedirectToAction("Placebid", new { id });
+        }
+
+
+    
+
     }
 }
       
