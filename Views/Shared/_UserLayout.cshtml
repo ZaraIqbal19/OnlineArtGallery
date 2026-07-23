@@ -35,6 +35,7 @@
 	<link rel="stylesheet" href="~/User/css/animate.min.css">
 	<link rel="stylesheet" href="~/User/css/owl.carousel.css">
 	<link rel="stylesheet" href="~/User/css/main.css">
+	@RenderSection("Styles", required: false)
 </head>
 <body>
 	<header id="header" id="home">
@@ -80,6 +81,9 @@
 
 						<li>
 							<a asp-controller="User" asp-action="Addproduct">Add Products</a>
+						</li>
+						li>
+							<a asp-controller="User" asp-action="About">About us</a>
 						</li>
 							<partial name="_LoginPartial" />
 

@@ -1,4 +1,5 @@
 ﻿@{
+<<<<<<< HEAD
     ViewData["Title"] = "About Us";
     Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
@@ -816,3 +817,532 @@
     </div>
 
 </section>
+=======
+    
+    ViewData["Title"] = "About Us - Online Art Gallery";
+}
+
+@{
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@* Google Fonts + Font Awesome + page-specific stylesheet *@
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/about.css" asp-append-version="true" />
+}
+
+<body class="about-page">
+
+    <!-- =========================================================
+         1. HERO SECTION
+    ========================================================== -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-xl-7">
+                    <span class="hero-eyebrow"><i class="fa-solid fa-palette me-2"></i>Our Story, Our Passion</span>
+                    <h1 class="hero-title">About <span>Online Art Gallery</span></h1>
+                    <p class="hero-subtitle">
+                        We are a digital home for painters, illustrators, photographers, and sculptors —
+                        a place where creativity meets community, and every artwork finds an admirer somewhere
+                        in the world.
+                    </p>
+                    <a href="#our-story" class="btn btn-gallery mt-3">
+                        Discover More <i class="fa-solid fa-arrow-down ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <a href="#our-story" class="hero-scroll-cue" aria-label="Scroll down">
+            <i class="fa-solid fa-chevron-down"></i>
+        </a>
+    </section>
+
+    <!-- =========================================================
+         2. OUR STORY
+    ========================================================== -->
+    <section id="our-story" class="section-padding">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 reveal">
+                    <div class="story-image-wrap">
+                        <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=900&q=80"
+                             alt="Artist painting in a studio" class="img-fluid" />
+                        <div class="story-badge">
+                            <div class="num">2021</div>
+                            <small class="text-muted-custom">Founded with a vision</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 reveal">
+                    <span class="section-eyebrow">Our Story</span>
+                    <h2 class="section-title">Why We Built This Gallery</h2>
+                    <p class="text-muted-custom">
+                        Online Art Gallery began with a simple observation: too many gifted artists were
+                        struggling to find an audience beyond their local circles, while art lovers everywhere
+                        were searching for original, meaningful pieces they simply couldn't find nearby.
+                    </p>
+                    <p class="text-muted-custom">
+                        We set out to close that gap — building a platform where artists can upload and
+                        showcase paintings, digital art, illustrations, photography, and sculpture, and where
+                        collectors can browse, search, and purchase with complete confidence. What started as
+                        a small idea has grown into a thriving global community that supports artists and makes
+                        art accessible to everyone, everywhere.
+                    </p>
+                    <ul class="mv-list mt-3">
+                        <li><i class="fa-solid fa-circle-check"></i>Supporting independent artists worldwide</li>
+                        <li><i class="fa-solid fa-circle-check"></i>Making original art accessible to all</li>
+                        <li><i class="fa-solid fa-circle-check"></i>Building trust between artists and collectors</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         3 & 4. OUR MISSION & OUR VISION
+    ========================================================== -->
+    <section class="section-padding section-bg-gray">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="section-eyebrow">What Drives Us</span>
+                <h2 class="section-title">Our Mission &amp; Vision</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="row g-4">
+                <!-- Mission -->
+                <div class="col-lg-6 reveal">
+                    <div class="mv-card">
+                        <div class="mv-icon"><i class="fa-solid fa-bullseye"></i></div>
+                        <h3 class="h4 fw-bold mb-3">Our Mission</h3>
+                        <ul class="mv-list">
+                            <li><i class="fa-solid fa-hand-sparkles"></i>Empower artists to share their work with the world</li>
+                            <li><i class="fa-solid fa-magnifying-glass"></i>Help collectors discover unique, one-of-a-kind artwork</li>
+                            <li><i class="fa-solid fa-earth-americas"></i>Promote creativity and celebrate global culture</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Vision -->
+                <div class="col-lg-6 reveal">
+                    <div class="mv-card">
+                        <div class="mv-icon"><i class="fa-solid fa-eye"></i></div>
+                        <h3 class="h4 fw-bold mb-3">Our Vision</h3>
+                        <ul class="mv-list">
+                            <li><i class="fa-solid fa-trophy"></i>Become one of the world's leading online art marketplaces</li>
+                            <li><i class="fa-solid fa-people-group"></i>Build a thriving global community of artists and collectors</li>
+                            <li><i class="fa-solid fa-seedling"></i>Nurture the next generation of creative talent</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         5. WHY CHOOSE US
+    ========================================================== -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="section-eyebrow">Our Advantage</span>
+                <h2 class="section-title">Why Choose Us</h2>
+                <div class="section-divider"></div>
+                <p class="text-muted-custom mx-auto" style="max-width:640px;">
+                    Everything we do is designed to make discovering and collecting art simple, safe, and enjoyable.
+                </p>
+            </div>
+            <div class="row g-4">
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-award feature-icon"></i>
+                        <h5>High Quality</h5>
+                        <p class="small text-muted-custom mb-0">Curated, high-resolution artwork</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-lock feature-icon"></i>
+                        <h5>Secure Shopping</h5>
+                        <p class="small text-muted-custom mb-0">Encrypted, safe transactions</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-user-check feature-icon"></i>
+                        <h5>Verified Artists</h5>
+                        <p class="small text-muted-custom mb-0">Every profile is reviewed</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-bolt feature-icon"></i>
+                        <h5>Fast Browsing</h5>
+                        <p class="small text-muted-custom mb-0">Optimized, lightning-fast pages</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-gauge-high feature-icon"></i>
+                        <h5>User Friendly</h5>
+                        <p class="small text-muted-custom mb-0">Intuitive, clutter-free design</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 reveal">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-mobile-screen-button feature-icon"></i>
+                        <h5>Responsive</h5>
+                        <p class="small text-muted-custom mb-0">Perfect on any device</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         6. OUR SERVICES
+    ========================================================== -->
+    <section class="section-padding section-bg-gray">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="section-eyebrow">What We Offer</span>
+                <h2 class="section-title">Our Services</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-images"></i></div>
+                        <div>
+                            <h6>Browse Artwork</h6>
+                            <p class="text-muted-custom">Explore thousands of paintings, digital art, and more.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-id-badge"></i></div>
+                        <div>
+                            <h6>Artist Profiles</h6>
+                            <p class="text-muted-custom">Get to know the creators behind every piece.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-layer-group"></i></div>
+                        <div>
+                            <h6>Artwork Categories</h6>
+                            <p class="text-muted-custom">Paintings, illustrations, photography, sculpture &amp; more.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <div>
+                            <h6>Search Functionality</h6>
+                            <p class="text-muted-custom">Find exactly the piece you're looking for, fast.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <div>
+                            <h6>Online Purchasing</h6>
+                            <p class="text-muted-custom">Buy original artwork securely, from anywhere.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="service-item">
+                        <div class="service-icon"><i class="fa-solid fa-user-gear"></i></div>
+                        <div>
+                            <h6>User Accounts</h6>
+                            <p class="text-muted-custom">Manage your profile, orders, and favorites with ease.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         7. STATISTICS
+    ========================================================== -->
+    <section class="stats-section section-padding">
+        <div class="container">
+            <div class="row g-4 text-center">
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fa-solid fa-user-pen"></i></div>
+                        <div class="stat-number"><span class="counter" data-target="500">0</span>+</div>
+                        <div class="stat-label">Artists</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fa-solid fa-image"></i></div>
+                        <div class="stat-number"><span class="counter" data-target="5000">0</span>+</div>
+                        <div class="stat-label">Artworks</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fa-solid fa-face-smile"></i></div>
+                        <div class="stat-number"><span class="counter" data-target="2000">0</span>+</div>
+                        <div class="stat-label">Happy Customers</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                        <div class="stat-number"><span class="counter" data-target="50">0</span>+</div>
+                        <div class="stat-label">Categories</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         8. MEET OUR TEAM
+    ========================================================== -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="section-eyebrow">The People Behind It</span>
+                <h2 class="section-title">Meet Our Team</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="team-card">
+                        <div class="team-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&q=80" alt="Sarah Malik - Founder & CEO" />
+                            <div class="team-social">
+                                <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                            </div>
+                        </div>
+                        <div class="team-info">
+                            <h5>Sarah Malik</h5>
+                            <span class="team-role">Founder &amp; CEO</span>
+                            <p>Art historian turned entrepreneur, on a mission to make galleries global.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="team-card">
+                        <div class="team-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=500&q=80" alt="Ahmed Raza - Lead Developer" />
+                            <div class="team-social">
+                                <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                                <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                            </div>
+                        </div>
+                        <div class="team-info">
+                            <h5>Ahmed Raza</h5>
+                            <span class="team-role">Lead Developer</span>
+                            <p>Builds the technology that keeps the gallery fast, secure, and reliable.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="team-card">
+                        <div class="team-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=80" alt="Emily Chen - Art Curator" />
+                            <div class="team-social">
+                                <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest"></i></a>
+                                <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                        <div class="team-info">
+                            <h5>Emily Chen</h5>
+                            <span class="team-role">Art Curator</span>
+                            <p>Reviews and verifies every artist to keep quality and authenticity high.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 reveal">
+                    <div class="team-card">
+                        <div class="team-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Daniel Osei - Customer Success" />
+                            <div class="team-social">
+                                <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                            </div>
+                        </div>
+                        <div class="team-info">
+                            <h5>Daniel Osei</h5>
+                            <span class="team-role">Customer Success</span>
+                            <p>Helps artists and collectors get the most out of their gallery experience.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         9. CUSTOMER TESTIMONIALS
+    ========================================================== -->
+    <section class="section-padding section-bg-gray">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="section-eyebrow">Testimonials</span>
+                <h2 class="section-title">What Our Community Says</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 reveal">
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left testimonial-quote-icon"></i>
+                        <div class="testimonial-rating mb-2">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-muted-custom">
+                            "I sold my first painting within a week of joining. The platform made it so easy
+                            to reach collectors I never could have found on my own."
+                        </p>
+                        <div class="testimonial-person">
+                            <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=100&q=80" alt="Maria Lopez" />
+                            <div>
+                                <h6>Maria Lopez</h6>
+                                <span>Independent Painter</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 reveal">
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left testimonial-quote-icon"></i>
+                        <div class="testimonial-rating mb-2">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <p class="text-muted-custom">
+                            "The search and filtering made it simple to find exactly the kind of sculpture I
+                            was looking for. Checkout was smooth and secure too."
+                        </p>
+                        <div class="testimonial-person">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="James Carter" />
+                            <div>
+                                <h6>James Carter</h6>
+                                <span>Art Collector</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 reveal">
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left testimonial-quote-icon"></i>
+                        <div class="testimonial-rating mb-2">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-muted-custom">
+                            "As a photographer, having verified profiles and a trustworthy marketplace gave me
+                            the confidence to showcase my portfolio to a global audience."
+                        </p>
+                        <div class="testimonial-person">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" alt="Nadia Farouk" />
+                            <div>
+                                <h6>Nadia Farouk</h6>
+                                <span>Photographer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         10. CALL TO ACTION
+    ========================================================== -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="cta-section reveal">
+                <h2>Discover Inspiring Art Today</h2>
+                <p class="mb-4" style="max-width:560px;margin-inline:auto;color:rgba(255,255,255,.9);">
+                    Step into a world of original paintings, digital art, illustrations, photography, and
+                    sculpture — all in one place.
+                </p>
+                <a asp-controller="User" asp-action="Index" class="btn btn-gallery">
+                    Explore Gallery <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         11. FOOTER BANNER (Inspirational Quote)
+    ========================================================== -->
+    <div class="quote-banner">
+        <i class="fa-solid fa-quote-left"></i>
+        <blockquote>
+            "Art enables us to find ourselves and lose ourselves at the same time."
+        </blockquote>
+        <cite>— Thomas Merton</cite>
+    </div>
+
+</body>
+
+@* =========================================================
+   Page scripts: scroll reveal + animated counters
+   ========================================================= *@
+@section Scripts {
+    <script>
+        // Reveal elements on scroll
+        document.addEventListener('DOMContentLoaded', function () {
+            const revealEls = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            revealEls.forEach(el => revealObserver.observe(el));
+
+            // Animated counters for the statistics section
+            const counters = document.querySelectorAll('.counter');
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(counter => counterObserver.observe(counter));
+
+            function animateCounter(el) {
+                const target = parseInt(el.getAttribute('data-target'), 10);
+                const duration = 1800; // ms
+                const startTime = performance.now();
+
+                function step(currentTime) {
+                    const progress = Math.min((currentTime - startTime) / duration, 1);
+                    // ease-out for a smoother finish
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.floor(eased * target).toLocaleString();
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        el.textContent = target.toLocaleString();
+                    }
+                }
+                requestAnimationFrame(step);
+            }
+        });
+    </script>
+}
+>>>>>>> 4af7d6889bc89ffd7ad1b1be3fabfec3922e8067
