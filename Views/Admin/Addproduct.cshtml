@@ -1,0 +1,2233 @@
+﻿@model Art_Gallery.Models.Product
+
+@{
+    ViewData["Title"] = "Create Product";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" referrerpolicy="no-referrer" />
+
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ultra-light-green: #f0fae6;
+        --danger-red: #e63946;
+        --danger-light: #fde8e9;
+        --danger-border: #f3b4b9;
+        --warn-amber: #d97706;
+        --text-dark: #374151;
+        --text-muted: #9ca3af;
+        --page-top-offset: 40px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .page-wrapper {
+        max-width: 1080px;
+        margin: var(--page-top-offset) auto 100px;
+        padding: 0 16px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    @@media (min-width: 992px) {
+        .page-wrapper {
+            grid-template-columns: 1fr 340px;
+            align-items: start;
+        }
+
+        .main-col {
+            grid-column: 1;
+        }
+
+        .side-col {
+            grid-column: 2;
+            position: sticky;
+            top: 20px;
+        }
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    .sale-type-option:focus-visible {
+        outline: 3px solid var(--dark-green);
+        outline-offset: 2px;
+    }
+
+    /* ---------- Progress bar (stays in normal flow, does not follow scroll) ---------- */
+    .progress-wrapper {
+        position: static;
+        margin-bottom: 20px;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 18px 24px;
+        box-shadow: 0 6px 24px rgba(111, 168, 0, 0.14);
+        backdrop-filter: blur(6px);
+        border: 1px solid #eef1ee;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .progress-title {
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+    }
+
+    .progress-percent {
+        font-weight: 800;
+        color: var(--dark-green);
+        font-size: 0.95rem;
+        transition: color 0.3s ease;
+    }
+
+    .progress-track {
+        position: relative;
+        height: 10px;
+        background: #eef2f0;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, var(--light-green), var(--primary-green));
+        transition: width 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+        position: relative;
+    }
+
+        .progress-fill::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+            animation: shimmer 1.8s infinite;
+        }
+
+    @@keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+        .progress-steps span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.3s ease;
+        }
+
+            .progress-steps span.done {
+                color: var(--dark-green);
+            }
+
+                .progress-steps span.done::before {
+                    content: "✓";
+                }
+
+    /* ---------- Page intro ---------- */
+    .page-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dark-green);
+        background: var(--ultra-light-green);
+        border: 1px solid var(--light-green);
+        padding: 5px 12px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+    }
+
+    /* ---------- Card ---------- */
+    .form-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 34px rgba(111, 168, 0, 0.14);
+        padding: 40px;
+        border-top: 6px solid var(--primary-green);
+        animation: fadeInUp 0.5s ease;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-title {
+        color: var(--dark-green);
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-bottom: 26px;
+        font-size: 0.95rem;
+    }
+
+    .alert-success {
+        background-color: var(--ultra-light-green);
+        border: 1px solid var(--primary-green);
+        color: var(--dark-green);
+        border-radius: 10px;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+    /* ---------- Validation summary banner ---------- */
+    .validation-banner {
+        background-color: var(--danger-light);
+        border: 1.5px solid var(--danger-border);
+        border-left: 5px solid var(--danger-red);
+        color: #a4222d;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        display: none;
+        box-shadow: 0 6px 18px rgba(230, 57, 70, 0.12);
+    }
+
+        .validation-banner.show {
+            display: block;
+            animation: shake 0.35s ease, bannerIn 0.3s ease;
+        }
+
+    @@keyframes bannerIn {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .validation-banner-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .validation-banner-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--danger-red);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14);
+        animation: pulseRing 1.6s ease-in-out infinite;
+    }
+
+    @@keyframes pulseRing {
+        0%, 100% {
+            box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14);
+        }
+
+        50% {
+            box-shadow: 0 0 0 7px rgba(230, 57, 70, 0.05);
+        }
+    }
+
+    .validation-banner-count {
+        margin-left: auto;
+        background: var(--danger-red);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    .validation-banner ul {
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        font-weight: 500;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .validation-banner li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        background: #ffffff;
+        border: 1px solid var(--danger-border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        transition: background-color 0.18s ease, transform 0.15s ease, border-color 0.18s ease;
+    }
+
+        .validation-banner li::before {
+            content: "!";
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--danger-light);
+            color: var(--danger-red);
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--danger-border);
+        }
+
+        .validation-banner li::after {
+            content: "→";
+            margin-left: auto;
+            opacity: 0.45;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        .validation-banner li:hover {
+            background-color: var(--danger-light);
+            border-color: var(--danger-red);
+            transform: translateX(2px);
+        }
+
+            .validation-banner li:hover::after {
+                opacity: 1;
+                transform: translateX(2px);
+            }
+
+    /* ---------- Collapsible sections ---------- */
+    .section {
+        border: 1.5px solid #eef1ee;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(10px);
+        animation: sectionIn 0.5s ease forwards;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .section:nth-of-type(1) {
+            animation-delay: 0.05s;
+        }
+
+        .section:nth-of-type(2) {
+            animation-delay: 0.15s;
+        }
+
+        .section:nth-of-type(3) {
+            animation-delay: 0.25s;
+        }
+
+        .section:nth-of-type(4) {
+            animation-delay: 0.35s;
+        }
+
+        .section:nth-of-type(5) {
+            animation-delay: 0.45s;
+        }
+
+    @@keyframes sectionIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 20px;
+        cursor: pointer;
+        background: #fafcf8;
+        user-select: none;
+        transition: background 0.2s ease;
+    }
+
+        .section-header:hover {
+            background: var(--ultra-light-green);
+        }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-dark);
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+        .section-label .num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #d1d5db;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+    .section.has-error {
+        border-color: var(--danger-red);
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.08);
+    }
+
+        .section.has-error .section-label .num {
+            background: var(--danger-red);
+        }
+
+    .section.complete {
+        border-color: var(--primary-green);
+    }
+
+        .section.complete .section-label .num {
+            background: var(--primary-green);
+            transform: scale(1.05);
+        }
+
+            .section.complete .section-label .num::after {
+                content: "✓";
+            }
+
+    .section:not(.complete) .section-label .num::after {
+        content: attr(data-step);
+    }
+
+    .chevron {
+        transition: transform 0.3s ease;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    .section.collapsed .chevron {
+        transform: rotate(-90deg);
+    }
+
+    .section-body {
+        padding: 20px 20px 6px;
+        max-height: 2000px;
+        transition: max-height 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
+        opacity: 1;
+    }
+
+    .section.collapsed .section-body {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0 16px;
+    }
+
+    @@media (min-width: 640px) {
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .three-col {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    @@media (min-width: 640px) {
+        .three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+        label.control-label, .form-group > label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+    .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .char-counter {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+        .char-counter.warn {
+            color: var(--warn-amber);
+        }
+
+        .char-counter.limit {
+            color: var(--danger-red);
+        }
+
+    /* ---------- Inputs ---------- */
+    .form-control {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 11px 40px 11px 14px;
+        font-size: 0.95rem;
+        width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+        background-color: #fafafa;
+    }
+
+        .form-control:hover {
+            border-color: var(--light-green);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.16);
+            background-color: #ffffff;
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .form-control.is-valid {
+            border-color: var(--primary-green);
+            background-color: var(--ultra-light-green);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger-red);
+            background-color: var(--danger-light);
+            box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.12);
+            animation: shake 0.35s ease;
+        }
+
+        .form-control:disabled {
+            background-color: #f3f4f6;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+    @@keyframes shake {
+        25% {
+            transform: translateX(-4px);
+        }
+
+        75% {
+            transform: translateX(4px);
+        }
+    }
+
+    .input-wrap {
+        position: relative;
+    }
+
+    .status-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%) scale(0);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+        color: #fff;
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        pointer-events: none;
+    }
+
+        .status-icon.show {
+            transform: translateY(-50%) scale(1);
+        }
+
+        .status-icon.valid {
+            background: var(--primary-green);
+        }
+
+        .status-icon.invalid {
+            background: var(--danger-red);
+            box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14);
+        }
+
+    select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236fa800' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        cursor: pointer;
+        padding-right: 38px;
+    }
+
+        select.form-control:disabled {
+            background-color: #f3f4f6;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23d1d5db' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        }
+
+    #CategorySelect, #SubCategorySelect, #StatusSelect {
+        min-height: 52px;
+        padding: 14px 44px 14px 18px;
+        font-size: 1rem;
+    }
+
+    .field-feedback {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        margin-top: 6px;
+        padding: 0 2px;
+        border-radius: 8px;
+        font-weight: 600;
+        min-height: 16px;
+        opacity: 0;
+        transform: translateY(-4px);
+        border-left: 0px solid transparent;
+        transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.25s ease, padding 0.25s ease, border-color 0.25s ease;
+    }
+
+        .field-feedback.visible {
+            opacity: 1;
+            transform: translateY(0);
+            padding: 6px 10px 6px 8px;
+        }
+
+        .field-feedback.valid {
+            color: var(--dark-green);
+            background-color: var(--ultra-light-green);
+            border-left: 3px solid var(--primary-green);
+        }
+
+        .field-feedback.invalid {
+            color: #a4222d;
+            background-color: var(--danger-light);
+            border-left: 3px solid var(--danger-red);
+        }
+
+    .text-danger {
+        color: var(--danger-red) !important;
+        font-size: 0.82rem;
+    }
+
+    .form-text.text-muted {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: inline-block;
+        margin-top: 6px;
+    }
+
+    /* ---------- Sale type toggle ---------- */
+    .sale-type-toggle {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .sale-type-option {
+        flex: 1;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-weight: 600;
+        color: #6b7280;
+        background: #fafafa;
+    }
+
+        .sale-type-option:hover {
+            border-color: var(--light-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.15);
+        }
+
+        .sale-type-option.active {
+            border-color: var(--primary-green);
+            background-color: var(--ultra-light-green);
+            color: var(--dark-green);
+            box-shadow: 0 4px 12px rgba(136, 210, 0, 0.2);
+        }
+
+        .sale-type-option .icon {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+    #SaleTypeSelect {
+        display: none;
+    }
+
+    #priceSection, #auctionSection {
+        background-color: var(--ultra-light-green);
+        border-radius: 12px;
+        padding: 18px 20px 4px;
+        margin-bottom: 20px;
+        border: 1px solid var(--light-green);
+    }
+
+    .countdown-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 1px solid var(--primary-green);
+        color: var(--dark-green);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 20px;
+        margin-bottom: 14px;
+    }
+
+    /* ---------- Image upload (3 individual slots) ---------- */
+    .image-slot-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    @@media (max-width: 560px) {
+        .image-slot-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .image-slot {
+        border: 2px dashed var(--light-green);
+        border-radius: 12px;
+        padding: 16px 10px;
+        text-align: center;
+        background-color: var(--ultra-light-green);
+        transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
+        cursor: pointer;
+        position: relative;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .image-slot:hover {
+            border-color: var(--primary-green);
+        }
+
+        .image-slot.drag-over {
+            border-color: var(--dark-green);
+            background-color: var(--light-green);
+            transform: scale(1.02);
+        }
+
+        .image-slot.is-invalid {
+            border-color: var(--danger-red);
+            background-color: var(--danger-light);
+            animation: shake 0.35s ease;
+        }
+
+        .image-slot.is-valid {
+            border-color: var(--primary-green);
+            background-color: #ffffff;
+        }
+
+        .image-slot .upload-icon {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .image-slot .slot-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--dark-green);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 4px;
+        }
+
+        .image-slot .slot-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .image-slot img.slot-preview {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--primary-green);
+            animation: popIn 0.3s ease;
+        }
+
+    @@keyframes popIn {
+        from {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .slot-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--danger-red);
+        color: #fff;
+        border: 2px solid #fff;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease;
+    }
+
+        .slot-remove.show {
+            display: flex;
+        }
+
+        .slot-remove:hover {
+            transform: scale(1.15);
+        }
+
+    .image-count-badge {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: #ffffff;
+        color: var(--dark-green);
+        border: 1px solid var(--primary-green);
+        transition: all 0.3s ease;
+    }
+
+        .image-count-badge.complete {
+            background: var(--primary-green);
+            color: #fff;
+        }
+
+    /* ---------- Submit button ---------- */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        border-radius: 12px;
+        padding: 14px 20px;
+        font-weight: 700;
+        font-size: 1rem;
+        width: 100%;
+        color: #ffffff;
+        transition: all 0.25s ease;
+        margin-top: 6px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-primary:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(111, 168, 0, 0.35);
+        }
+
+        .btn-primary:not(:disabled):active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.55);
+        transform: scale(0);
+        animation: rippleAnim 0.6s ease-out;
+        pointer-events: none;
+    }
+
+    @@keyframes rippleAnim {
+        to {
+            transform: scale(3);
+            opacity: 0;
+        }
+    }
+
+    .btn-hint {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 8px;
+        transition: color 0.3s ease;
+    }
+
+        .btn-hint.ready {
+            color: var(--dark-green);
+            font-weight: 600;
+        }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: var(--dark-green);
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s ease;
+    }
+
+        .back-link:hover {
+            color: var(--primary-green);
+            transform: translateX(-3px);
+            display: inline-block;
+        }
+
+    /* ---------- Sticky mobile submit bar ---------- */
+    .mobile-submit-bar {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        box-shadow: 0 -6px 20px rgba(0,0,0,0.08);
+        padding: 12px 16px;
+        z-index: 100;
+    }
+
+    @@media (max-width: 991px) {
+        .mobile-submit-bar {
+            display: block;
+        }
+
+        .desktop-submit {
+            display: none;
+        }
+
+        .page-wrapper {
+            margin-bottom: 90px;
+        }
+    }
+
+    /* ---------- Live preview card (side col) ---------- */
+    .preview-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(111, 168, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid #eef1ee;
+    }
+
+    .preview-card-header {
+        padding: 14px 18px;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dark-green);
+        background: var(--ultra-light-green);
+        border-bottom: 1px solid var(--light-green);
+    }
+
+    .preview-card-image {
+        width: 100%;
+        height: 180px;
+        background: #f3f4f6 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='1.5'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><path d='M21 15l-5-5L5 21'/></svg>") no-repeat center;
+        background-size: 40px;
+        transition: background-image 0.2s ease;
+        object-fit: cover;
+    }
+
+    .preview-card-body {
+        padding: 16px 18px 20px;
+    }
+
+    .preview-card-name {
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+        min-height: 1.3em;
+    }
+
+    .preview-card-desc {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        min-height: 1.2em;
+    }
+
+    .preview-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .preview-price {
+        font-weight: 800;
+        color: var(--dark-green);
+        font-size: 1.1rem;
+    }
+
+    .preview-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: var(--ultra-light-green);
+        color: var(--dark-green);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+        .preview-badge.auction {
+            background: #fff7e6;
+            color: #b45309;
+        }
+
+    .preview-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+    .preview-chip {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 20px;
+        background: #f3f4f6;
+        color: var(--text-dark);
+    }
+
+    .preview-card-thumbs {
+        display: flex;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+        .preview-card-thumbs img {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--light-green);
+        }
+
+    /* ---------- Toasts ---------- */
+    .toast-stack {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toast {
+        background: #ffffff;
+        border-left: 5px solid var(--danger-red);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        color: var(--text-dark);
+        min-width: 240px;
+        max-width: 320px;
+        transform: translateX(120%);
+        animation: toastIn 0.35s ease forwards, toastOut 0.35s ease forwards 3.2s;
+    }
+
+        .toast.success-toast {
+            border-left-color: var(--primary-green);
+        }
+
+    @@keyframes toastIn {
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes toastOut {
+        to {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+    }
+
+    /* ---------- Success overlay w/ confetti ---------- */
+    .success-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 30, 10, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        overflow: hidden;
+    }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+    .success-box {
+        background: #fff;
+        border-radius: 20px;
+        padding: 40px 50px;
+        text-align: center;
+        max-width: 380px;
+        transform: scale(0.7);
+        transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        position: relative;
+        z-index: 2;
+    }
+
+    .success-overlay.show .success-box {
+        transform: scale(1);
+    }
+
+    .checkmark-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--ultra-light-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+    }
+
+        .checkmark-circle svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .checkmark-circle path {
+            stroke: var(--primary-green);
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: drawCheck 0.5s ease forwards 0.2s;
+        }
+
+    @@keyframes drawCheck {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    .success-box h3 {
+        color: var(--dark-green);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .success-box p {
+        color: #6b7280;
+        font-size: 0.92rem;
+        line-height: 1.5;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        top: -10px;
+        width: 8px;
+        height: 14px;
+        opacity: 0.9;
+        animation: confettiFall linear forwards;
+    }
+
+    @@keyframes confettiFall {
+        to {
+            transform: translateY(110vh) rotate(540deg);
+            opacity: 0.3;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<div class="page-wrapper">
+    <div class="main-col">
+
+        <div class="progress-wrapper">
+            <div class="progress-header">
+                <span class="progress-title">Form Completion</span>
+                <span class="progress-percent" id="progressPercent" aria-live="polite">0%</span>
+            </div>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progressTrack" aria-valuenow="0">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-steps">
+                <span id="step-basic">Basic Info</span>
+                <span id="step-images">Images</span>
+                <span id="step-pricing">Pricing</span>
+                <span id="step-category">Category</span>
+                <span id="step-admin">Admin Settings</span>
+            </div>
+        </div>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success" role="alert">@TempData["Message"]</div>
+        }
+
+        <div class="form-card">
+            <span class="page-eyebrow"><i class="fa-solid fa-toolbox"></i> Admin panel</span>
+            <h1 class="page-title">Add New Product</h1>
+            <p class="page-subtitle">Fill in the details below to create a new product listing.</p>
+
+            <div class="validation-banner" id="validationBanner" role="alert" aria-live="assertive">
+                <div class="validation-banner-title">
+                    <span class="validation-banner-icon">✕</span>
+                    <span id="validationBannerTitle">Please fix the following before submitting</span>
+                    <span class="validation-banner-count" id="validationBannerCount"></span>
+                </div>
+                <ul id="validationBannerList"></ul>
+            </div>
+
+            <form id="productForm" asp-action="Addproductlogic" method="post" enctype="multipart/form-data" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <!-- Section 1: Basic Details -->
+                <div class="section" id="section-basic" data-group="basic">
+                    <div class="section-header" onclick="toggleSection('section-basic')" role="button" tabindex="0" aria-expanded="true">
+                        <span class="section-label"><span class="num" data-step="1"></span> Basic Details</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label asp-for="Name" class="control-label"></label>
+                                <span class="char-counter" id="nameCounter">0/80</span>
+                            </div>
+                            <div class="input-wrap">
+                                <input asp-for="Name" class="form-control" data-group="basic" data-label="Product name" maxlength="80" required autocomplete="off" />
+                                <span class="status-icon"></span>
+                            </div>
+                            <span class="field-feedback"></span>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label asp-for="Description" class="control-label"></label>
+                                <span class="char-counter" id="descCounter">0/200</span>
+                            </div>
+                            <div class="input-wrap">
+                                <textarea asp-for="Description" class="form-control" data-group="basic" data-label="Description" maxlength="200" required rows="4" style="min-height:120px; resize:vertical;"></textarea>
+                                <span class="status-icon" style="top:28px;"></span>
+                            </div>
+                            <span class="field-feedback"></span>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Product Images (3 individual slots: Image1, Image2, Image3) -->
+                <div class="section" id="section-images" data-group="images">
+                    <div class="section-header" onclick="toggleSection('section-images')" role="button" tabindex="0" aria-expanded="true">
+                        <span class="section-label"><span class="num" data-step="2"></span> Product Images</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="form-group">
+                            <label>Upload exactly 3 images</label>
+                            <div class="image-slot-grid">
+                                @{
+                                    var imageSlots = new[] { "Image1", "Image2", "Image3" };
+                                }
+                                @for (int i = 0; i < imageSlots.Length; i++)
+                                {
+                                    var slotName = imageSlots[i];
+                                    var slotNumber = i + 1;
+                                    <div class="image-slot" id="slot-@slotName" data-slot="@slotName" tabindex="0" role="button" aria-label="Upload @slotName">
+                                        <span class="upload-icon"><i class="fa-solid fa-image"></i></span>
+                                        <span class="slot-label">Image @slotNumber</span>
+                                        <span class="slot-hint">Click or drop</span>
+                                        <input type="file" id="@(slotName)Input" name="@slotName" class="form-control" accept="image/*" style="display:none;" />
+                                        <span class="slot-remove" id="remove-@slotName">×</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="image-count-badge" id="imageCountBadge">0 / 3 selected</div>
+                            <span id="imageError" class="field-feedback invalid"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Pricing & Sale Type -->
+                <div class="section" id="section-pricing" data-group="pricing">
+                    <div class="section-header" onclick="toggleSection('section-pricing')" role="button" tabindex="0" aria-expanded="true">
+                        <span class="section-label"><span class="num" data-step="3"></span> Pricing &amp; Sale Type</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="form-group">
+                            <label>Sale Type</label>
+                            <div class="sale-type-toggle" role="radiogroup" aria-label="Sale type">
+                                <div class="sale-type-option active" data-value="No" role="radio" aria-checked="true" tabindex="0">
+                                    <span class="icon"><i class="fa-solid fa-tag"></i></span>Fixed Price
+                                </div>
+                                <div class="sale-type-option" data-value="Yes" role="radio" aria-checked="false" tabindex="0">
+                                    <span class="icon"><i class="fa-solid fa-gavel"></i></span>Auction
+                                </div>
+                            </div>
+                            <select id="SaleTypeSelect" asp-for="AvailableForBid" class="form-control">
+                                <option value="No">Fixed Price</option>
+                                <option value="Yes">Auction</option>
+                            </select>
+                            <span asp-validation-for="AvailableForBid" class="text-danger"></span>
+                        </div>
+
+                        <div id="priceSection">
+                            <div class="form-group">
+                                <label asp-for="price" class="control-label"></label>
+                                <div class="input-wrap">
+                                    <input asp-for="price" class="form-control" data-group="pricing" data-label="Price" type="text" inputmode="decimal" required />
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                                <span asp-validation-for="price" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="quantity" class="control-label"></label>
+                            <div class="input-wrap">
+                                <input asp-for="quantity" class="form-control" data-group="pricing" data-label="Quantity" type="number" min="1" step="1" required />
+                                <span class="status-icon"></span>
+                            </div>
+                            <span class="field-feedback"></span>
+                            <span asp-validation-for="quantity" class="text-danger"></span>
+                        </div>
+
+                        <div id="auctionSection">
+                            <div class="countdown-chip" id="countdownChip" style="display:none;"><i class="fa-solid fa-clock"></i> <span id="countdownText"></span></div>
+
+                            <div class="form-group">
+                                <label asp-for="BidStartDate" class="control-label"></label>
+                                <div class="input-wrap">
+                                    <input asp-for="BidStartDate" class="form-control" data-group="pricing" data-label="Auction start date" type="date" />
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                                <span asp-validation-for="BidStartDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="BidEndDate" class="control-label"></label>
+                                <div class="input-wrap">
+                                    <input asp-for="BidEndDate" class="form-control" data-group="pricing" data-label="Auction end date" type="date" />
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                                <span asp-validation-for="BidEndDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="BidPrice" class="control-label"></label>
+                                <div class="input-wrap">
+                                    <input asp-for="BidPrice" class="form-control" data-group="pricing" data-label="Starting bid" type="text" inputmode="decimal" />
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                                <span asp-validation-for="BidPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Category -->
+                <div class="section" id="section-category" data-group="category">
+                    <div class="section-header" onclick="toggleSection('section-category')" role="button" tabindex="0" aria-expanded="true">
+                        <span class="section-label"><span class="num" data-step="4"></span> Category</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="two-col">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <div class="input-wrap">
+                                    <select id="CategorySelect" class="form-control" data-group="category" data-label="Category" required>
+                                        <option value="">-- Select Category --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="SubCategoryId" class="control-label"></label>
+                                <div class="input-wrap">
+                                    <select asp-for="SubCategoryId" id="SubCategorySelect" class="form-control" data-group="category" data-label="Sub category" required disabled>
+                                        <option value="">-- Select Sub Category --</option>
+                                        @foreach (var item in ViewBag.SubCategories)
+                                        {
+                                            <option value="@item.Id" data-category="@item.CategoryId">@item.Name</option>
+                                        }
+                                    </select>
+                                    <span class="status-icon"></span>
+                                </div>
+                                <span class="field-feedback"></span>
+                                <span class="form-text text-muted" id="subCategoryHint">Select a category first</span>
+                                <span asp-validation-for="SubCategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Admin Settings (admin-only fields) -->
+                <div class="section" id="section-admin" data-group="admin">
+                    <div class="section-header" onclick="toggleSection('section-admin')" role="button" tabindex="0" aria-expanded="true">
+                        <span class="section-label"><span class="num" data-step="5"></span> Admin Settings</span>
+                        <span class="chevron">▾</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="form-group">
+                            <label asp-for="Status" class="control-label">Status</label>
+                            <div class="input-wrap">
+                                <select asp-for="Status" id="StatusSelect" class="form-control" data-group="admin" data-label="Status" required>
+                                    <option value="">-- Select Status --</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Available">Available</option>
+                                    <option value="NotAvailable">Not Available</option>
+                                </select>
+                                <span class="status-icon"></span>
+                            </div>
+                            <span class="field-feedback"></span>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group desktop-submit">
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Create Product</button>
+                    <div class="btn-hint" id="btnHint" aria-live="polite">Complete all fields to enable submission</div>
+                </div>
+            </form>
+        </div>
+
+        <a asp-action="Index" class="back-link">&larr; Back to List</a>
+    </div>
+
+    <!-- Live preview side column -->
+    <div class="side-col">
+        <div class="preview-card">
+            <div class="preview-card-header">Live Preview</div>
+            <div class="preview-card-image" id="previewImage"></div>
+            <div class="preview-card-body">
+                <div class="preview-card-name" id="previewName">Untitled product</div>
+                <div class="preview-card-desc" id="previewDesc">No description yet</div>
+                <div class="preview-card-footer">
+                    <span class="preview-price" id="previewPrice">—</span>
+                    <span class="preview-badge" id="previewBadge">Fixed Price</span>
+                </div>
+                <div class="preview-card-meta">
+                    <span class="preview-chip" id="previewStatusChip">Status: —</span>
+                </div>
+                <div class="preview-card-thumbs" id="previewThumbs"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sticky mobile submit bar -->
+<div class="mobile-submit-bar">
+    <button type="button" class="btn btn-primary" id="mobileSubmitBtn" disabled>Create Product</button>
+    <div class="btn-hint" id="mobileBtnHint">Complete all fields to enable submission</div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+    <div class="success-box">
+        <div class="checkmark-circle">
+            <svg viewBox="0 0 52 52"><path d="M14 27l8 8 16-16" /></svg>
+        </div>
+        <h3>Product Created!</h3>
+        <p>The product has been successfully added to the gallery.</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const form = document.getElementById("productForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const mobileSubmitBtn = document.getElementById("mobileSubmitBtn");
+        const btnHint = document.getElementById("btnHint");
+        const mobileBtnHint = document.getElementById("mobileBtnHint");
+        let formSubmitAttempted = false;
+
+        // ---------- Per-field messages ----------
+        const FIELD_MESSAGES = {
+            Name: { empty: "Enter a product name.", invalid: "Product name should be at least 3 characters." },
+            Description: { empty: "Enter a product description.", invalid: "Description should be at least 10 characters." },
+            price: { empty: "Enter a price for this product.", invalid: "Price must be greater than $0." },
+            quantity: { empty: "Enter how many are available.", invalid: "Quantity must be a whole number greater than 0." },
+            BidStartDate: { empty: "Choose when the auction should start.", invalid: "Start date can't be in the past." },
+            BidEndDate: { empty: "Choose when the auction should end.", invalid: "End date must be after the start date." },
+            BidPrice: { empty: "Enter a starting bid amount.", invalid: "Starting bid must be greater than $0." },
+            CategorySelect: { empty: "Select a category.", invalid: "Select a category." },
+            SubCategoryId: { empty: "Select a sub-category.", invalid: "Select a sub-category." },
+            Status: { empty: "Select a status.", invalid: "Select a status." }
+        };
+
+        // ---------- Toasts ----------
+        function showToast(message, type = "error") {
+            const stack = document.getElementById("toastStack");
+            const toast = document.createElement("div");
+            toast.className = "toast" + (type === "success" ? " success-toast" : "");
+            toast.textContent = message;
+            stack.appendChild(toast);
+            setTimeout(() => toast.remove(), 3600);
+        }
+
+        // ---------- Collapsible sections ----------
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.classList.toggle("collapsed");
+            const header = section.querySelector(".section-header");
+            header.setAttribute("aria-expanded", !section.classList.contains("collapsed"));
+        }
+        document.querySelectorAll(".section-header").forEach(h => {
+            h.addEventListener("keydown", e => {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); h.click(); }
+            });
+        });
+
+        // ---------- Debounce helper ----------
+        function debounce(fn, delay) {
+            let t;
+            return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+        }
+
+        // ---------- Character counters ----------
+        const nameInput = document.querySelector("input[name='Name']");
+        const descInput = document.querySelector("textarea[name='Description']");
+        const nameCounter = document.getElementById("nameCounter");
+        const descCounter = document.getElementById("descCounter");
+
+        function updateCounter(input, counter, max) {
+            const len = input.value.length;
+            counter.textContent = `${len}/${max}`;
+            counter.classList.toggle("warn", len > max * 0.8 && len <= max);
+            counter.classList.toggle("limit", len >= max);
+        }
+        nameInput.addEventListener("input", () => updateCounter(nameInput, nameCounter, 80));
+        descInput.addEventListener("input", () => updateCounter(descInput, descCounter, 200));
+
+        // ---------- No backdating ----------
+        const todayStr = new Date().toISOString().split("T")[0];
+        const bidStartInput = document.querySelector("input[name='BidStartDate']");
+        const bidEndInput = document.querySelector("input[name='BidEndDate']");
+        bidStartInput.setAttribute("min", todayStr);
+        bidEndInput.setAttribute("min", todayStr);
+
+        function updateCountdown() {
+            const chip = document.getElementById("countdownChip");
+            const text = document.getElementById("countdownText");
+            if (bidStartInput.value && bidEndInput.value) {
+                const start = new Date(bidStartInput.value);
+                const end = new Date(bidEndInput.value);
+                const days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+                if (days > 0) {
+                    chip.style.display = "inline-flex";
+                    text.textContent = `Auction will run for ${days} day${days !== 1 ? "s" : ""}`;
+                } else {
+                    chip.style.display = "none";
+                }
+            } else {
+                chip.style.display = "none";
+            }
+        }
+
+        bidStartInput.addEventListener("change", () => {
+            bidStartInput.dataset.touched = "true";
+            bidEndInput.setAttribute("min", bidStartInput.value || todayStr);
+            if (bidEndInput.value && bidEndInput.value < bidStartInput.value) bidEndInput.value = bidStartInput.value;
+            validateField(bidStartInput);
+            if (bidEndInput.value) validateField(bidEndInput);
+            updateCountdown();
+            updateProgress();
+            updatePreview();
+        });
+        bidEndInput.addEventListener("change", () => {
+            bidEndInput.dataset.touched = "true";
+            validateField(bidEndInput);
+            updateCountdown();
+            updateProgress();
+            updatePreview();
+        });
+        [bidStartInput, bidEndInput].forEach(input => {
+            input.addEventListener("blur", () => {
+                input.dataset.touched = "true";
+                validateField(input);
+                updateProgress();
+                updatePreview();
+            });
+        });
+
+        // ---------- Sale type toggle ----------
+        const saleTypeSelect = document.getElementById("SaleTypeSelect");
+        const saleTypeOptions = document.querySelectorAll(".sale-type-option");
+        const priceSection = document.getElementById("priceSection");
+        const auctionSection = document.getElementById("auctionSection");
+        const priceInput = priceSection.querySelector("input[name='price']");
+        const bidPriceInput = auctionSection.querySelector("input[name='BidPrice']");
+
+        function setSaleType(value) {
+            saleTypeSelect.value = value;
+            saleTypeOptions.forEach(opt => {
+                const active = opt.dataset.value === value;
+                opt.classList.toggle("active", active);
+                opt.setAttribute("aria-checked", active);
+            });
+            toggleSaleType();
+            updateProgress();
+            updatePreview();
+        }
+        saleTypeOptions.forEach(opt => {
+            opt.addEventListener("click", () => setSaleType(opt.dataset.value));
+            opt.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSaleType(opt.dataset.value); } });
+        });
+
+        function toggleSaleType() {
+            if (saleTypeSelect.value === "Yes") {
+                priceSection.style.display = "none";
+                auctionSection.style.display = "block";
+                priceInput.removeAttribute("required");
+                priceInput.value = "";
+                clearFieldValidation(priceInput);
+                bidStartInput.setAttribute("required", "required");
+                bidEndInput.setAttribute("required", "required");
+                bidPriceInput.setAttribute("required", "required");
+            } else {
+                priceSection.style.display = "block";
+                auctionSection.style.display = "none";
+                priceInput.setAttribute("required", "required");
+                bidStartInput.removeAttribute("required");
+                bidEndInput.removeAttribute("required");
+                bidPriceInput.removeAttribute("required");
+                bidStartInput.value = "";
+                bidEndInput.value = "";
+                bidPriceInput.value = "";
+                [bidStartInput, bidEndInput, bidPriceInput].forEach(clearFieldValidation);
+                updateCountdown();
+            }
+        }
+        toggleSaleType();
+
+        // ---------- Currency formatting ----------
+        function formatCurrencyOnBlur(input) {
+            const val = parseFloat(input.value.replace(/[^0-9.]/g, ""));
+            if (!isNaN(val)) input.value = val.toFixed(2);
+        }
+        function stripCurrencyOnFocus(input) {
+            input.value = input.value.replace(/[^0-9.]/g, "");
+        }
+        [priceInput, bidPriceInput].forEach(inp => {
+            inp.addEventListener("focus", () => stripCurrencyOnFocus(inp));
+            inp.addEventListener("blur", () => { if (inp.value.trim() !== "") formatCurrencyOnBlur(inp); });
+        });
+
+        // ---------- Field validation ----------
+        function clearFieldValidation(input) {
+            input.classList.remove("is-valid", "is-invalid");
+            const group = input.closest(".form-group");
+            const feedback = group?.querySelector(".field-feedback");
+            const icon = group?.querySelector(".status-icon");
+            if (feedback) { feedback.textContent = ""; feedback.classList.remove("visible", "valid", "invalid"); }
+            if (icon) { icon.classList.remove("show", "valid", "invalid"); icon.textContent = ""; }
+        }
+
+        function validateField(input) {
+            const isRequired = input.hasAttribute("required") && !input.disabled;
+            const value = input.value.trim();
+            const messages = FIELD_MESSAGES[input.name] || FIELD_MESSAGES[input.id] || { empty: "This field is required.", invalid: "Enter a valid value." };
+
+            let valid = true;
+            let message = "Looks good";
+
+            if (!isRequired && value === "") {
+                valid = true;
+            } else if (value === "") {
+                valid = false;
+                message = messages.empty;
+            } else if (input === priceInput || input === bidPriceInput) {
+                const num = parseFloat(value.replace(/[^0-9.]/g, ""));
+                valid = !isNaN(num) && num > 0;
+                message = valid ? "Looks good" : messages.invalid;
+            } else if (input.type === "number") {
+                const num = parseFloat(value);
+                valid = Number.isFinite(num) && Number.isInteger(num) && num > 0;
+                message = valid ? "Looks good" : messages.invalid;
+            } else if (input === nameInput) {
+                valid = value.length >= 3;
+                message = valid ? "Looks good" : messages.invalid;
+            } else if (input === descInput) {
+                valid = value.length >= 10;
+                message = valid ? "Looks good" : messages.invalid;
+            } else if (input.tagName === "SELECT") {
+                message = "Looks good";
+            }
+
+            if (valid && input.type === "date") {
+                if (value < todayStr) { valid = false; message = messages.invalid; }
+                else if (input === bidEndInput && bidStartInput.value && value < bidStartInput.value) { valid = false; message = messages.invalid; }
+                else { message = "Valid date"; }
+            }
+
+            const shouldShowUI = input.dataset.touched === "true" || formSubmitAttempted;
+            if (shouldShowUI) {
+                const group = input.closest(".form-group");
+                const feedback = group?.querySelector(".field-feedback");
+                const icon = group?.querySelector(".status-icon");
+                input.classList.toggle("is-valid", valid);
+                input.classList.toggle("is-invalid", !valid);
+                if (feedback) {
+                    feedback.textContent = (valid ? "✓ " : "✕ ") + message;
+                    feedback.classList.add("visible");
+                    feedback.classList.toggle("valid", valid);
+                    feedback.classList.toggle("invalid", !valid);
+                }
+                if (icon) {
+                    icon.textContent = valid ? "✓" : "✕";
+                    icon.classList.add("show");
+                    icon.classList.toggle("valid", valid);
+                    icon.classList.toggle("invalid", !valid);
+                }
+            } else {
+                clearFieldValidation(input);
+            }
+
+            return valid;
+        }
+
+        const validatedInputs = document.querySelectorAll(
+            "#productForm input[required], #productForm select[required], #productForm textarea[required], #productForm input[name='price'], #productForm input[name='quantity'], #productForm input[name='BidPrice']"
+        );
+
+        const debouncedValidate = debounce((input) => { validateField(input); updateProgress(); updatePreview(); }, 300);
+
+        validatedInputs.forEach(input => {
+            input.addEventListener("input", () => { input.dataset.touched = "true"; debouncedValidate(input); });
+            input.addEventListener("change", () => { input.dataset.touched = "true"; validateField(input); updateProgress(); updatePreview(); });
+            input.addEventListener("blur", () => { input.dataset.touched = "true"; validateField(input); updateProgress(); updatePreview(); });
+        });
+
+        // ---------- Images: 3 individual slots (Image1, Image2, Image3) ----------
+        const imageError = document.getElementById("imageError");
+        const imageCountBadge = document.getElementById("imageCountBadge");
+        const MAX_FILE_MB = 8;
+        const slotNames = ["Image1", "Image2", "Image3"];
+        const slotFiles = {};
+
+        function countFilledSlots() {
+            return slotNames.filter(n => slotFiles[n]).length;
+        }
+
+        function renderSlotPreview(slotName, file) {
+            const slotEl = document.getElementById(`slot-${slotName}`);
+            const removeBtn = document.getElementById(`remove-${slotName}`);
+            const reader = new FileReader();
+            reader.onload = e => {
+                slotEl.querySelectorAll(".upload-icon, .slot-label, .slot-hint, img.slot-preview").forEach(el => el.remove());
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.className = "slot-preview";
+                slotEl.insertBefore(img, slotEl.firstChild);
+                removeBtn.classList.add("show");
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetSlotUI(slotName) {
+            const slotEl = document.getElementById(`slot-${slotName}`);
+            const removeBtn = document.getElementById(`remove-${slotName}`);
+            const slotNumber = slotNames.indexOf(slotName) + 1;
+            slotEl.querySelectorAll("img.slot-preview").forEach(el => el.remove());
+            if (!slotEl.querySelector(".upload-icon")) {
+                slotEl.innerHTML = `<span class="upload-icon"><i class="fa-solid fa-image"></i></span><span class="slot-label">Image ${slotNumber}</span><span class="slot-hint">Click or drop</span>` + slotEl.innerHTML;
+            }
+            removeBtn.classList.remove("show");
+        }
+
+        function validateSlotFile(slotName, file) {
+            const slotEl = document.getElementById(`slot-${slotName}`);
+            if (file.size > MAX_FILE_MB * 1024 * 1024) {
+                slotEl.classList.add("is-invalid");
+                slotEl.classList.remove("is-valid");
+                imageError.textContent = `"${file.name}" is larger than ${MAX_FILE_MB}MB — please choose a smaller photo.`;
+                imageError.classList.add("visible");
+                showToast(`Image too large: ${file.name}`);
+                return false;
+            }
+            if (!file.type.startsWith("image/")) {
+                slotEl.classList.add("is-invalid");
+                slotEl.classList.remove("is-valid");
+                imageError.textContent = "Please upload image files only (JPG, PNG, etc.).";
+                imageError.classList.add("visible");
+                showToast("Only image files are allowed.");
+                return false;
+            }
+            slotEl.classList.add("is-valid");
+            slotEl.classList.remove("is-invalid");
+            imageError.textContent = "";
+            imageError.classList.remove("visible");
+            return true;
+        }
+
+        function setSlotFile(slotName, file) {
+            const inputEl = document.getElementById(`${slotName}Input`);
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            inputEl.files = dt.files;
+            slotFiles[slotName] = file;
+            const ok = validateSlotFile(slotName, file);
+            if (ok) renderSlotPreview(slotName, file);
+            updateImageCount();
+            updateProgress();
+        }
+
+        function clearSlotFile(slotName) {
+            const inputEl = document.getElementById(`${slotName}Input`);
+            inputEl.value = "";
+            delete slotFiles[slotName];
+            const slotEl = document.getElementById(`slot-${slotName}`);
+            slotEl.classList.remove("is-valid", "is-invalid");
+            resetSlotUI(slotName);
+            updateImageCount();
+            updateProgress();
+            updatePreview();
+        }
+
+        function updateImageCount() {
+            const count = countFilledSlots();
+            imageCountBadge.textContent = `${count} / 3 selected`;
+            imageCountBadge.classList.toggle("complete", count === 3);
+            if (count === 3) {
+                imageError.textContent = "";
+                imageError.classList.remove("visible");
+            }
+        }
+
+        slotNames.forEach(slotName => {
+            const slotEl = document.getElementById(`slot-${slotName}`);
+            const inputEl = document.getElementById(`${slotName}Input`);
+            const removeBtn = document.getElementById(`remove-${slotName}`);
+
+            slotEl.addEventListener("click", () => inputEl.click());
+            slotEl.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputEl.click(); } });
+            inputEl.addEventListener("change", () => {
+                if (inputEl.files && inputEl.files[0]) setSlotFile(slotName, inputEl.files[0]);
+            });
+            removeBtn.addEventListener("click", (e) => { e.stopPropagation(); clearSlotFile(slotName); });
+
+            ["dragenter", "dragover"].forEach(evt => {
+                slotEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); slotEl.classList.add("drag-over"); });
+            });
+            ["dragleave", "drop"].forEach(evt => {
+                slotEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); slotEl.classList.remove("drag-over"); });
+            });
+            slotEl.addEventListener("drop", e => {
+                const dropped = Array.from(e.dataTransfer.files).find(f => f.type.startsWith("image/"));
+                if (dropped) setSlotFile(slotName, dropped);
+            });
+        });
+
+        function validateImages() {
+            const count = countFilledSlots();
+            if (count < 3) {
+                imageError.textContent = `You've added ${count} photo${count === 1 ? "" : "s"} — please select all 3.`;
+                imageError.classList.add("visible");
+                return false;
+            }
+            return true;
+        }
+
+        // ---------- Cascading Category -> SubCategory ----------
+        const categorySelect = document.getElementById("CategorySelect");
+        const subCategorySelect = document.getElementById("SubCategorySelect");
+        const subCategoryHint = document.getElementById("subCategoryHint");
+        const allSubCategoryOptions = Array.from(subCategorySelect.options);
+
+        function filterSubCategories() {
+            const selectedCategoryId = categorySelect.value;
+            subCategorySelect.innerHTML = "";
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "-- Select Sub Category --";
+            subCategorySelect.appendChild(defaultOption);
+
+            allSubCategoryOptions.forEach(opt => {
+                if (opt.value === "") return;
+                if (!selectedCategoryId || opt.dataset.category === selectedCategoryId) {
+                    subCategorySelect.appendChild(opt.cloneNode(true));
+                }
+            });
+
+            const hasCategory = !!selectedCategoryId;
+            subCategorySelect.disabled = !hasCategory;
+            subCategoryHint.style.display = hasCategory ? "none" : "inline-block";
+            clearFieldValidation(subCategorySelect);
+            validateField(categorySelect);
+            updateProgress();
+        }
+        categorySelect.addEventListener("change", filterSubCategories);
+
+        // ---------- Live preview card ----------
+        const statusSelect = document.getElementById("StatusSelect");
+
+        function updatePreview() {
+            document.getElementById("previewName").textContent = nameInput.value.trim() || "Untitled product";
+            document.getElementById("previewDesc").textContent = descInput.value.trim() || "No description yet";
+
+            const isAuction = saleTypeSelect.value === "Yes";
+            const badge = document.getElementById("previewBadge");
+            badge.textContent = isAuction ? "Auction" : "Fixed Price";
+            badge.classList.toggle("auction", isAuction);
+
+            const priceEl = document.getElementById("previewPrice");
+            if (isAuction) {
+                const num = parseFloat(bidPriceInput.value);
+                priceEl.textContent = !isNaN(num) ? `Starting $${num.toFixed(2)}` : "—";
+            } else {
+                const num = parseFloat(priceInput.value);
+                priceEl.textContent = !isNaN(num) ? `$${num.toFixed(2)}` : "—";
+            }
+
+            document.getElementById("previewStatusChip").textContent = `Status: ${statusSelect.value || "—"}`;
+
+            const thumbsWrap = document.getElementById("previewThumbs");
+            thumbsWrap.innerHTML = "";
+            slotNames.forEach(slotName => {
+                const file = slotFiles[slotName];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    thumbsWrap.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            const mainImage = document.getElementById("previewImage");
+            const firstFile = slotFiles["Image1"] || slotFiles["Image2"] || slotFiles["Image3"];
+            if (firstFile) {
+                const reader = new FileReader();
+                reader.onload = e => { mainImage.style.backgroundImage = `url(${e.target.result})`; mainImage.style.backgroundSize = "cover"; };
+                reader.readAsDataURL(firstFile);
+            }
+        }
+        nameInput.addEventListener("input", debounce(updatePreview, 200));
+        descInput.addEventListener("input", debounce(updatePreview, 200));
+        statusSelect.addEventListener("change", updatePreview);
+
+        // ---------- Progress bar / section completion ----------
+        const progressFill = document.getElementById("progressFill");
+        const progressPercent = document.getElementById("progressPercent");
+        const progressTrack = document.getElementById("progressTrack");
+        const steps = {
+            basic: document.getElementById("step-basic"),
+            images: document.getElementById("step-images"),
+            pricing: document.getElementById("step-pricing"),
+            category: document.getElementById("step-category"),
+            admin: document.getElementById("step-admin")
+        };
+
+        function isFieldFilled(input) {
+            const isRequired = input.hasAttribute("required") && !input.disabled;
+            if (!isRequired) return true;
+            const value = input.value.trim();
+            if (value === "") return false;
+            if (input === priceInput || input === bidPriceInput) {
+                const num = parseFloat(value.replace(/[^0-9.]/g, ""));
+                return !isNaN(num) && num > 0;
+            }
+            if (input.type === "number") {
+                const num = parseFloat(value);
+                return Number.isFinite(num) && Number.isInteger(num) && num > 0;
+            }
+            if (input === nameInput) return value.length >= 3;
+            if (input === descInput) return value.length >= 10;
+            if (input.type === "date") {
+                if (value < todayStr) return false;
+                if (input === bidEndInput && bidStartInput.value && value < bidStartInput.value) return false;
+                return true;
+            }
+            return true;
+        }
+
+        function groupComplete(groupName) {
+            if (groupName === "images") return countFilledSlots() === 3;
+            const requiredInputs = Array.from(document.querySelectorAll(`[data-group='${groupName}'][required]`))
+                .filter(el => el.offsetParent !== null && !el.disabled);
+            if (requiredInputs.length === 0) return true;
+            return requiredInputs.every(isFieldFilled);
+        }
+
+        function groupHasError(groupName) {
+            if (groupName === "images") return countFilledSlots() > 0 && countFilledSlots() < 3;
+            return Array.from(document.querySelectorAll(`[data-group='${groupName}']`))
+                .filter(el => el.offsetParent !== null && !el.disabled && el.dataset.touched === "true")
+                .some(el => !isFieldFilled(el));
+        }
+
+        function updateProgress() {
+            let completed = 0;
+            const total = 5;
+
+            ["basic", "images", "pricing", "category", "admin"].forEach(g => {
+                const done = groupComplete(g);
+                if (done) completed++;
+                steps[g].classList.toggle("done", done);
+                const sectionEl = document.getElementById(`section-${g}`);
+                if (sectionEl) {
+                    sectionEl.classList.toggle("complete", done);
+                    sectionEl.classList.toggle("has-error", !done && groupHasError(g));
+                }
+            });
+
+            const pct = Math.round((completed / total) * 100);
+            progressFill.style.width = pct + "%";
+            progressPercent.textContent = pct + "%";
+            progressTrack.setAttribute("aria-valuenow", pct);
+
+            const allDone = completed === total;
+            submitBtn.disabled = !allDone;
+            mobileSubmitBtn.disabled = !allDone;
+            const hintText = allDone ? "All set — ready to submit!" : "Complete all fields to enable submission";
+            btnHint.textContent = hintText;
+            mobileBtnHint.textContent = hintText;
+            btnHint.classList.toggle("ready", allDone);
+            mobileBtnHint.classList.toggle("ready", allDone);
+
+            if (allDone) {
+                document.getElementById("validationBanner").classList.remove("show");
+            }
+        }
+
+        updateProgress();
+        updatePreview();
+
+        // ---------- Button ripple ----------
+        function addRipple(e, btn) {
+            const rect = btn.getBoundingClientRect();
+            const ripple = document.createElement("span");
+            ripple.className = "ripple";
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + "px";
+            ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
+            ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+        [submitBtn, mobileSubmitBtn].forEach(btn => {
+            btn.addEventListener("click", e => { if (!btn.disabled) addRipple(e, btn); });
+        });
+
+        // ---------- Confetti ----------
+        function launchConfetti() {
+            const overlay = document.getElementById("successOverlay");
+            const colors = ["#88d200", "#6fa800", "#d4f09b", "#f0fae6"];
+            for (let i = 0; i < 40; i++) {
+                const piece = document.createElement("div");
+                piece.className = "confetti-piece";
+                piece.style.left = Math.random() * 100 + "%";
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (1.6 + Math.random() * 1.4) + "s";
+                piece.style.animationDelay = (Math.random() * 0.3) + "s";
+                overlay.appendChild(piece);
+                setTimeout(() => piece.remove(), 3200);
+            }
+        }
+
+        // ---------- Validation summary banner ----------
+        function showValidationBanner(invalidInputs, imagesInvalid) {
+            const banner = document.getElementById("validationBanner");
+            const list = document.getElementById("validationBannerList");
+            const title = document.getElementById("validationBannerTitle");
+            const countBadge = document.getElementById("validationBannerCount");
+            list.innerHTML = "";
+
+            invalidInputs.forEach(input => {
+                const label = input.dataset.label || input.name || "This field";
+                const li = document.createElement("li");
+                li.textContent = label;
+                li.addEventListener("click", () => {
+                    const sectionEl = input.closest(".section");
+                    if (sectionEl && sectionEl.classList.contains("collapsed")) toggleSection(sectionEl.id);
+                    input.scrollIntoView({ behavior: "smooth", block: "center" });
+                    input.focus();
+                });
+                list.appendChild(li);
+            });
+            if (imagesInvalid) {
+                const li = document.createElement("li");
+                li.textContent = "Product images (exactly 3 required)";
+                li.addEventListener("click", () => {
+                    const sectionEl = document.getElementById("section-images");
+                    if (sectionEl.classList.contains("collapsed")) toggleSection("section-images");
+                    document.getElementById("slot-Image1").scrollIntoView({ behavior: "smooth", block: "center" });
+                });
+                list.appendChild(li);
+            }
+
+            const count = list.children.length;
+            title.textContent = "Please fix the following before submitting";
+            countBadge.textContent = count === 1 ? "1 issue" : `${count} issues`;
+            banner.classList.add("show");
+        }
+
+        // ---------- Submit ----------
+        mobileSubmitBtn.addEventListener("click", () => { if (!mobileSubmitBtn.disabled) form.requestSubmit(); });
+
+        form.addEventListener("submit", function (e) {
+            formSubmitAttempted = true;
+            let allValid = true;
+            const invalidInputs = [];
+            validatedInputs.forEach(input => {
+                if (input.offsetParent !== null && !input.disabled) {
+                    input.dataset.touched = "true";
+                    const ok = validateField(input);
+                    if (!ok) { allValid = false; invalidInputs.push(input); }
+                }
+            });
+            const imagesOk = validateImages();
+            if (!imagesOk) allValid = false;
+
+            updateProgress();
+
+            if (!allValid) {
+                e.preventDefault();
+                showValidationBanner(invalidInputs, !imagesOk);
+                showToast("Please fix the highlighted fields before submitting.");
+                const firstInvalid = form.querySelector(".is-invalid");
+                if (firstInvalid) {
+                    const sectionEl = firstInvalid.closest(".section");
+                    if (sectionEl && sectionEl.classList.contains("collapsed")) toggleSection(sectionEl.id);
+                    firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+                } else {
+                    document.getElementById("validationBanner").scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+                return;
+            }
+
+            document.getElementById("validationBanner").classList.remove("show");
+            e.preventDefault();
+            const overlay = document.getElementById("successOverlay");
+            overlay.classList.add("show");
+            launchConfetti();
+            showToast("Product created successfully.", "success");
+            setTimeout(() => form.submit(), 1800);
+        });
+    </script>
+}

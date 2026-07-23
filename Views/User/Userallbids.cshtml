@@ -1,0 +1,921 @@
+@model IEnumerable<Art_Gallery.Models.AuctionDetails>
+@{
+    ViewData["Title"] = "My Bids";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+@functions {
+    // Image1 sometimes ends up saved as a full disk path instead of just the
+    // filename, which breaks the <img> src. This pulls out just the filename
+    // regardless of how it was stored, so it always resolves under wwwroot/images/products.
+    string GetProductImageFileName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+        var normalized = raw.Replace('\\', '/');
+        return normalized.Substring(normalized.LastIndexOf('/') + 1);
+    }
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    /* ===== everything scoped under .mybids-user-page so it can't leak into the shell ===== */
+    .mybids-user-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .mybids-user-page *,
+        .mybids-user-page *::before,
+        .mybids-user-page *::after {
+            box-sizing: border-box;
+        }
+
+        .mybids-user-page .container-cust {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .mybids-user-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .mybids-user-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        /* header */
+        .mybids-user-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .mybids-user-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .mybids-user-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .mybids-user-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .mybids-user-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+            .mybids-user-page .heading-green span {
+                background: #88d200;
+                color: white;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 0.2rem 1rem;
+                border-radius: 60px;
+                letter-spacing: 0.3px;
+            }
+
+        .mybids-user-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .mybids-user-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        .mybids-user-page .alert-info-cust {
+            background: #f0fae6;
+            border: 1.5px dashed #d4f09b;
+            color: #5c7a2e;
+            border-radius: 16px;
+            padding: 30px 22px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+            .mybids-user-page .alert-info-cust i {
+                display: block;
+                font-size: 2rem;
+                color: #d4f09b;
+                margin-bottom: 10px;
+            }
+
+        /* stat cards */
+        .mybids-user-page .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 1.4rem;
+        }
+
+        .mybids-user-page .stat-card {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.25s;
+        }
+
+            .mybids-user-page .stat-card:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
+            }
+
+        .mybids-user-page .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #88d200;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+        }
+
+        .mybids-user-page .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1a1a1a;
+            line-height: 1.1;
+        }
+
+        .mybids-user-page .stat-label {
+            font-size: 0.76rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* toolbar / search */
+        .mybids-user-page .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .mybids-user-page .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            border-radius: 60px;
+            padding: 9px 20px;
+            flex: 1;
+            max-width: 340px;
+            transition: all 0.2s;
+        }
+
+            .mybids-user-page .search-box:focus-within {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
+            }
+
+            .mybids-user-page .search-box i {
+                color: #6fa800;
+            }
+
+            .mybids-user-page .search-box input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 0.88rem;
+                width: 100%;
+                color: #1a1a1a;
+            }
+
+        .mybids-user-page .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .mybids-user-page .result-count {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .mybids-user-page .scroll-hint {
+            font-size: 0.78rem;
+            color: #6fa800;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* table (drag-to-scroll) */
+        .mybids-user-page .table-responsive-cust {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+            cursor: grab;
+            user-select: none;
+        }
+
+            .mybids-user-page .table-responsive-cust::-webkit-scrollbar {
+                display: none;
+            }
+
+            .mybids-user-page .table-responsive-cust.dragging {
+                cursor: grabbing;
+            }
+
+        .mybids-user-page .table-green-white {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+            min-width: 950px;
+            margin-bottom: 0;
+        }
+
+            .mybids-user-page .table-green-white thead th {
+                background: #88d200;
+                color: white;
+                font-weight: 600;
+                font-size: 0.76rem;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                padding: 15px 18px;
+                border: none;
+                text-align: left;
+                vertical-align: middle;
+                white-space: nowrap;
+            }
+
+                .mybids-user-page .table-green-white thead th .th-inner {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .mybids-user-page .table-green-white thead th.text-end .th-inner {
+                    justify-content: flex-end;
+                }
+
+                .mybids-user-page .table-green-white thead th:first-child {
+                    border-radius: 20px 0 0 20px;
+                    padding-left: 26px;
+                }
+
+                .mybids-user-page .table-green-white thead th:last-child {
+                    border-radius: 0 20px 20px 0;
+                    padding-right: 26px;
+                }
+
+                .mybids-user-page .table-green-white thead th.text-end {
+                    text-align: right;
+                }
+
+                .mybids-user-page .table-green-white thead th.sortable {
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                    .mybids-user-page .table-green-white thead th.sortable .sort-icon {
+                        margin-left: 6px;
+                        font-size: 0.63rem;
+                        opacity: 0.6;
+                        transition: opacity 0.2s, transform 0.2s;
+                    }
+
+                    .mybids-user-page .table-green-white thead th.sortable:hover .sort-icon {
+                        opacity: 1;
+                    }
+
+                .mybids-user-page .table-green-white thead th.sort-asc .sort-icon,
+                .mybids-user-page .table-green-white thead th.sort-desc .sort-icon {
+                    opacity: 1;
+                }
+
+                .mybids-user-page .table-green-white thead th.sort-desc .sort-icon {
+                    transform: rotate(180deg);
+                }
+
+        .mybids-user-page .empty-state-row td {
+            text-align: center;
+            padding: 40px 20px !important;
+            color: #8a9a6e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 20px !important;
+        }
+
+        .mybids-user-page .empty-state-row i {
+            display: block;
+            font-size: 2rem;
+            color: #d4f09b;
+            margin-bottom: 10px;
+        }
+
+        .mybids-user-page .table-green-white tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid rgba(136, 210, 0, 0.06);
+            opacity: 0;
+            animation: fadeSlideMyBidsU 0.45s forwards;
+            animation-delay: calc(0.05s * var(--i, 1));
+        }
+
+    @@keyframes fadeSlideMyBidsU {
+        0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .mybids-user-page .table-green-white tbody tr:hover {
+        background: #fbffef;
+        border-color: #d4f09b;
+        transform: scale(1.006) translateY(-2px);
+        box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
+    }
+
+    .mybids-user-page .table-green-white tbody td {
+        padding: 12px 18px;
+        vertical-align: middle;
+        border: none;
+        background: transparent;
+        font-size: 0.92rem;
+    }
+
+        .mybids-user-page .table-green-white tbody td:first-child {
+            padding-left: 26px;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .mybids-user-page .table-green-white tbody td:last-child {
+            padding-right: 26px;
+            border-radius: 0 18px 18px 0;
+        }
+
+        .mybids-user-page .table-green-white thead th:first-child,
+        .mybids-user-page .table-green-white tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #88d200;
+        }
+
+        .mybids-user-page .table-green-white tbody td:first-child {
+            background: white;
+            box-shadow: 4px 0 8px -4px rgba(111, 168, 0, 0.15);
+        }
+
+    .mybids-user-page .table-green-white tbody tr:hover td:first-child {
+        background: #fbffef;
+    }
+
+    .mybids-user-page .product-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1.5px solid #d4f09b;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.18);
+        transition: transform 0.2s;
+        background: #f0fae6;
+    }
+
+    .mybids-user-page .table-green-white tbody tr:hover .product-thumb {
+        transform: scale(1.06);
+    }
+
+    .mybids-user-page .thumb-fallback {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: #f0fae6;
+        border: 1.5px dashed #d4f09b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #88d200;
+        font-size: 1.3rem;
+    }
+
+    .mybids-user-page .product-name-cell {
+        font-weight: 700;
+        color: #1a1a1a;
+        transition: 0.15s;
+        white-space: nowrap;
+    }
+
+    .mybids-user-page .table-green-white tbody tr:hover .product-name-cell {
+        color: #6fa800;
+    }
+
+    .mybids-user-page .info-pill {
+        background: #f0fae6;
+        color: #4c7800;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .mybids-user-page .table-green-white tbody tr:hover .info-pill {
+        background: #d4f09b;
+    }
+
+    .mybids-user-page .price-cell {
+        font-weight: 700;
+        color: #4c7800;
+        white-space: nowrap;
+    }
+
+    .mybids-user-page .status-badge-row {
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.76rem;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+        .mybids-user-page .status-badge-row.status-pending {
+            background: #fff6e0;
+            color: #a66a00;
+        }
+
+        .mybids-user-page .status-badge-row.status-won,
+        .mybids-user-page .status-badge-row.status-completed,
+        .mybids-user-page .status-badge-row.status-accepted {
+            background: #eaf7d6;
+            color: #4c7800;
+        }
+
+        .mybids-user-page .status-badge-row.status-rejected,
+        .mybids-user-page .status-badge-row.status-cancelled,
+        .mybids-user-page .status-badge-row.status-lost {
+            background: #fdeaea;
+            color: #a51b1b;
+        }
+
+        .mybids-user-page .status-badge-row.status-active,
+        .mybids-user-page .status-badge-row.status-outbid {
+            background: #e6f1fc;
+            color: #1a5fa5;
+        }
+
+    /* view details button */
+    .mybids-user-page .btn-action {
+        border-radius: 60px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        letter-spacing: 0.25px;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        line-height: 1;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .mybids-user-page .btn-details {
+        background: #88d200;
+        color: white;
+        border-color: #88d200;
+    }
+
+        .mybids-user-page .btn-details:hover {
+            background: #6fa800;
+            border-color: #6fa800;
+            color: white;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
+        }
+
+    /* footer */
+    .mybids-user-page .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.84rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .mybids-user-page .table-footer i {
+            color: #88d200;
+            margin: 0 4px;
+        }
+
+        .mybids-user-page .table-footer .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+            .mybids-user-page .table-footer .pill:hover {
+                background: #88d200;
+                color: white;
+            }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .mybids-user-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .mybids-user-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .mybids-user-page .brand-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .mybids-user-page .table-green-white thead th,
+        .mybids-user-page .table-green-white tbody td {
+            padding: 10px 10px;
+            font-size: 0.84rem;
+        }
+
+        .mybids-user-page .btn-action {
+            padding: 6px 12px;
+            font-size: 0.7rem;
+        }
+
+        .mybids-user-page .table-green-white tbody td:first-child {
+            padding-left: 14px;
+        }
+
+        .mybids-user-page .table-green-white tbody td:last-child {
+            padding-right: 14px;
+        }
+
+        .mybids-user-page .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .mybids-user-page .toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .mybids-user-page .search-box {
+            max-width: unset;
+        }
+
+        .mybids-user-page .toolbar-right {
+            justify-content: space-between;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .mybids-user-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+
+        .mybids-user-page .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="mybids-user-page">
+    <div class="container-cust">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <h1 class="heading-green">
+                        My Bids
+                        <span>@Model.Count()</span>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge">
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> bidder account
+                    </div>
+                </div>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert-info-cust">
+                    <i class="fas fa-gavel"></i>
+                    You have not placed any bids yet.
+                </div>
+            }
+            else
+            {
+                <!-- stat cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-gavel"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count()</div>
+                            <div class="stat-label">Total Bids</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count(a => a.bidstatus == "Pending")</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count(a => a.bidstatus == "Accepted")</div>
+                            <div class="stat-label">Accepted</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                        <div>
+                            <div class="stat-value">Rs. @Model.Sum(a => a.bidamount)</div>
+                            <div class="stat-label">Total Bid Value</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- search / toolbar -->
+                <div class="toolbar-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="myBidsSearch" placeholder="Search by product, category or status..." onkeyup="filterMyBids()" />
+                    </div>
+                    <div class="toolbar-right">
+                        <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                        <span class="scroll-hint">
+                            <i class="fas fa-arrows-left-right"></i> click &amp; drag to scroll
+                        </span>
+                    </div>
+                </div>
+
+                <!-- table -->
+                <div class="table-responsive-cust" id="myBidsTableScroll">
+                    <table class="table table-green-white">
+                        <thead>
+                            <tr>
+                                <th><span class="th-inner"><i class="fas fa-image fa-fw-lead"></i> Image</span></th>
+                                <th class="sortable" onclick="sortMyBidsTable(1, this)"><span class="th-inner"><i class="fas fa-box-open fa-fw-lead"></i> Product <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-layer-group fa-fw-lead"></i> Category</span></th>
+                                <th class="sortable" onclick="sortMyBidsTable(3, this)"><span class="th-inner"><i class="fas fa-rupee-sign fa-fw-lead"></i> Your Bid <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-info-circle fa-fw-lead"></i> Status</span></th>
+                                <th class="sortable" onclick="sortMyBidsTable(5, this)"><span class="th-inner"><i class="fas fa-calendar fa-fw-lead"></i> Bid Date <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th class="text-end"><span class="th-inner"><i class="fas fa-bolt fa-fw-lead"></i> Action</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowIndex = 0;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                rowIndex++;
+                                var statusClass = (item.bidstatus ?? "").ToLower().Replace(" ", "-");
+                                <tr style="--i: @rowIndex;">
+                                    <td>
+                                        @{
+                                            var imgFile = GetProductImageFileName(item.Product?.Image1);
+                                        }
+                                        @if (!string.IsNullOrEmpty(imgFile))
+                                        {
+                                            <img src="~/images/products/@imgFile"
+                                                 class="product-thumb"
+                                                 onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-fallback',innerHTML:'<i class=\'fas fa-image\'></i>'}));" />
+                                        }
+                                        else
+                                        {
+                                            <div class="thumb-fallback"><i class="fas fa-image"></i></div>
+                                        }
+                                    </td>
+                                    <td><span class="product-name-cell">@item.Product?.Name</span></td>
+                                    <td><span class="info-pill">@(item.Product?.SubCategory?.Name ?? "—")</span></td>
+                                    <td><span class="price-cell">Rs. @item.bidamount</span></td>
+                                    <td>
+                                        <span class="status-badge-row status-@statusClass">
+                                            <i class="fas fa-circle" style="font-size: 0.45rem;"></i> @item.bidstatus
+                                        </span>
+                                    </td>
+                                    <td>@item.Product?.BidEndDate</td>
+                                    <td style="text-align: right;">
+                                        <a asp-action="UserBiddetails" asp-route-id="@item.Id" class="btn-action btn-details">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="empty-state-row" id="noResultsRow" style="display: none;">
+                                <td colspan="7">
+                                    <i class="fas fa-inbox"></i>
+                                    No matching bids found.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- footer -->
+                <div class="table-footer">
+                    <span>
+                        <i class="fas fa-arrow-right"></i> hover rows · click headers to sort · green theme
+                    </span>
+                    <span class="pill">
+                        <i class="fas fa-gavel"></i> @Model.Count() bids
+                    </span>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Live search filter across product, category, status columns
+    function filterMyBids() {
+        const query = document.getElementById('myBidsSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.mybids-user-page .table-green-white tbody tr:not(#noResultsRow)');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(query);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
+
+        const totalRows = rows.length;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
+    }
+
+    // Click-to-sort table columns
+    let myBidsSortDirections = {};
+    function sortMyBidsTable(colIndex, headerEl) {
+        const table = headerEl.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
+
+        const asc = !myBidsSortDirections[colIndex];
+        myBidsSortDirections = {};
+        myBidsSortDirections[colIndex] = asc;
+
+        table.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+        headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+        rows.sort((a, b) => {
+            const cellA = a.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const cellB = b.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const numA = parseFloat(cellA), numB = parseFloat(cellB);
+            const bothNumeric = !isNaN(numA) && !isNaN(numB);
+            const cmp = bothNumeric ? (numA - numB) : cellA.localeCompare(cellB);
+            return asc ? cmp : -cmp;
+        });
+
+        rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
+    }
+
+    // Click & drag horizontal scrolling for the table
+    (function () {
+        const scroller = document.getElementById('myBidsTableScroll');
+        if (!scroller) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeftStart;
+
+        scroller.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scroller.classList.add('dragging');
+            startX = e.pageX - scroller.offsetLeft;
+            scrollLeftStart = scroller.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mouseleave', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scroller.offsetLeft;
+            const walk = (x - startX);
+            scroller.scrollLeft = scrollLeftStart - walk;
+        });
+
+        let touchStartX = 0;
+        let touchScrollStart = 0;
+        scroller.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX;
+            touchScrollStart = scroller.scrollLeft;
+        }, { passive: true });
+
+        scroller.addEventListener('touchmove', (e) => {
+            const dx = e.touches[0].pageX - touchStartX;
+            scroller.scrollLeft = touchScrollStart - dx;
+        }, { passive: true });
+    })();
+</script>

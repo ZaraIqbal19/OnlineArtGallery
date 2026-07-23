@@ -1,0 +1,1963 @@
+﻿@using System.Linq
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+    var user = ViewBag.User;
+
+    var spendingLabels = (ViewBag.MonthlySpendingLabels as List<string>) ?? new List<string>();
+    var spendingValues = (ViewBag.MonthlySpendingValues as List<decimal>) ?? new List<decimal>();
+    var topNames = (ViewBag.TopProductNames as List<string>) ?? new List<string>();
+    var topQty = (ViewBag.TopProductQty as List<int>) ?? new List<int>();
+    var topSpent = (ViewBag.TopProductSpent as List<decimal>) ?? new List<decimal>();
+    int topMaxQty = ViewBag.TopProductMaxQty is int mq && mq > 0 ? mq : 1;
+    double? trendPercent = ViewBag.SpendingTrendPercent as double?;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+<style>
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .profile-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+        overflow-x: hidden;
+        background: radial-gradient(circle at 12% 0%, rgba(136, 210, 0, 0.06), transparent 45%), radial-gradient(circle at 100% 20%, rgba(136, 210, 0, 0.05), transparent 40%);
+    }
+
+        .profile-page *, .profile-page *::before, .profile-page *::after {
+            box-sizing: border-box;
+        }
+
+        .profile-page .container-cust {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes pulseRing {
+        0% {
+            box-shadow: 0 0 0 0 rgba(46,204,113,0.55);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(46,204,113,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(46,204,113,0);
+        }
+    }
+
+    @@keyframes shineMove {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        100% {
+            background-position: 200% 50%;
+        }
+    }
+
+    @@keyframes alertIn {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes alertOut {
+        from {
+            opacity: 1;
+            max-height: 80px;
+            margin-bottom: 14px;
+        }
+
+        to {
+            opacity: 0;
+            max-height: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    @@keyframes shakeError {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-4px);
+        }
+
+        75% {
+            transform: translateX(4px);
+        }
+    }
+
+    .profile-page .fade-in {
+        animation: fadeInUp 0.55s ease both;
+    }
+
+    .profile-page .user-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 2rem;
+        padding: 2rem 1.8rem 1.8rem;
+        box-shadow: 0 20px 45px -16px rgba(111,168,0,0.22), 0 4px 18px rgba(136,210,0,0.06);
+        border: 1px solid rgba(136,210,0,0.12);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.4rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+        .profile-page .user-card:hover {
+            box-shadow: 0 26px 55px -16px rgba(111,168,0,0.3), 0 6px 20px rgba(136,210,0,0.1);
+        }
+
+        .profile-page .user-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800, #88d200, #d4f09b);
+            background-size: 200% 100%;
+            animation: shineMove 5s linear infinite;
+        }
+
+    /* header / identity */
+    .profile-page .identity-row {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.6rem;
+        padding-bottom: 1.4rem;
+        border-bottom: 2px solid rgba(136,210,0,0.18);
+    }
+
+    .profile-page .avatar-circle {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.6rem;
+        box-shadow: 0 10px 22px rgba(136,210,0,0.35);
+        flex-shrink: 0;
+        position: relative;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+        .profile-page .avatar-circle:hover {
+            transform: scale(1.08) rotate(-4deg);
+            box-shadow: 0 14px 28px rgba(136,210,0,0.45);
+        }
+
+        .profile-page .avatar-circle .status-ring {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2ecc71;
+            border: 3px solid #fff;
+            animation: pulseRing 2.2s infinite;
+        }
+
+    .profile-page .identity-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .profile-page .identity-email {
+        font-size: 0.88rem;
+        color: #5c7a2e;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .profile-page .identity-badges {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .profile-page .id-badge {
+        background: #f0fae6;
+        color: #4c7800;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .profile-page .id-badge:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: #e2f5c8;
+            box-shadow: 0 6px 14px rgba(136,210,0,0.25);
+        }
+
+        .profile-page .id-badge.muted {
+            background: #f2f2f2;
+            color: #666;
+        }
+
+    /* section titles */
+    .profile-page .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.1rem;
+    }
+
+        .profile-page .section-title i {
+            background: #88d200;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 6px 14px rgba(136,210,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+    .profile-page .sub-card:hover > .section-title i {
+        transform: rotate(-8deg) scale(1.08);
+    }
+
+    .profile-page .section-title small {
+        margin-left: auto;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #9ab569;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .profile-page .section-title .trend-badge {
+        margin-left: auto;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 30px;
+        transition: transform 0.2s ease;
+    }
+
+        .profile-page .section-title .trend-badge:hover {
+            transform: scale(1.06);
+        }
+
+        .profile-page .section-title .trend-badge.up {
+            background: #eaf7d6;
+            color: #4c7800;
+        }
+
+        .profile-page .section-title .trend-badge.down {
+            background: #fdeaea;
+            color: #a51b1b;
+        }
+
+        .profile-page .section-title .trend-badge.flat {
+            background: #f2f2f2;
+            color: #666;
+        }
+
+    /* forms */
+    .profile-page .cards-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.4rem;
+        margin-bottom: 1.4rem;
+    }
+
+        .profile-page .cards-row-2 > .sub-card {
+            min-width: 0;
+        }
+
+    .profile-page .sub-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 1.6rem;
+        padding: 1.6rem;
+        box-shadow: 0 14px 30px -14px rgba(111,168,0,0.2);
+        border: 1px solid rgba(136,210,0,0.12);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+        .profile-page .sub-card:hover {
+            box-shadow: 0 20px 38px -14px rgba(111,168,0,0.3);
+            transform: translateY(-3px);
+        }
+
+    .profile-page .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .profile-page .form-group {
+        margin-bottom: 14px;
+    }
+
+    .profile-page .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .profile-page .form-control,
+    .profile-page select.form-control,
+    .profile-page textarea.form-control {
+        width: 100%;
+        border: 1.5px solid rgba(136,210,0,0.25);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        color: #1a1a1a;
+        background: #f9fdf2;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .profile-page textarea.form-control {
+        resize: vertical;
+        min-height: 64px;
+    }
+
+    .profile-page .form-control:focus {
+        outline: none;
+        border-color: #88d200;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(136,210,0,0.15);
+    }
+
+    .profile-page .form-control.input-error {
+        border-color: #dc3545 !important;
+        background: #fdeaea !important;
+        animation: shakeError 0.35s ease;
+    }
+
+    .profile-page .field-error {
+        font-size: 0.72rem;
+        color: #a51b1b;
+        font-weight: 600;
+        margin-top: 4px;
+        display: none;
+    }
+
+        .profile-page .field-error.show {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            animation: errorSlideIn 0.3s ease both;
+        }
+
+            .profile-page .field-error.show::before {
+                content: "\f06a";
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                font-size: 0.78rem;
+                flex-shrink: 0;
+            }
+
+    /* icon-prefixed inputs (profile info fields + password fields) */
+    .profile-page .icon-field {
+        position: relative;
+    }
+
+        .profile-page .icon-field .field-icon,
+        .profile-page .pw-field .field-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ab569;
+            font-size: 0.82rem;
+            transition: color 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .profile-page .icon-field .form-control {
+            padding-left: 36px;
+            padding-right: 32px;
+        }
+
+        .profile-page .icon-field:focus-within .field-icon,
+        .profile-page .pw-field:focus-within .field-icon {
+            color: #4c7800;
+            animation: iconGlow 0.5s ease;
+        }
+
+        .profile-page .icon-field .valid-check,
+        .profile-page .pw-field .valid-check {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            opacity: 0;
+            color: #4c9a00;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .profile-page .icon-field.is-valid .valid-check,
+        .profile-page .pw-field.is-valid .valid-check {
+            animation: validPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+
+        .profile-page .icon-field.is-valid .form-control,
+        .profile-page .pw-field.is-valid .form-control {
+            border-color: rgba(76,154,0,0.4);
+        }
+
+        .profile-page .icon-field.shake-anim .form-control,
+        .profile-page .pw-field.shake-anim .form-control {
+            animation: shakeStrong 0.45s ease;
+        }
+
+    .profile-page .form-control:focus {
+        animation: focusGlow 0.55s ease;
+    }
+
+    @@keyframes validPop {
+        0% {
+            transform: translateY(-50%) scale(0) rotate(-30deg);
+            opacity: 0;
+        }
+
+        55% {
+            transform: translateY(-50%) scale(1.35) rotate(6deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(-50%) scale(1) rotate(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes popIn {
+        0% {
+            transform: scale(0) rotate(-30deg);
+            opacity: 0;
+        }
+
+        55% {
+            transform: scale(1.35) rotate(6deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1) rotate(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes shakeStrong {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        15% {
+            transform: translateX(-6px);
+        }
+
+        30% {
+            transform: translateX(5px);
+        }
+
+        45% {
+            transform: translateX(-4px);
+        }
+
+        60% {
+            transform: translateX(3px);
+        }
+
+        75% {
+            transform: translateX(-2px);
+        }
+    }
+
+    @@keyframes iconGlow {
+        0% {
+            transform: translateY(-50%) scale(1);
+        }
+
+        40% {
+            transform: translateY(-50%) scale(1.25);
+        }
+
+        100% {
+            transform: translateY(-50%) scale(1);
+        }
+    }
+
+    @@keyframes focusGlow {
+        0% {
+            box-shadow: 0 0 0 0 rgba(136,210,0,0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 7px rgba(136,210,0,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(136,210,0,0);
+        }
+    }
+
+    @@keyframes errorSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-page .char-counter {
+        font-size: 0.68rem;
+        color: #9ab569;
+        font-weight: 600;
+        text-align: right;
+        margin-top: 4px;
+        transition: color 0.2s ease;
+    }
+
+        .profile-page .char-counter.warn {
+            color: #b8860b;
+        }
+
+        .profile-page .char-counter.limit {
+            color: #a51b1b;
+            animation: iconGlow 0.4s ease;
+        }
+
+    /* password field with eye toggle */
+    .profile-page .pw-field {
+        position: relative;
+    }
+
+        .profile-page .pw-field .field-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ab569;
+            font-size: 0.82rem;
+            transition: color 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .profile-page .pw-field:focus-within .field-icon {
+            color: #4c7800;
+        }
+
+        .profile-page .pw-field .form-control {
+            padding-left: 36px;
+            padding-right: 42px;
+        }
+
+        .profile-page .pw-field .pw-valid-check {
+            right: 40px;
+        }
+
+        .profile-page .pw-field.has-check .form-control {
+            padding-right: 74px;
+        }
+
+    .profile-page .pw-toggle {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9ab569;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+        overflow: hidden;
+    }
+
+        .profile-page .pw-toggle:hover {
+            color: #4c7800;
+            background: #eaf7d6;
+            transform: translateY(-50%) scale(1.08);
+        }
+
+    /* password strength meter */
+    .profile-page .pw-strength {
+        margin-top: 9px;
+    }
+
+    .profile-page .pw-strength-track {
+        height: 6px;
+        background: #f0fae6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .profile-page .pw-strength-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 20px;
+        background: #dc3545;
+        transition: width 0.35s cubic-bezier(0.22,1,0.36,1), background 0.35s ease;
+    }
+
+        .profile-page .pw-strength-fill.weak {
+            background: #dc3545;
+        }
+
+        .profile-page .pw-strength-fill.fair {
+            background: #f0a500;
+        }
+
+        .profile-page .pw-strength-fill.good {
+            background: #1a5fa5;
+        }
+
+        .profile-page .pw-strength-fill.strong {
+            background: #4c9a00;
+        }
+
+    .profile-page .pw-strength-label {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #9ab569;
+        transition: color 0.25s ease;
+    }
+
+        .profile-page .pw-strength-label.weak {
+            color: #a51b1b;
+        }
+
+        .profile-page .pw-strength-label.fair {
+            color: #b8860b;
+        }
+
+        .profile-page .pw-strength-label.good {
+            color: #1a5fa5;
+        }
+
+        .profile-page .pw-strength-label.strong {
+            color: #4c7800;
+        }
+
+    .profile-page .pw-requirements {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px 10px;
+    }
+
+        .profile-page .pw-requirements li {
+            font-size: 0.71rem;
+            color: #9ab569;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.25s ease;
+        }
+
+        .profile-page .pw-requirements .req-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #f0fae6;
+            border: 1.5px solid rgba(136,210,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: transparent;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .profile-page .pw-requirements li.met {
+            color: #4c7800;
+        }
+
+            .profile-page .pw-requirements li.met .req-dot {
+                background: #88d200;
+                border-color: #88d200;
+                color: #fff;
+                transform: scale(1.1);
+            }
+
+                .profile-page .pw-requirements li.met .req-dot::before {
+                    content: "\2713";
+                }
+
+    .profile-page .btn-save {
+        border: none;
+        background: #88d200;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 10px 24px;
+        border-radius: 60px;
+        cursor: pointer;
+        transition: all 0.25s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .profile-page .btn-save:hover {
+            background: #6fa800;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(136,210,0,0.3);
+        }
+
+        .profile-page .btn-save:active {
+            transform: translateY(0);
+        }
+
+    .profile-page .btn-ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.55);
+        transform: scale(0);
+        animation: rippleEffect 0.6s ease-out forwards;
+        pointer-events: none;
+    }
+
+    @@keyframes rippleEffect {
+        to {
+            transform: scale(2.6);
+            opacity: 0;
+        }
+    }
+
+    /* enhanced alerts */
+    .profile-page .alert-inline {
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: alertIn 0.4s ease both;
+        overflow: hidden;
+    }
+
+        .profile-page .alert-inline.alert-hide {
+            animation: alertOut 0.35s ease forwards;
+        }
+
+        .profile-page .alert-inline i:first-child {
+            font-size: 0.95rem;
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+            animation-delay: 0.15s;
+        }
+
+        .profile-page .alert-inline span {
+            flex: 1;
+        }
+
+    .profile-page .alert-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: inherit;
+        opacity: 0.6;
+        padding: 2px 4px;
+        border-radius: 6px;
+        transition: opacity 0.2s ease, background 0.2s ease;
+    }
+
+        .profile-page .alert-close:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.06);
+        }
+
+    .profile-page .alert-success-inline {
+        background: #eaf7d6;
+        color: #4c7800;
+    }
+
+    .profile-page .alert-danger-inline {
+        background: #fdeaea;
+        color: #a51b1b;
+    }
+
+    /* quick stats */
+    .profile-page .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 1.4rem;
+    }
+
+    .profile-page .qs-item {
+        background: rgba(255,255,255,0.97);
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 1.2rem;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 22px -14px rgba(111,168,0,0.25);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+        .profile-page .qs-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .profile-page .qs-item:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .profile-page .qs-item:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .profile-page .qs-item:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+        .profile-page .qs-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 18px 30px -12px rgba(136,210,0,0.35);
+            border-color: rgba(136,210,0,0.4);
+        }
+
+            .profile-page .qs-item:hover .qs-icon {
+                transform: rotate(10deg) scale(1.1);
+                background: #88d200;
+                color: #fff;
+            }
+
+    .profile-page .qs-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #f0fae6;
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+    }
+
+    .profile-page .qs-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .profile-page .qs-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        line-height: 1.2;
+    }
+
+    .profile-page .qs-sub {
+        font-size: 0.7rem;
+        color: #9ab569;
+        font-weight: 600;
+        margin-top: 1px;
+    }
+
+    /* order status breakdown */
+    .profile-page .status-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-page .status-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 6px;
+        border-radius: 10px;
+        transition: background 0.25s ease;
+    }
+
+        .profile-page .status-bar-row:hover {
+            background: #f9fdf2;
+        }
+
+    .profile-page .status-bar-label {
+        width: 110px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-page .status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .profile-page .status-bar-track {
+        flex: 1;
+        height: 10px;
+        background: #f0fae6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .profile-page .status-bar-fill {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .profile-page .status-bar-row:hover .status-bar-fill {
+        filter: brightness(1.12);
+    }
+
+    .profile-page .status-bar-count {
+        width: 34px;
+        text-align: right;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #1a1a1a;
+        flex-shrink: 0;
+    }
+
+    .profile-page .dot-pending, .fill-pending {
+        background: #f0a500;
+    }
+
+    .profile-page .dot-processing, .fill-processing {
+        background: #1a5fa5;
+    }
+
+    .profile-page .dot-dispatched, .fill-dispatched {
+        background: #8a5cf6;
+    }
+
+    .profile-page .dot-delivered, .fill-delivered {
+        background: #6fa800;
+    }
+
+    .profile-page .dot-cancelled, .fill-cancelled {
+        background: #dc3545;
+    }
+
+    /* payment split */
+    .profile-page .split-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .profile-page .split-box {
+        flex: 1;
+        min-width: 130px;
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.15);
+        border-radius: 14px;
+        padding: 14px;
+        text-align: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+        .profile-page .split-box:hover {
+            transform: translateY(-4px) scale(1.03);
+            background: #f0fae6;
+            box-shadow: 0 12px 20px -10px rgba(136,210,0,0.35);
+        }
+
+        .profile-page .split-box .sv {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+
+        .profile-page .split-box .sl {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #5c7a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+    .profile-page .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 24px;
+    }
+
+    .profile-page .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.1);
+        transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+
+        .profile-page .info-row:hover {
+            transform: translateX(4px);
+            border-color: rgba(136,210,0,0.35);
+            background: #f0fae6;
+        }
+
+        .profile-page .info-row .k {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #5c7a2e;
+        }
+
+        .profile-page .info-row .v {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: right;
+        }
+
+    /* account / activity grid (wishlist + bids) */
+    .profile-page .acct-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .profile-page .acct-item {
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 14px;
+        padding: 14px 16px;
+        position: relative;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+        .profile-page .acct-item:hover {
+            transform: translateY(-4px);
+            background: #fff;
+            box-shadow: 0 14px 26px -12px rgba(136,210,0,0.3);
+        }
+
+        .profile-page .acct-item .ai-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: #eaf7d6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+
+        .profile-page .acct-item:hover .ai-icon {
+            transform: rotate(-8deg) scale(1.1);
+            background: #88d200;
+            color: #fff;
+        }
+
+        .profile-page .acct-item .ai-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #5c7a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .profile-page .acct-item .ai-value {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-top: 2px;
+        }
+
+        .profile-page .acct-item .ai-sub {
+            font-size: 0.7rem;
+            color: #9ab569;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .profile-page .acct-item.warn .ai-icon {
+            background: #fdf3d9;
+            color: #b8860b;
+        }
+
+        .profile-page .acct-item.warn:hover .ai-icon {
+            background: #f0a500;
+            color: #fff;
+        }
+
+    /* top products ranked list */
+    .profile-page .rank-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-page .rank-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px;
+        border-radius: 10px;
+        transition: background 0.25s ease, transform 0.2s ease;
+    }
+
+        .profile-page .rank-row:hover {
+            background: #f9fdf2;
+            transform: translateX(3px);
+        }
+
+    .profile-page .rank-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        background: #eaf7d6;
+        color: #4c7800;
+        font-size: 0.72rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .profile-page .rank-row:hover .rank-num {
+        background: #88d200;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .profile-page .rank-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .profile-page .rank-top-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+    }
+
+    .profile-page .rank-name {
+        font-weight: 700;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile-page .rank-meta {
+        font-size: 0.74rem;
+        color: #9ab569;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .profile-page .rank-track {
+        height: 8px;
+        background: #f0fae6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .profile-page .rank-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, #d4f09b, #88d200);
+        transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .profile-page .empty-hint {
+        font-size: 0.85rem;
+        color: #9ab569;
+        font-weight: 600;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    .profile-page .chart-wrap {
+        position: relative;
+        height: 220px;
+    }
+
+    @@media (max-width: 900px) {
+        .profile-page .cards-row-2, .profile-page .quick-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-page .acct-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-page .pw-requirements {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .profile-page .user-card {
+            padding: 1.2rem;
+        }
+
+        .profile-page .cards-row-2, .profile-page .quick-stats, .profile-page .info-grid, .profile-page .acct-grid, .profile-page .form-row-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="profile-page">
+    <div class="container-cust">
+
+        <!-- identity + edit forms -->
+        <div class="user-card fade-in">
+            <div class="identity-row">
+                <div class="avatar-circle">
+                    @(string.IsNullOrEmpty(user?.UserName) ? "?" : user.UserName.Substring(0, 1).ToUpper())
+                    <span class="status-ring" title="Active"></span>
+                </div>
+                <div>
+                    <h1 class="identity-name">@user?.UserName</h1>
+                    <div class="identity-email">@user?.Email</div>
+                    <div class="identity-badges">
+                        <span class="id-badge"><i class="fas fa-shopping-bag"></i> @ViewBag.TotalOrders orders</span>
+                        <span class="id-badge"><i class="fas fa-heart"></i> @ViewBag.TotalWishlist wishlist</span>
+                        <span class="id-badge"><i class="fas fa-gavel"></i> @ViewBag.TotalBids bids</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row-2">
+                <!-- profile info form -->
+                <div class="sub-card fade-in">
+                    <div class="section-title"><i class="fas fa-user-edit"></i> Profile Information</div>
+                    @if (TempData["ProfileSuccess"] != null)
+                    {
+                        <div class="alert-inline alert-success-inline">
+                            <i class="fas fa-circle-check"></i>
+                            <span>@TempData["ProfileSuccess"]</span>
+                            <button type="button" class="alert-close" onclick="dismissAlert(this)"><i class="fas fa-xmark"></i></button>
+                        </div>
+                    }
+                    @if (TempData["ProfileError"] != null)
+                    {
+                        <div class="alert-inline alert-danger-inline">
+                            <i class="fas fa-circle-exclamation"></i>
+                            <span>@TempData["ProfileError"]</span>
+                            <button type="button" class="alert-close" onclick="dismissAlert(this)"><i class="fas fa-xmark"></i></button>
+                        </div>
+                    }
+                    <form asp-action="UpdateProfile" method="post" id="profileInfoForm" novalidate>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-user field-icon"></i>
+                                    <input type="text" name="UserName" id="UserName" class="form-control" value="@user?.UserName" required minlength="3" maxlength="30" autocomplete="off" />
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="field-error" id="err-UserName"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-envelope field-icon"></i>
+                                    <input type="email" name="Email" id="Email" class="form-control" value="@user?.Email" required autocomplete="off" />
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="field-error" id="err-Email"></div>
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-phone field-icon"></i>
+                                    <input type="text" name="PhoneNumber" id="PhoneNumber" class="form-control" value="@user?.PhoneNumber" required autocomplete="off" />
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="field-error" id="err-PhoneNumber"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Age</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-cake-candles field-icon"></i>
+                                    <input type="number" name="Age" id="Age" min="1" max="120" class="form-control" value="@user?.age" required />
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="field-error" id="err-Age"></div>
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-venus-mars field-icon"></i>
+                                    <select name="Gender" id="Gender" class="form-control" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="Male" selected="@(user?.gender == "Male")">Male</option>
+                                        <option value="Female" selected="@(user?.gender == "Female")">Female</option>
+                                        <option value="Other" selected="@(user?.gender == "Other")">Other</option>
+                                    </select>
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="field-error" id="err-Gender"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <div class="icon-field">
+                                    <i class="fas fa-location-dot field-icon"></i>
+                                    <input type="text" name="Address" id="Address" class="form-control" value="@user?.address" required minlength="5" maxlength="120" autocomplete="off" />
+                                    <i class="fas fa-circle-check valid-check"></i>
+                                </div>
+                                <div class="char-counter" id="counter-Address">0/120</div>
+                                <div class="field-error" id="err-Address"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
+                    </form>
+                </div>
+
+                <!-- change password form -->
+                <div class="sub-card fade-in">
+                    <div class="section-title"><i class="fas fa-lock"></i> Change Password</div>
+                    @if (TempData["PasswordSuccess"] != null)
+                    {
+                        <div class="alert-inline alert-success-inline">
+                            <i class="fas fa-circle-check"></i>
+                            <span>@TempData["PasswordSuccess"]</span>
+                            <button type="button" class="alert-close" onclick="dismissAlert(this)"><i class="fas fa-xmark"></i></button>
+                        </div>
+                    }
+                    @if (TempData["PasswordError"] != null)
+                    {
+                        <div class="alert-inline alert-danger-inline">
+                            <i class="fas fa-circle-exclamation"></i>
+                            <span>@TempData["PasswordError"]</span>
+                            <button type="button" class="alert-close" onclick="dismissAlert(this)"><i class="fas fa-xmark"></i></button>
+                        </div>
+                    }
+                    <form asp-action="ChangePassword" method="post" id="changePasswordForm" novalidate>
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <div class="pw-field">
+                                <i class="fas fa-lock field-icon"></i>
+                                <input type="password" name="CurrentPassword" id="CurrentPassword" class="form-control" required autocomplete="current-password" />
+                                <button type="button" class="pw-toggle" data-target="CurrentPassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="field-error" id="err-CurrentPassword"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <div class="pw-field has-check">
+                                <i class="fas fa-lock field-icon"></i>
+                                <input type="password" name="NewPassword" id="NewPassword" class="form-control" required minlength="8" autocomplete="new-password" />
+                                <i class="fas fa-circle-check valid-check pw-valid-check"></i>
+                                <button type="button" class="pw-toggle" data-target="NewPassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="pw-strength">
+                                <div class="pw-strength-track"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
+                                <span class="pw-strength-label" id="pwStrengthLabel">Enter a new password</span>
+                            </div>
+                            <ul class="pw-requirements" id="pwRequirements">
+                                <li data-rule="length"><span class="req-dot"></span> 8+ characters</li>
+                                <li data-rule="upper"><span class="req-dot"></span> Uppercase letter</li>
+                                <li data-rule="lower"><span class="req-dot"></span> Lowercase letter</li>
+                                <li data-rule="number"><span class="req-dot"></span> A number</li>
+                                <li data-rule="special"><span class="req-dot"></span> Special character</li>
+                                <li data-rule="different"><span class="req-dot"></span> Differs from current</li>
+                            </ul>
+                            <div class="field-error" id="err-NewPassword"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <div class="pw-field has-check">
+                                <i class="fas fa-lock field-icon"></i>
+                                <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control" required autocomplete="new-password" />
+                                <i class="fas fa-circle-check valid-check pw-valid-check"></i>
+                                <button type="button" class="pw-toggle" data-target="ConfirmPassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="field-error" id="err-ConfirmPassword"></div>
+                        </div>
+                        <button type="submit" class="btn-save"><i class="fas fa-key"></i> Update Password</button>
+                    </form>
+
+                    <!-- read-only personal details summary (no role exposed) -->
+                    <div style="margin-top:18px; padding-top:16px; border-top:2px solid rgba(136,210,0,0.14);">
+                        <div class="section-title" style="margin-bottom:10px;"><i class="fas fa-id-card"></i> Personal Details</div>
+                        <div class="info-grid">
+                            <div class="info-row"><span class="k">Age</span><span class="v">@(user?.age > 0 ? user.age.ToString() : "—")</span></div>
+                            <div class="info-row"><span class="k">Gender</span><span class="v">@(string.IsNullOrEmpty(user?.gender) ? "—" : user.gender)</span></div>
+                            <div class="info-row" style="grid-column: span 2;"><span class="k">Address</span><span class="v">@(string.IsNullOrEmpty(user?.address) ? "—" : user.address)</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- quick stats -->
+        <div class="quick-stats">
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-coins"></i></div>
+                <div>
+                    <div class="qs-label">Total Spent</div>
+                    <div class="qs-value">Rs. @ViewBag.TotalMoneySpent</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-box"></i></div>
+                <div>
+                    <div class="qs-label">Items Purchased</div>
+                    <div class="qs-value">@ViewBag.TotalItemsPurchased</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-layer-group"></i></div>
+                <div>
+                    <div class="qs-label">Unique Products</div>
+                    <div class="qs-value">@ViewBag.UniqueProductsPurchased</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="qs-label">Avg Order Value</div>
+                    <div class="qs-value">Rs. @(string.Format("{0:0.##}", ViewBag.AverageOrderValue))</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-row-2">
+            <!-- order status breakdown -->
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-tasks"></i> Order Status Breakdown</div>
+                @{
+                    int total = ViewBag.TotalOrders > 0 ? ViewBag.TotalOrders : 1;
+                    var statuses = new (string label, string css, int count)[]
+                    {
+                                ("Pending", "pending", (int)ViewBag.PendingOrders),
+                                ("Processing", "processing", (int)ViewBag.ProcessingOrders),
+                                ("Dispatched", "dispatched", (int)ViewBag.DispatchedOrders),
+                                ("Delivered", "delivered", (int)ViewBag.DeliveredOrders),
+                                ("Cancelled", "cancelled", (int)ViewBag.CancelledOrders)
+                    };
+                }
+                <div class="status-bars">
+                    @foreach (var s in statuses)
+                    {
+                        var pct = (s.count * 100.0) / total;
+                        <div class="status-bar-row">
+                            <div class="status-bar-label"><span class="status-dot dot-@s.css"></span> @s.label</div>
+                            <div class="status-bar-track"><div class="status-bar-fill fill-@s.css" style="width:@pct.ToString("0.#")%;"></div></div>
+                            <div class="status-bar-count">@s.count</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- order value + payment insights -->
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-receipt"></i> Order Insights</div>
+                <div class="info-grid">
+                    <div class="info-row"><span class="k">Highest Order</span><span class="v">Rs. @ViewBag.HighestOrder</span></div>
+                    <div class="info-row"><span class="k">Lowest Order</span><span class="v">Rs. @ViewBag.LowestOrder</span></div>
+                    <div class="info-row"><span class="k">First Order</span><span class="v">@(ViewBag.FirstOrderDate != null ? ((DateTime)ViewBag.FirstOrderDate).ToString("dd MMM yyyy") : "—")</span></div>
+                    <div class="info-row"><span class="k">Last Order</span><span class="v">@(ViewBag.LastOrderDate != null ? ((DateTime)ViewBag.LastOrderDate).ToString("dd MMM yyyy") : "—")</span></div>
+                </div>
+                <div class="split-row" style="margin-top:14px;">
+                    <div class="split-box"><div class="sv">@ViewBag.PaidOrders</div><div class="sl">Paid</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.UnpaidOrders</div><div class="sl">Unpaid</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.CODOrders</div><div class="sl">COD</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.CardOrders</div><div class="sl">Card</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-row-2">
+            <!-- monthly spending trend -->
+            <div class="sub-card fade-in">
+                <div class="section-title">
+                    <i class="fas fa-chart-area"></i> Spending Trend (6 mo)
+                    @if (trendPercent.HasValue)
+                    {
+                        var cls = trendPercent.Value > 0 ? "up" : (trendPercent.Value < 0 ? "down" : "flat");
+                        var arrow = trendPercent.Value > 0 ? "▲" : (trendPercent.Value < 0 ? "▼" : "—");
+                        <span class="trend-badge @cls">@arrow @Math.Abs(trendPercent.Value).ToString("0.#")% vs last mo</span>
+                    }
+                </div>
+                @if (spendingLabels.Count > 0)
+                {
+                    <div class="chart-wrap">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-hint">No orders in the last 6 months yet.</div>
+                }
+            </div>
+
+            <!-- top products -->
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-trophy"></i> Top Purchased Products</div>
+                @if (topNames.Count > 0)
+                {
+                    <div class="rank-list">
+                        @for (int i = 0; i < topNames.Count; i++)
+                        {
+                            var widthPct = (topQty[i] * 100.0) / topMaxQty;
+                            <div class="rank-row">
+                                <div class="rank-num">@(i + 1)</div>
+                                <div class="rank-body">
+                                    <div class="rank-top-line">
+                                        <span class="rank-name">@topNames[i]</span>
+                                        <span class="rank-meta">@topQty[i] pcs · Rs. @topSpent[i]</span>
+                                    </div>
+                                    <div class="rank-track"><div class="rank-fill" style="width:@widthPct.ToString("0.#")%;"></div></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-hint">No purchases yet.</div>
+                }
+            </div>
+        </div>
+
+        <!-- wishlist & auction activity -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-gavel"></i> Wishlist &amp; Auction Activity</div>
+            <div class="acct-grid">
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-heart"></i></div>
+                    <div class="ai-label">Wishlist Items</div>
+                    <div class="ai-value">@ViewBag.WishlistCount</div>
+                </div>
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-gavel"></i></div>
+                    <div class="ai-label">Total Bids Placed</div>
+                    <div class="ai-value">@ViewBag.TotalBidsCount</div>
+                </div>
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-fire"></i></div>
+                    <div class="ai-label">Highest Bid</div>
+                    <div class="ai-value">Rs. @ViewBag.HighestBidAmount</div>
+                </div>
+                <div class="acct-item warn">
+                    <div class="ai-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="ai-label">Active / Won Bids</div>
+                    <div class="ai-value">@ViewBag.ActiveBidsCount / @ViewBag.WonBidsCount</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ---- auto-dismiss + manual close for alert banners ----
+    function dismissAlert(btn) {
+        var alertEl = btn.closest('.alert-inline');
+        if (!alertEl) return;
+        alertEl.classList.add('alert-hide');
+        alertEl.addEventListener('animationend', function () { alertEl.remove(); }, { once: true });
+    }
+
+    document.querySelectorAll('.alert-inline').forEach(function (el) {
+        setTimeout(function () {
+            if (document.body.contains(el)) {
+                el.classList.add('alert-hide');
+                el.addEventListener('animationend', function () { el.remove(); }, { once: true });
+            }
+        }, 6000);
+    });
+
+    // ---- password show/hide toggles ----
+    document.querySelectorAll('.pw-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(this.dataset.target);
+            var icon = this.querySelector('i');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // ---- password strength meter + live requirement checklist ----
+    (function () {
+        var newPw = document.getElementById('NewPassword');
+        var curPw = document.getElementById('CurrentPassword');
+        var confirmPw = document.getElementById('ConfirmPassword');
+        var fill = document.getElementById('pwStrengthFill');
+        var label = document.getElementById('pwStrengthLabel');
+        var reqItems = document.querySelectorAll('#pwRequirements li');
+        if (!newPw || !fill || !label) return;
+
+        function allRulesMet(rules) {
+            return rules.length && rules.upper && rules.lower && rules.number && rules.special && rules.different;
+        }
+
+        function evaluate() {
+            var pw = newPw.value;
+            var cur = curPw ? curPw.value : '';
+            var rules = {
+                length: pw.length >= 8,
+                upper: /[A-Z]/.test(pw),
+                lower: /[a-z]/.test(pw),
+                number: /[0-9]/.test(pw),
+                special: /[^A-Za-z0-9]/.test(pw),
+                different: pw.length > 0 && pw !== cur
+            };
+            reqItems.forEach(function (li) {
+                var rule = li.getAttribute('data-rule');
+                li.classList.toggle('met', !!rules[rule]);
+            });
+
+            var newPwWrap = newPw.closest('.pw-field');
+
+            if (!pw) {
+                fill.style.width = '0%';
+                fill.className = 'pw-strength-fill';
+                label.textContent = 'Enter a new password';
+                label.className = 'pw-strength-label';
+                if (newPwWrap) newPwWrap.classList.remove('is-valid');
+                syncConfirm();
+                return;
+            }
+
+            var coreScore = [rules.length, rules.upper, rules.lower, rules.number, rules.special].filter(Boolean).length;
+            var pct = (coreScore / 5) * 100;
+            fill.style.width = pct + '%';
+
+            var level, text;
+            if (coreScore <= 2) { level = 'weak'; text = 'Weak'; }
+            else if (coreScore === 3) { level = 'fair'; text = 'Fair'; }
+            else if (coreScore === 4) { level = 'good'; text = 'Good'; }
+            else { level = 'strong'; text = 'Strong'; }
+
+            fill.className = 'pw-strength-fill ' + level;
+            label.textContent = text;
+            label.className = 'pw-strength-label ' + level;
+
+            if (newPwWrap) newPwWrap.classList.toggle('is-valid', allRulesMet(rules));
+            syncConfirm();
+        }
+
+        function syncConfirm() {
+            if (!confirmPw) return;
+            var wrap = confirmPw.closest('.pw-field');
+            if (!wrap) return;
+            var matches = confirmPw.value.length > 0 && confirmPw.value === newPw.value;
+            wrap.classList.toggle('is-valid', matches);
+        }
+
+        newPw.addEventListener('input', evaluate);
+        if (curPw) curPw.addEventListener('input', evaluate);
+        if (confirmPw) confirmPw.addEventListener('input', syncConfirm);
+    })();
+
+    // ---- client-side validation: change password form ----
+    (function () {
+        var form = document.getElementById('changePasswordForm');
+        if (!form) return;
+
+        function setErr(id, msg) {
+            var input = document.getElementById(id);
+            var errEl = document.getElementById('err-' + id);
+            var wrap = input ? input.closest('.pw-field') : null;
+            if (msg) {
+                if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+                if (input) input.classList.add('input-error');
+                if (wrap) {
+                    wrap.classList.remove('is-valid');
+                    wrap.classList.remove('shake-anim');
+                    void wrap.offsetWidth; // force reflow so the animation can replay
+                    wrap.classList.add('shake-anim');
+                    setTimeout(function () { wrap.classList.remove('shake-anim'); }, 450);
+                }
+                return false;
+            } else {
+                if (errEl) { errEl.textContent = ''; errEl.classList.remove('show'); }
+                if (input) input.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        form.addEventListener('submit', function (e) {
+            var cur = document.getElementById('CurrentPassword').value;
+            var npw = document.getElementById('NewPassword').value;
+            var cpw = document.getElementById('ConfirmPassword').value;
+            var valid = true;
+
+            valid = setErr('CurrentPassword', cur.trim() === '' ? 'Current password is required.' : '') && valid;
+
+            if (npw.trim() === '') {
+                valid = setErr('NewPassword', 'New password is required.') && valid;
+            } else if (npw.length < 8) {
+                valid = setErr('NewPassword', 'Must be at least 8 characters.') && valid;
+            } else if (!/[A-Z]/.test(npw)) {
+                valid = setErr('NewPassword', 'Must include an uppercase letter.') && valid;
+            } else if (!/[a-z]/.test(npw)) {
+                valid = setErr('NewPassword', 'Must include a lowercase letter.') && valid;
+            } else if (!/[0-9]/.test(npw)) {
+                valid = setErr('NewPassword', 'Must include a number.') && valid;
+            } else if (!/[^A-Za-z0-9]/.test(npw)) {
+                valid = setErr('NewPassword', 'Must include a special character.') && valid;
+            } else if (cur && npw === cur) {
+                valid = setErr('NewPassword', 'New password must differ from the current one.') && valid;
+            } else {
+                valid = setErr('NewPassword', '') && valid;
+            }
+
+            if (cpw.trim() === '') {
+                valid = setErr('ConfirmPassword', 'Please confirm your new password.') && valid;
+            } else if (cpw !== npw) {
+                valid = setErr('ConfirmPassword', 'Passwords do not match.') && valid;
+            } else {
+                valid = setErr('ConfirmPassword', '') && valid;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+
+        ['CurrentPassword', 'NewPassword', 'ConfirmPassword'].forEach(function (id) {
+            var input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', function () {
+                    var errEl = document.getElementById('err-' + id);
+                    if (errEl && errEl.classList.contains('show')) {
+                        errEl.classList.remove('show');
+                        input.classList.remove('input-error');
+                    }
+                });
+            }
+        });
+    })();
+
+    // ---- client-side validation: profile information form ----
+    (function () {
+        var form = document.getElementById('profileInfoForm');
+        if (!form) return;
+
+        var fieldIds = ['UserName', 'Email', 'PhoneNumber', 'Age', 'Gender', 'Address'];
+        var usernamePattern = /^[a-zA-Z][a-zA-Z0-9_.]{2,19}$/;
+        var emailPattern = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        var phonePattern = /^\+?[0-9]{7,15}$/;
+
+        function setErr(id, msg, opts) {
+            opts = opts || {};
+            var input = document.getElementById(id);
+            var errEl = document.getElementById('err-' + id);
+            var wrap = input ? input.closest('.icon-field') : null;
+            if (msg) {
+                if (!opts.silent) {
+                    if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+                    if (input) input.classList.add('input-error');
+                    if (wrap) {
+                        wrap.classList.remove('shake-anim');
+                        void wrap.offsetWidth; // force reflow so the shake can replay
+                        wrap.classList.add('shake-anim');
+                        setTimeout(function () { wrap.classList.remove('shake-anim'); }, 450);
+                    }
+                }
+                if (wrap) wrap.classList.remove('is-valid');
+                return false;
+            } else {
+                if (errEl) { errEl.textContent = ''; errEl.classList.remove('show'); }
+                if (input) input.classList.remove('input-error');
+                if (wrap) wrap.classList.add('is-valid');
+                return true;
+            }
+        }
+
+        function validateField(id, opts) {
+            var username = document.getElementById('UserName').value.trim();
+            var email = document.getElementById('Email').value.trim();
+            var phone = document.getElementById('PhoneNumber').value.replace(/[\s\-()]/g, '');
+            var age = document.getElementById('Age').value.trim();
+            var gender = document.getElementById('Gender').value;
+            var address = document.getElementById('Address').value.trim();
+
+            switch (id) {
+                case 'UserName':
+                    return setErr('UserName', username === '' ? 'Username is required.' : (!usernamePattern.test(username) ? '3-20 characters: start with a letter, then letters/numbers/._' : ''), opts);
+                case 'Email':
+                    return setErr('Email', email === '' ? 'Email is required.' : (email.length > 254 || !emailPattern.test(email) ? 'Enter a valid email address.' : ''), opts);
+                case 'PhoneNumber':
+                    return setErr('PhoneNumber', phone === '' ? 'Phone number is required.' : (!phonePattern.test(phone) ? '7-15 digits, optional leading +.' : ''), opts);
+                case 'Age':
+                    return setErr('Age', age === '' ? 'Age is required.' : (!/^\d+$/.test(age) || Number(age) < 13 || Number(age) > 120 ? 'Age must be a whole number between 13 and 120.' : ''), opts);
+                case 'Gender':
+                    return setErr('Gender', gender === '' ? 'Please select a gender.' : '', opts);
+                case 'Address':
+                    return setErr('Address', address === '' ? 'Address is required.' : (address.length < 10 ? 'Address must be at least 10 characters.' : (address.length > 120 ? 'Address is too long.' : (!/[a-zA-Z]/.test(address) ? 'Address must include some letters.' : ''))), opts);
+            }
+            return true;
+        }
+
+        form.addEventListener('submit', function (e) {
+            var valid = true;
+            fieldIds.forEach(function (id) {
+                valid = validateField(id) && valid;
+            });
+            if (!valid) e.preventDefault();
+        });
+
+        fieldIds.forEach(function (id) {
+            var input = document.getElementById(id);
+            if (!input) return;
+            var evt = (input.tagName === 'SELECT') ? 'change' : 'input';
+            input.addEventListener(evt, function () { validateField(id); });
+            input.addEventListener('blur', function () { validateField(id); });
+        });
+
+        // silent pass on load: show green checks for already-valid pre-filled values
+        // without flashing red errors at page open
+        fieldIds.forEach(function (id) {
+            validateField(id, { silent: true });
+        });
+
+        // live character counter for Address
+        var addressInput = document.getElementById('Address');
+        var counter = document.getElementById('counter-Address');
+        if (addressInput && counter) {
+            function updateCounter() {
+                var len = addressInput.value.length;
+                counter.textContent = len + '/120';
+                counter.classList.toggle('warn', len > 90 && len <= 115);
+                counter.classList.toggle('limit', len > 115);
+            }
+            addressInput.addEventListener('input', updateCounter);
+            updateCounter();
+        }
+    })();
+</script>
+
+@if (spendingLabels.Count > 0)
+{
+    <script>
+        (function () {
+            const ctx = document.getElementById('spendingChart');
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", spendingLabels.Select(l => $"'{l.Replace("'", "\\'")}'")))],
+                    datasets: [{
+                        label: 'Spent (Rs.)',
+                        data: [@Html.Raw(string.Join(",", spendingValues.Select(v => v.ToString(System.Globalization.CultureInfo.InvariantCulture))))],
+                        borderColor: '#88d200',
+                        backgroundColor: 'rgba(136,210,0,0.12)',
+                        pointBackgroundColor: '#6fa800',
+                        borderWidth: 2.5,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(136,210,0,0.08)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        })();
+    </script>
+}

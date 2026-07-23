@@ -1,4 +1,5 @@
 ﻿using Art_Gallery.Areas.Identity.Data;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Art_Gallery.Models
@@ -6,7 +7,7 @@ namespace Art_Gallery.Models
     public class Order
     {
         public int Id { get; set; }
-        public int WishlistId { get; set; }
+        public int? WishlistId { get; set; }
         [ForeignKey("WishlistId")]
         public Wishlist Wishlist { get; set; }
         public string UserId { get; set; }
@@ -16,7 +17,18 @@ namespace Art_Gallery.Models
         [ForeignKey("ProductId")]
         public Product Product { get; set; }
 
-        public string Status { get; set; }
-        public int Quantity { get; set; }
+        public string Status { get; set; } = "Pending"; 
+        public int Quantity { get; set; }          
+
+
+        public decimal PricePaid { get; set; }
+
+        public DateTime OrderDate { get; set; } = DateTime.Now;
+
+        public string ShippingAddress { get; set; }
+
+        public string ContactPhone { get; set; }
+
+        public Payment Payment { get; set; }
     }
 }

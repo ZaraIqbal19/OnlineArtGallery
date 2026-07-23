@@ -81,6 +81,17 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             public string Email { get; set; }
 
             [Required]
+            [StringLength(30, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
+            [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers, and underscores.")]
+            [Display(Name = "Username")]
+            public string Username { get; set; }
+
+            [Required]
+            [RegularExpression(@"^03\d{9}$", ErrorMessage = "Enter a valid 11-digit phone number starting with 03 (e.g. 03001234567).")]
+            [Display(Name = "Phone Number")]
+            public string PhoneNumber { get; set; }
+
+            [Required]
             [Display(Name = "Gender")]
             public string Gender { get; set; }
 
@@ -121,6 +132,22 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>
+        ///     AJAX handler used by the registration form to check, in real time, whether a
+        ///     username is already taken. Invoked as GET .../Register?handler=CheckUsername&amp;username=...
+        /// </summary>
+        public async Task<JsonResult> OnGetCheckUsernameAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username) || username.Length < 3 || username.Length > 30
+                || !System.Text.RegularExpressions.Regex.IsMatch(username, @"^[a-zA-Z0-9_]+$"))
+            {
+                return new JsonResult(new { valid = false, available = false });
+            }
+
+            var existingUser = await _userManager.FindByNameAsync(username);
+            return new JsonResult(new { valid = true, available = existingUser == null });
+        }
+
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -131,7 +158,8 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
                 user.gender = Input.Gender;
                 user.address = Input.Address;
                 user.age = Input.Age;
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                user.PhoneNumber = Input.PhoneNumber;
+                await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

@@ -64,6 +64,10 @@ namespace Art_Gallery.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -204,11 +208,25 @@ namespace Art_Gallery.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContactPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PricePaid")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("ShippingAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -218,7 +236,7 @@ namespace Art_Gallery.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("WishlistId")
+                    b.Property<int?>("WishlistId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -249,7 +267,8 @@ namespace Art_Gallery.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("payments");
                 });
@@ -632,8 +651,7 @@ namespace Art_Gallery.Migrations
                     b.HasOne("Art_Gallery.Models.Wishlist", "Wishlist")
                         .WithMany()
                         .HasForeignKey("WishlistId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Product");
 
@@ -645,8 +663,8 @@ namespace Art_Gallery.Migrations
             modelBuilder.Entity("Art_Gallery.Models.Payment", b =>
                 {
                     b.HasOne("Art_Gallery.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
+                        .WithOne("Payment")
+                        .HasForeignKey("Art_Gallery.Models.Payment", "OrderId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -780,6 +798,12 @@ namespace Art_Gallery.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Art_Gallery.Models.Order", b =>
+                {
+                    b.Navigation("Payment")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

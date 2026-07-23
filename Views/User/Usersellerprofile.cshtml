@@ -1,0 +1,1520 @@
+﻿@using System.Linq
+@{
+    ViewData["Title"] = "Seller Dashboard";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+    var seller = ViewBag.Seller;
+    var products = ViewBag.Products;
+    var orders = ViewBag.Orders;
+    var bids = ViewBag.Bids;
+
+    var productsList = products != null ? ((IEnumerable<dynamic>)products).ToList() : new List<dynamic>();
+    var ordersList = orders != null ? ((IEnumerable<dynamic>)orders).ToList() : new List<dynamic>();
+    var bidsList = bids != null ? ((IEnumerable<dynamic>)bids).ToList() : new List<dynamic>();
+
+    // --- extra analytics computed on the view side ---
+    var productQty = new Dictionary<string, int>();
+    var productBidCount = new Dictionary<string, int>();
+    var bidderCount = new Dictionary<string, int>();
+
+    foreach (var o in ordersList)
+    {
+        string pname = (string)(o.Product != null ? o.Product.Name : null) ?? "Unknown";
+        int qty = (int)o.Quantity;
+        if (!productQty.ContainsKey(pname)) { productQty[pname] = 0; }
+        productQty[pname] += qty;
+    }
+
+    foreach (var b in bidsList)
+    {
+        string pname = (string)(b.Product != null ? b.Product.Name : null) ?? "Unknown";
+        if (!productBidCount.ContainsKey(pname)) { productBidCount[pname] = 0; }
+        productBidCount[pname] += 1;
+
+        string bidder = (string)(b.User != null ? b.User.UserName : null) ?? "Unknown";
+        if (!bidderCount.ContainsKey(bidder)) { bidderCount[bidder] = 0; }
+        bidderCount[bidder] += 1;
+    }
+
+    string topProductName = productQty.Any() ? productQty.OrderByDescending(x => x.Value).First().Key : "—";
+    int topProductQty = productQty.Any() ? productQty.OrderByDescending(x => x.Value).First().Value : 0;
+
+    string topBidProductName = productBidCount.Any() ? productBidCount.OrderByDescending(x => x.Value).First().Key : "—";
+    int topBidProductCount = productBidCount.Any() ? productBidCount.OrderByDescending(x => x.Value).First().Value : 0;
+
+    string topBidderName = bidderCount.Any() ? bidderCount.OrderByDescending(x => x.Value).First().Key : "—";
+    int topBidderCount = bidderCount.Any() ? bidderCount.OrderByDescending(x => x.Value).First().Value : 0;
+
+    int totalOrdersCount = ViewBag.TotalOrders != null ? (int)ViewBag.TotalOrders : 0;
+    int totalItemsSoldCount = ViewBag.TotalItemsSold != null ? (int)ViewBag.TotalItemsSold : 0;
+    double avgItemsPerOrder = totalOrdersCount > 0 ? (double)totalItemsSoldCount / totalOrdersCount : 0;
+
+    int totalBidsCount = ViewBag.TotalBidsReceived != null ? (int)ViewBag.TotalBidsReceived : 0;
+    int totalSalesCount = ViewBag.TotalSales != null ? (int)ViewBag.TotalSales : 0;
+    double bidToSaleRatio = totalSalesCount > 0 ? (double)totalBidsCount / totalSalesCount : 0;
+
+    int lowStockCount = productsList.Count(p => (int)p.quantity > 0 && (int)p.quantity <= 5);
+
+    decimal thisWeekRevenue = ViewBag.ThisWeekRevenue != null ? Convert.ToDecimal(ViewBag.ThisWeekRevenue) : 0m;
+    decimal lastMonthRevenue = ViewBag.LastMonthRevenue != null ? Convert.ToDecimal(ViewBag.LastMonthRevenue) : 0m;
+    decimal weeklyAvgLastMonth = lastMonthRevenue > 0 ? lastMonthRevenue / 4m : 0m;
+    decimal growthPct = weeklyAvgLastMonth > 0 ? ((thisWeekRevenue - weeklyAvgLastMonth) / weeklyAvgLastMonth) * 100m : 0m;
+    bool isGrowthPositive = growthPct >= 0;
+
+    // ---- chart datasets (computed from the same lists above, no controller changes needed) ----
+
+    // Revenue trend, last 6 months
+    var sixMonthsAgo = DateTime.Now.AddMonths(-5).Date;
+    var monthlyRevenueGroups = ordersList
+        .Select(o => new { Date = (DateTime)o.OrderDate, Price = (decimal)o.PricePaid })
+        .Where(x => x.Date >= sixMonthsAgo)
+        .GroupBy(x => new { x.Date.Year, x.Date.Month })
+        .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+        .Select(g => new
+        {
+            Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+            Total = g.Sum(x => x.Price)
+        })
+        .ToList();
+    var revenueLabels = monthlyRevenueGroups.Select(x => x.Label).ToList();
+    var revenueValues = monthlyRevenueGroups.Select(x => x.Total).ToList();
+
+    // Order status doughnut
+    int pendingSalesCount = ViewBag.PendingSales != null ? (int)ViewBag.PendingSales : 0;
+    int processingSalesCount = ViewBag.ProcessingSales != null ? (int)ViewBag.ProcessingSales : 0;
+    int dispatchedSalesCount = ViewBag.DispatchedSales != null ? (int)ViewBag.DispatchedSales : 0;
+    int deliveredSalesCount = ViewBag.DeliveredSales != null ? (int)ViewBag.DeliveredSales : 0;
+    int cancelledSalesCount = ViewBag.CancelledSales != null ? (int)ViewBag.CancelledSales : 0;
+
+    // Top 5 products bar chart (reuses productQty computed above)
+    var topProductsForChart = productQty.OrderByDescending(x => x.Value).Take(5).ToList();
+    var topProductChartLabels = topProductsForChart.Select(x => x.Key).ToList();
+    var topProductChartValues = topProductsForChart.Select(x => x.Value).ToList();
+
+    // Payment split doughnut
+    int cardPaymentsCount = ViewBag.CardPayments != null ? (int)ViewBag.CardPayments : 0;
+    int codPaymentsCount = ViewBag.CODPayments != null ? (int)ViewBag.CODPayments : 0;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+<style>
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .seller-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+        overflow-x: hidden;
+        background: radial-gradient(circle at 12% 0%, rgba(136, 210, 0, 0.06), transparent 45%), radial-gradient(circle at 100% 20%, rgba(136, 210, 0, 0.05), transparent 40%);
+    }
+
+        .seller-page *, .seller-page *::before, .seller-page *::after {
+            box-sizing: border-box;
+        }
+
+        .seller-page .container-cust {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes pulseRing {
+        0% {
+            box-shadow: 0 0 0 0 rgba(46,204,113,0.55);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(46,204,113,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(46,204,113,0);
+        }
+    }
+
+    @@keyframes pulseSoft {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.55;
+        }
+    }
+
+    @@keyframes shineMove {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        100% {
+            background-position: 200% 50%;
+        }
+    }
+
+    @@keyframes countBar {
+        from {
+            width: 0;
+        }
+    }
+
+    @@keyframes floatSlow {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+
+    .seller-page .fade-in {
+        animation: fadeInUp 0.55s ease both;
+    }
+
+    .seller-page .user-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 2rem;
+        padding: 2rem 1.8rem 1.8rem;
+        box-shadow: 0 20px 45px -16px rgba(111,168,0,0.22), 0 4px 18px rgba(136,210,0,0.06);
+        border: 1px solid rgba(136,210,0,0.12);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.4rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+        .seller-page .user-card:hover {
+            box-shadow: 0 26px 55px -16px rgba(111,168,0,0.3), 0 6px 20px rgba(136,210,0,0.1);
+        }
+
+        .seller-page .user-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800, #88d200, #d4f09b);
+            background-size: 200% 100%;
+            animation: shineMove 5s linear infinite;
+        }
+
+    .seller-page .identity-row {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .seller-page .avatar-circle {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.6rem;
+        box-shadow: 0 10px 22px rgba(136,210,0,0.35);
+        flex-shrink: 0;
+        position: relative;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+        .seller-page .avatar-circle:hover {
+            transform: scale(1.08) rotate(-4deg);
+            box-shadow: 0 14px 28px rgba(136,210,0,0.45);
+        }
+
+        .seller-page .avatar-circle .status-ring {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2ecc71;
+            border: 3px solid #fff;
+            animation: pulseRing 2.2s infinite;
+        }
+
+    .seller-page .identity-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .seller-page .identity-email {
+        font-size: 0.88rem;
+        color: #5c7a2e;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .seller-page .identity-badges {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .seller-page .id-badge {
+        background: #f0fae6;
+        color: #4c7800;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .seller-page .id-badge:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: #e2f5c8;
+            box-shadow: 0 6px 14px rgba(136,210,0,0.25);
+        }
+
+    .seller-page .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.1rem;
+    }
+
+        .seller-page .section-title i {
+            background: #88d200;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 6px 14px rgba(136,210,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .seller-page .section-title .trend-badge {
+            margin-left: auto;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 30px;
+        }
+
+            .seller-page .section-title .trend-badge.up {
+                background: #eaf7d6;
+                color: #4c7800;
+            }
+
+            .seller-page .section-title .trend-badge.down {
+                background: #fdeaea;
+                color: #a51b1b;
+            }
+
+    .seller-page .sub-card:hover .section-title i {
+        transform: rotate(-8deg) scale(1.08);
+    }
+
+    .seller-page .section-title small {
+        margin-left: auto;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #9ab569;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .seller-page .cards-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.4rem;
+        margin-bottom: 1.4rem;
+    }
+
+        .seller-page .cards-row-2 > .sub-card {
+            min-width: 0;
+        }
+
+            .seller-page .cards-row-2 > .sub-card:nth-child(1) {
+                animation-delay: 0.05s;
+            }
+
+            .seller-page .cards-row-2 > .sub-card:nth-child(2) {
+                animation-delay: 0.15s;
+            }
+
+    .seller-page .sub-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 1.6rem;
+        padding: 1.6rem;
+        box-shadow: 0 14px 30px -14px rgba(111,168,0,0.2);
+        border: 1px solid rgba(136,210,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .seller-page .sub-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 40px -16px rgba(111,168,0,0.3);
+        }
+
+    .seller-page .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 1.4rem;
+    }
+
+    .seller-page .qs-item {
+        background: rgba(255,255,255,0.97);
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 1.2rem;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 22px -14px rgba(111,168,0,0.25);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+        .seller-page .qs-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .seller-page .qs-item:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .seller-page .qs-item:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .seller-page .qs-item:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+        .seller-page .qs-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 18px 30px -12px rgba(136,210,0,0.35);
+            border-color: rgba(136,210,0,0.4);
+        }
+
+            .seller-page .qs-item:hover .qs-icon {
+                transform: rotate(10deg) scale(1.1);
+                background: #88d200;
+                color: #fff;
+            }
+
+    .seller-page .qs-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #f0fae6;
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+    }
+
+    .seller-page .qs-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .seller-page .qs-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        line-height: 1.2;
+    }
+
+    .seller-page .qs-sub {
+        font-size: 0.7rem;
+        color: #9ab569;
+        font-weight: 600;
+        margin-top: 1px;
+    }
+
+    .seller-page .status-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .seller-page .status-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 6px;
+        border-radius: 10px;
+        transition: background 0.25s ease;
+    }
+
+        .seller-page .status-bar-row:hover {
+            background: #f9fdf2;
+        }
+
+    .seller-page .status-bar-label {
+        width: 110px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .seller-page .status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .seller-page .status-bar-track {
+        flex: 1;
+        height: 10px;
+        background: #f0fae6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .seller-page .status-bar-fill {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+        animation: countBar 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .seller-page .status-bar-row:hover .status-bar-fill {
+        filter: brightness(1.12);
+    }
+
+    .seller-page .status-bar-count {
+        width: 34px;
+        text-align: right;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #1a1a1a;
+        flex-shrink: 0;
+    }
+
+    .seller-page .dot-pending, .fill-pending {
+        background: #f0a500;
+    }
+
+    .seller-page .dot-processing, .fill-processing {
+        background: #1a5fa5;
+    }
+
+    .seller-page .dot-dispatched, .fill-dispatched {
+        background: #8a5cf6;
+    }
+
+    .seller-page .dot-delivered, .fill-delivered {
+        background: #6fa800;
+    }
+
+    .seller-page .dot-cancelled, .fill-cancelled {
+        background: #dc3545;
+    }
+
+    .seller-page .split-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .seller-page .split-box {
+        flex: 1;
+        min-width: 130px;
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.15);
+        border-radius: 14px;
+        padding: 14px;
+        text-align: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+        .seller-page .split-box:hover {
+            transform: translateY(-4px) scale(1.03);
+            background: #f0fae6;
+            box-shadow: 0 12px 20px -10px rgba(136,210,0,0.35);
+        }
+
+        .seller-page .split-box .sv {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1a1a1a;
+        }
+
+        .seller-page .split-box .sl {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #5c7a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+    .seller-page .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 24px;
+    }
+
+    .seller-page .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.1);
+        transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+
+        .seller-page .info-row:hover {
+            transform: translateX(4px);
+            border-color: rgba(136,210,0,0.35);
+            background: #f0fae6;
+        }
+
+        .seller-page .info-row .k {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #5c7a2e;
+        }
+
+        .seller-page .info-row .v {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: right;
+        }
+
+    .seller-page .acct-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .seller-page .acct-item {
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 14px;
+        padding: 14px 16px;
+        position: relative;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+        .seller-page .acct-item:hover {
+            transform: translateY(-4px);
+            background: #fff;
+            box-shadow: 0 14px 26px -12px rgba(136,210,0,0.3);
+        }
+
+        .seller-page .acct-item .ai-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: #eaf7d6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+
+        .seller-page .acct-item:hover .ai-icon {
+            transform: rotate(-8deg) scale(1.1);
+            background: #88d200;
+            color: #fff;
+        }
+
+        .seller-page .acct-item .ai-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #5c7a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .seller-page .acct-item .ai-value {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-top: 2px;
+        }
+
+        .seller-page .acct-item .ai-sub {
+            font-size: 0.7rem;
+            color: #9ab569;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .seller-page .acct-item.warn .ai-icon {
+            background: #fdf3d9;
+            color: #b8860b;
+        }
+
+        .seller-page .acct-item.warn:hover .ai-icon {
+            background: #f0a500;
+            color: #fff;
+        }
+
+    .seller-page .trend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 2px 9px;
+        border-radius: 40px;
+        margin-top: 4px;
+    }
+
+        .seller-page .trend-chip.up {
+            background: #eaf7d6;
+            color: #4c7800;
+        }
+
+        .seller-page .trend-chip.down {
+            background: #fdeaea;
+            color: #a51b1b;
+        }
+
+    /* insight cards */
+    .seller-page .insight-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .seller-page .insight-item {
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+        .seller-page .insight-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .seller-page .insight-item:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .seller-page .insight-item:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .seller-page .insight-item:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+        .seller-page .insight-item:nth-child(5) {
+            animation-delay: 0.33s;
+        }
+
+        .seller-page .insight-item:nth-child(6) {
+            animation-delay: 0.40s;
+        }
+
+        .seller-page .insight-item:hover {
+            transform: translateY(-5px);
+            background: #fff;
+            box-shadow: 0 18px 32px -16px rgba(136,210,0,0.35);
+        }
+
+    .seller-page .insight-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        box-shadow: 0 8px 16px rgba(136,210,0,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .seller-page .insight-item:hover .insight-icon {
+        transform: scale(1.1) rotate(6deg);
+    }
+
+    .seller-page .insight-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .seller-page .insight-value {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-top: 2px;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .seller-page .insight-sub {
+        font-size: 0.72rem;
+        color: #9ab569;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    /* charts */
+    .seller-page .chart-wrap {
+        position: relative;
+        height: 240px;
+    }
+
+        .seller-page .chart-wrap.small {
+            height: 210px;
+        }
+
+    .seller-page .chart-legend-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        justify-content: center;
+    }
+
+    .seller-page .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        transition: transform 0.2s ease;
+    }
+
+        .seller-page .chart-legend-item:hover {
+            transform: translateY(-2px);
+        }
+
+    .seller-page .chart-legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    /* tables */
+    .seller-page .table-wrap {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .seller-page table.seller-table {
+        width: 100%;
+        min-width: 480px;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+        .seller-page table.seller-table thead th {
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #5c7a2e;
+            background: #f0fae6;
+            padding: 10px 12px;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+
+            .seller-page table.seller-table thead th:first-child {
+                border-radius: 10px 0 0 10px;
+            }
+
+            .seller-page table.seller-table thead th:last-child {
+                border-radius: 0 10px 10px 0;
+            }
+
+        .seller-page table.seller-table tbody td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(136,210,0,0.1);
+            color: #1a1a1a;
+            font-weight: 600;
+            white-space: nowrap;
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.2s ease;
+        }
+
+        .seller-page table.seller-table tbody tr {
+            transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+            animation: fadeInUp 0.4s ease both;
+        }
+
+            .seller-page table.seller-table tbody tr:nth-child(1) {
+                animation-delay: 0.03s;
+            }
+
+            .seller-page table.seller-table tbody tr:nth-child(2) {
+                animation-delay: 0.06s;
+            }
+
+            .seller-page table.seller-table tbody tr:nth-child(3) {
+                animation-delay: 0.09s;
+            }
+
+            .seller-page table.seller-table tbody tr:nth-child(4) {
+                animation-delay: 0.12s;
+            }
+
+            .seller-page table.seller-table tbody tr:nth-child(5) {
+                animation-delay: 0.15s;
+            }
+
+            .seller-page table.seller-table tbody tr:nth-child(n+6) {
+                animation-delay: 0.18s;
+            }
+
+            .seller-page table.seller-table tbody tr:hover {
+                background: #f9fdf2;
+                box-shadow: inset 3px 0 0 #88d200;
+                transform: translateX(2px);
+            }
+
+    .seller-page .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 40px;
+        transition: transform 0.2s ease;
+    }
+
+    .seller-page table.seller-table tbody tr:hover .badge-status {
+        transform: scale(1.06);
+    }
+
+    .seller-page .badge-status.pending {
+        background: #fdf3d9;
+        color: #b8860b;
+        animation: pulseSoft 1.8s ease-in-out infinite;
+    }
+
+    .seller-page .badge-status.processing {
+        background: #e3edfb;
+        color: #1a5fa5;
+    }
+
+    .seller-page .badge-status.dispatched {
+        background: #f0e9fe;
+        color: #8a5cf6;
+    }
+
+    .seller-page .badge-status.delivered {
+        background: #eaf7d6;
+        color: #4c7800;
+    }
+
+    .seller-page .badge-status.cancelled {
+        background: #fdeaea;
+        color: #a51b1b;
+    }
+
+    .seller-page .empty-note {
+        font-size: 0.85rem;
+        color: #9ab569;
+        font-weight: 600;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    @@media (max-width: 900px) {
+        .seller-page .cards-row-2, .seller-page .quick-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .seller-page .acct-grid, .seller-page .insight-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .seller-page .user-card {
+            padding: 1.2rem;
+        }
+
+        .seller-page .cards-row-2, .seller-page .quick-stats, .seller-page .info-grid, .seller-page .acct-grid, .seller-page .insight-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="seller-page">
+    <div class="container-cust">
+
+        <!-- identity -->
+        <div class="user-card fade-in">
+            <div class="identity-row">
+                <div class="avatar-circle">
+                    @(string.IsNullOrEmpty(seller?.UserName) ? "?" : seller.UserName.Substring(0, 1).ToUpper())
+                    <span class="status-ring" title="Active"></span>
+                </div>
+                <div>
+                    <h1 class="identity-name">@seller?.UserName</h1>
+                    <div class="identity-email">@seller?.Email</div>
+                    <div class="identity-badges">
+                        <span class="id-badge"><i class="fas fa-box"></i> @ViewBag.TotalProducts products</span>
+                        <span class="id-badge"><i class="fas fa-shopping-bag"></i> @ViewBag.TotalOrders orders</span>
+                        <span class="id-badge"><i class="fas fa-gavel"></i> @ViewBag.TotalBids bids</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- quick stats -->
+        <div class="quick-stats">
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-coins"></i></div>
+                <div>
+                    <div class="qs-label">Total Revenue</div>
+                    <div class="qs-value">Rs. @ViewBag.TotalRevenue</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-cubes"></i></div>
+                <div>
+                    <div class="qs-label">Items Sold</div>
+                    <div class="qs-value">@ViewBag.TotalItemsSold</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-receipt"></i></div>
+                <div>
+                    <div class="qs-label">Total Orders</div>
+                    <div class="qs-value">@ViewBag.TotalOrders</div>
+                </div>
+            </div>
+            <div class="qs-item fade-in">
+                <div class="qs-icon"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="qs-label">Avg Order Value</div>
+                    <div class="qs-value">Rs. @(string.Format("{0:0.##}", ViewBag.AverageOrderValue))</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- revenue trend + order status charts -->
+        <div class="cards-row-2">
+            <div class="sub-card fade-in">
+                <div class="section-title">
+                    <i class="fas fa-chart-area"></i> Revenue Trend (6 mo)
+                    <span class="trend-badge @(isGrowthPositive ? "up" : "down")">
+                        @(isGrowthPositive ? "▲" : "▼") @(string.Format("{0:0.#}", Math.Abs(growthPct)))% vs last mo
+                    </span>
+                </div>
+                @if (revenueLabels.Count > 0)
+                {
+                    <div class="chart-wrap">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-note">No sales in the last 6 months yet.</div>
+                }
+            </div>
+
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-tasks"></i> Order Status Breakdown</div>
+                @{
+                    int total = ViewBag.TotalSales > 0 ? ViewBag.TotalSales : 1;
+                    var statuses = new (string label, string css, int count)[]
+                    {
+                                ("Pending", "pending", pendingSalesCount),
+                                ("Processing", "processing", processingSalesCount),
+                                ("Dispatched", "dispatched", dispatchedSalesCount),
+                                ("Delivered", "delivered", deliveredSalesCount),
+                                ("Cancelled", "cancelled", cancelledSalesCount)
+                    };
+                }
+                @if (totalSalesCount > 0)
+                {
+                    <div class="chart-wrap small">
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                    <div class="chart-legend-row">
+                        @foreach (var s in statuses)
+                        {
+                            <div class="chart-legend-item"><span class="chart-legend-dot dot-@s.css"></span>@s.label (@s.count)</div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-note">No orders received yet.</div>
+                }
+            </div>
+        </div>
+
+        <div class="cards-row-2">
+            <!-- product analytics -->
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-boxes-stacked"></i> Product Analytics</div>
+                <div class="info-grid">
+                    <div class="info-row"><span class="k">Total Products</span><span class="v">@ViewBag.TotalProducts</span></div>
+                    <div class="info-row"><span class="k">Available</span><span class="v">@ViewBag.AvailableProducts</span></div>
+                    <div class="info-row"><span class="k">Out of Stock</span><span class="v">@ViewBag.OutOfStock</span></div>
+                    <div class="info-row"><span class="k">Total Stock</span><span class="v">@ViewBag.TotalStock</span></div>
+                </div>
+            </div>
+
+            <!-- sales insights -->
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-chart-simple"></i> Sales Insights</div>
+                <div class="info-grid">
+                    <div class="info-row"><span class="k">Highest Sale</span><span class="v">Rs. @ViewBag.HighestSale</span></div>
+                    <div class="info-row"><span class="k">Lowest Sale</span><span class="v">Rs. @ViewBag.LowestSale</span></div>
+                    <div class="info-row"><span class="k">First Sale</span><span class="v">@(ViewBag.FirstSale != null ? ((DateTime)ViewBag.FirstSale).ToString("dd MMM yyyy") : "—")</span></div>
+                    <div class="info-row"><span class="k">Last Sale</span><span class="v">@(ViewBag.LastSale != null ? ((DateTime)ViewBag.LastSale).ToString("dd MMM yyyy") : "—")</span></div>
+                </div>
+                <div class="split-row" style="margin-top:14px;">
+                    <div class="split-box"><div class="sv">@ViewBag.CardPayments</div><div class="sl">Card</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.CODPayments</div><div class="sl">COD</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.TotalCustomers</div><div class="sl">Customers</div></div>
+                    <div class="split-box"><div class="sv">@ViewBag.RepeatCustomers</div><div class="sl">Repeat</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- top products + payment split charts -->
+        <div class="cards-row-2">
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-trophy"></i> Top 5 Products by Units Sold</div>
+                @if (topProductChartLabels.Count > 0)
+                {
+                    <div class="chart-wrap">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-note">No sales yet.</div>
+                }
+            </div>
+
+            <div class="sub-card fade-in">
+                <div class="section-title"><i class="fas fa-credit-card"></i> Payment Method Split</div>
+                @if (cardPaymentsCount + codPaymentsCount > 0)
+                {
+                    <div class="chart-wrap small">
+                        <canvas id="paymentSplitChart"></canvas>
+                    </div>
+                    <div class="chart-legend-row">
+                        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#88d200;"></span>Card (@cardPaymentsCount)</div>
+                        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#1a5fa5;"></span>COD (@codPaymentsCount)</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-note">No payments recorded yet.</div>
+                }
+            </div>
+        </div>
+
+        <!-- bidding analytics -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-gavel"></i> Bidding Analytics</div>
+            <div class="info-grid">
+                <div class="info-row"><span class="k">Total Bids</span><span class="v">@ViewBag.TotalBidsReceived</span></div>
+                <div class="info-row"><span class="k">Unique Bidders</span><span class="v">@ViewBag.UniqueBidders</span></div>
+                <div class="info-row"><span class="k">Highest Bid</span><span class="v">Rs. @ViewBag.HighestBid</span></div>
+                <div class="info-row"><span class="k">Average Bid</span><span class="v">Rs. @(string.Format("{0:0.##}", ViewBag.AverageBid))</span></div>
+            </div>
+        </div>
+
+        <!-- more insights -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-lightbulb"></i> More Insights</div>
+            <div class="insight-grid">
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-crown"></i></div>
+                    <div>
+                        <div class="insight-label">Top Selling Product</div>
+                        <div class="insight-value">@topProductName</div>
+                        <div class="insight-sub">@topProductQty units sold</div>
+                    </div>
+                </div>
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-fire"></i></div>
+                    <div>
+                        <div class="insight-label">Most Bid-On Product</div>
+                        <div class="insight-value">@topBidProductName</div>
+                        <div class="insight-sub">@topBidProductCount bids received</div>
+                    </div>
+                </div>
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-star"></i></div>
+                    <div>
+                        <div class="insight-label">Top Bidder</div>
+                        <div class="insight-value">@topBidderName</div>
+                        <div class="insight-sub">@topBidderCount bids placed</div>
+                    </div>
+                </div>
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <div class="insight-label">Avg Items / Order</div>
+                        <div class="insight-value">@(string.Format("{0:0.##}", avgItemsPerOrder))</div>
+                        <div class="insight-sub">items per order on average</div>
+                    </div>
+                </div>
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-percent"></i></div>
+                    <div>
+                        <div class="insight-label">Bid-to-Sale Ratio</div>
+                        <div class="insight-value">@(string.Format("{0:0.##}", bidToSaleRatio)) : 1</div>
+                        <div class="insight-sub">bids received per sale</div>
+                    </div>
+                </div>
+                <div class="insight-item fade-in">
+                    <div class="insight-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div>
+                        <div class="insight-label">Low Stock Alert</div>
+                        <div class="insight-value">@lowStockCount product(s)</div>
+                        <div class="insight-sub">5 units or fewer remaining</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- this week / last month -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-calendar-days"></i> Performance Snapshot</div>
+            <div class="acct-grid">
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-cart-shopping"></i></div>
+                    <div class="ai-label">This Week Sales</div>
+                    <div class="ai-value">@ViewBag.ThisWeekSales</div>
+                </div>
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-sack-dollar"></i></div>
+                    <div class="ai-label">This Week Revenue</div>
+                    <div class="ai-value">Rs. @ViewBag.ThisWeekRevenue</div>
+                    <span class="trend-chip @(isGrowthPositive ? "up" : "down")">
+                        <i class="fas @(isGrowthPositive ? "fa-arrow-up" : "fa-arrow-down")"></i>
+                        @(string.Format("{0:0.#}", Math.Abs(growthPct)))% vs last month
+                    </span>
+                </div>
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-cart-shopping"></i></div>
+                    <div class="ai-label">Last Month Sales</div>
+                    <div class="ai-value">@ViewBag.LastMonthSales</div>
+                </div>
+                <div class="acct-item">
+                    <div class="ai-icon"><i class="fas fa-sack-dollar"></i></div>
+                    <div class="ai-label">Last Month Revenue</div>
+                    <div class="ai-value">Rs. @ViewBag.LastMonthRevenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- products table -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-box-open"></i> My Products <small>@ViewBag.TotalProducts total</small></div>
+            <div class="table-wrap">
+                @if (productsList.Any())
+                {
+                    <table class="seller-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in productsList)
+                            {
+                                <tr>
+                                    <td>@p.Name</td>
+                                    <td>@(p.SubCategory != null ? p.SubCategory.Name : "—")</td>
+                                    <td>@p.quantity</td>
+                                    <td>
+                                        @if ((int)p.quantity == 0)
+                                        {
+                                            <span class="badge-status cancelled">Out of Stock</span>
+                                        }
+                                        else if ((int)p.quantity <= 5)
+                                        {
+                                            <span class="badge-status pending">Low Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status delivered">In Stock</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="empty-note">No products uploaded yet.</div>
+                }
+            </div>
+        </div>
+
+        <!-- recent orders -->
+        <div class="sub-card fade-in" style="margin-bottom:1.4rem;">
+            <div class="section-title"><i class="fas fa-clock-rotate-left"></i> Recent Orders</div>
+            <div class="table-wrap">
+                @if (ordersList.Any())
+                {
+                    <table class="seller-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in ordersList.OrderByDescending(x => x.OrderDate).Take(10))
+                            {
+                                string statusCss = ((string)o.Status ?? "pending").ToLower();
+                                <tr>
+                                    <td>@(o.User != null ? o.User.UserName : "—")</td>
+                                    <td>@(o.Product != null ? o.Product.Name : "—")</td>
+                                    <td>@o.Quantity</td>
+                                    <td>Rs. @o.PricePaid</td>
+                                    <td><span class="badge-status @statusCss">@o.Status</span></td>
+                                    <td>@(((DateTime)o.OrderDate).ToString("dd MMM yyyy"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="empty-note">No orders received yet.</div>
+                }
+            </div>
+        </div>
+
+        <!-- recent bids -->
+        <div class="sub-card fade-in">
+            <div class="section-title"><i class="fas fa-gavel"></i> Recent Bids</div>
+            <div class="table-wrap">
+                @if (bidsList.Any())
+                {
+                    <table class="seller-table">
+                        <thead>
+                            <tr>
+                                <th>Bidder</th>
+                                <th>Product</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in bidsList.Take(10))
+                            {
+                                <tr>
+                                    <td>@(b.User != null ? b.User.UserName : "—")</td>
+                                    <td>@(b.Product != null ? b.Product.Name : "—")</td>
+                                    <td>Rs. @b.bidamount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="empty-note">No bids placed yet.</div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function () {
+        Chart.defaults.font.family = "'Inter','Segoe UI',Roboto,system-ui,sans-serif";
+
+        @if (revenueLabels.Count > 0)
+        {
+                <text>
+                const revenueCtx = document.getElementById('revenueTrendChart');
+                if (revenueCtx) {
+                    new Chart(revenueCtx, {
+                        type: 'line',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", revenueLabels.Select(l => $"'{l.Replace("'", "\\'")}'")))],
+                            datasets: [{
+                                label: 'Revenue (Rs.)',
+                                data: [@Html.Raw(string.Join(",", revenueValues.Select(v => v.ToString(System.Globalization.CultureInfo.InvariantCulture))))],
+                                borderColor: '#88d200',
+                                backgroundColor: 'rgba(136,210,0,0.12)',
+                                pointBackgroundColor: '#6fa800',
+                                borderWidth: 2.5,
+                                tension: 0.35,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(136,210,0,0.08)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+                </text>
+        }
+
+        @if (totalSalesCount > 0)
+        {
+                <text>
+                const statusCtx = document.getElementById('orderStatusChart');
+                if (statusCtx) {
+                    new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'],
+                            datasets: [{
+                                data: [@pendingSalesCount, @processingSalesCount, @dispatchedSalesCount, @deliveredSalesCount, @cancelledSalesCount],
+                                backgroundColor: ['#f0a500', '#1a5fa5', '#8a5cf6', '#6fa800', '#dc3545'],
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '68%',
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+                </text>
+        }
+
+        @if (topProductChartLabels.Count > 0)
+        {
+                <text>
+                const topProductsCtx = document.getElementById('topProductsChart');
+                if (topProductsCtx) {
+                    new Chart(topProductsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: [@Html.Raw(string.Join(",", topProductChartLabels.Select(l => $"'{l.Replace("'", "\\'")}'")))],
+                            datasets: [{
+                                label: 'Units Sold',
+                                data: [@Html.Raw(string.Join(",", topProductChartValues))],
+                                backgroundColor: '#88d200',
+                                borderRadius: 8,
+                                maxBarThickness: 42
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(136,210,0,0.08)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+                </text>
+        }
+
+        @if (cardPaymentsCount + codPaymentsCount > 0)
+        {
+                <text>
+                const paymentCtx = document.getElementById('paymentSplitChart');
+                if (paymentCtx) {
+                    new Chart(paymentCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Card', 'Cash on Delivery'],
+                            datasets: [{
+                                data: [@cardPaymentsCount, @codPaymentsCount],
+                                backgroundColor: ['#88d200', '#1a5fa5'],
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '68%',
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+                </text>
+        }
+    })();
+</script>
