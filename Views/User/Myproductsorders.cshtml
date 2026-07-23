@@ -1,0 +1,1397 @@
+@model IEnumerable<Art_Gallery.Models.Order>
+@{
+    ViewData["Title"] = "Orders Received";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+@functions {
+    // Image1 sometimes ends up saved as a full disk path (e.g. C:\Users\...\products\file.jpg)
+    // instead of just the filename, which breaks the <img> src. This pulls out just the
+    // filename regardless of how it was stored, so it always resolves under wwwroot/images/products.
+    string GetProductImageFileName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+        var normalized = raw.Replace('\\', '/');
+        var fileName = normalized.Substring(normalized.LastIndexOf('/') + 1);
+        return fileName;
+    }
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    /* ===== everything scoped under .sales-page so it can't leak into the user shell ===== */
+    .sales-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .sales-page *,
+        .sales-page *::before,
+        .sales-page *::after {
+            box-sizing: border-box;
+        }
+
+        .sales-page .container-cust {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ----- main card / glass effect ----- */
+        .sales-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .sales-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        /* ----- header ----- */
+        .sales-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .sales-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .sales-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .sales-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .sales-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+            .sales-page .heading-green span {
+                background: #88d200;
+                color: white;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 0.2rem 1rem;
+                border-radius: 60px;
+                letter-spacing: 0.3px;
+            }
+
+        .sales-page .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .sales-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .sales-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        /* ----- success alert (from TempData) ----- */
+        .sales-page .alert-success-cust {
+            background: #f0fae6;
+            border: 1.5px solid #88d200;
+            color: #4c7800;
+            border-radius: 16px;
+            padding: 14px 22px;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .sales-page .alert-success-cust i {
+                color: #88d200;
+                font-size: 1.1rem;
+            }
+
+        .sales-page .alert-info-cust {
+            background: #f0fae6;
+            border: 1.5px dashed #d4f09b;
+            color: #5c7a2e;
+            border-radius: 16px;
+            padding: 30px 22px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+            .sales-page .alert-info-cust i {
+                display: block;
+                font-size: 2rem;
+                color: #d4f09b;
+                margin-bottom: 10px;
+            }
+
+        /* ----- stat cards ----- */
+        .sales-page .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 1.4rem;
+        }
+
+        .sales-page .stat-card {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.25s;
+        }
+
+            .sales-page .stat-card:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
+            }
+
+        .sales-page .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #88d200;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+        }
+
+        .sales-page .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1a1a1a;
+            line-height: 1.1;
+        }
+
+        .sales-page .stat-label {
+            font-size: 0.76rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* ----- toolbar / search ----- */
+        .sales-page .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .sales-page .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            border-radius: 60px;
+            padding: 9px 20px;
+            flex: 1;
+            max-width: 340px;
+            transition: all 0.2s;
+        }
+
+            .sales-page .search-box:focus-within {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
+            }
+
+            .sales-page .search-box i {
+                color: #6fa800;
+            }
+
+            .sales-page .search-box input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 0.88rem;
+                width: 100%;
+                color: #1a1a1a;
+            }
+
+        .sales-page .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .sales-page .result-count {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .sales-page .scroll-hint {
+            font-size: 0.78rem;
+            color: #6fa800;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* ----- table (drag-to-scroll) ----- */
+        .sales-page .table-responsive-cust {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+            cursor: grab;
+            user-select: none;
+        }
+
+            .sales-page .table-responsive-cust::-webkit-scrollbar {
+                display: none;
+            }
+
+            .sales-page .table-responsive-cust.dragging {
+                cursor: grabbing;
+            }
+
+        .sales-page .table-green-white {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+            min-width: 1150px;
+            margin-bottom: 0;
+        }
+
+            .sales-page .table-green-white thead th {
+                background: #88d200;
+                color: white;
+                font-weight: 600;
+                font-size: 0.76rem;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                padding: 15px 18px;
+                border: none;
+                transition: background 0.2s;
+                text-align: left;
+                vertical-align: middle;
+                white-space: nowrap;
+            }
+
+                .sales-page .table-green-white thead th .th-inner {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .sales-page .table-green-white thead th.text-end .th-inner {
+                    justify-content: flex-end;
+                }
+
+                .sales-page .table-green-white thead th:first-child {
+                    border-radius: 20px 0 0 20px;
+                    padding-left: 26px;
+                }
+
+                .sales-page .table-green-white thead th:last-child {
+                    border-radius: 0 20px 20px 0;
+                    padding-right: 26px;
+                }
+
+                .sales-page .table-green-white thead th.text-end {
+                    text-align: right;
+                }
+
+                .sales-page .table-green-white thead th.sortable {
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                    .sales-page .table-green-white thead th.sortable .sort-icon {
+                        margin-left: 6px;
+                        font-size: 0.63rem;
+                        opacity: 0.6;
+                        transition: opacity 0.2s, transform 0.2s;
+                    }
+
+                    .sales-page .table-green-white thead th.sortable:hover .sort-icon {
+                        opacity: 1;
+                    }
+
+                .sales-page .table-green-white thead th.sort-asc .sort-icon,
+                .sales-page .table-green-white thead th.sort-desc .sort-icon {
+                    opacity: 1;
+                }
+
+                .sales-page .table-green-white thead th.sort-desc .sort-icon {
+                    transform: rotate(180deg);
+                }
+
+        .sales-page .empty-state-row td {
+            text-align: center;
+            padding: 40px 20px !important;
+            color: #8a9a6e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 20px !important;
+        }
+
+        .sales-page .empty-state-row i {
+            display: block;
+            font-size: 2rem;
+            color: #d4f09b;
+            margin-bottom: 10px;
+        }
+
+        .sales-page .table-green-white tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid rgba(136, 210, 0, 0.06);
+            opacity: 0;
+            animation: fadeSlideSales 0.45s forwards;
+            animation-delay: calc(0.05s * var(--i, 1));
+        }
+
+    @@keyframes fadeSlideSales {
+        0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .sales-page .table-green-white tbody tr:hover {
+        background: #fbffef;
+        border-color: #d4f09b;
+        transform: scale(1.006) translateY(-2px);
+        box-shadow: 0 14px 28px rgba(111, 168, 0, 0.12);
+    }
+
+    .sales-page .table-green-white tbody td {
+        padding: 12px 18px;
+        vertical-align: middle;
+        border: none;
+        background: transparent;
+        font-size: 0.92rem;
+    }
+
+        .sales-page .table-green-white tbody td:first-child {
+            padding-left: 26px;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .sales-page .table-green-white tbody td:last-child {
+            padding-right: 26px;
+            border-radius: 0 18px 18px 0;
+        }
+
+        /* sticky image column */
+        .sales-page .table-green-white thead th:first-child,
+        .sales-page .table-green-white tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #88d200;
+        }
+
+        .sales-page .table-green-white tbody td:first-child {
+            background: white;
+            box-shadow: 4px 0 8px -4px rgba(111, 168, 0, 0.15);
+        }
+
+    .sales-page .table-green-white tbody tr:hover td:first-child {
+        background: #fbffef;
+    }
+
+    .sales-page .product-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1.5px solid #d4f09b;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.18);
+        transition: transform 0.2s;
+        background: #f0fae6;
+    }
+
+    .sales-page .table-green-white tbody tr:hover .product-thumb {
+        transform: scale(1.06);
+    }
+
+    .sales-page .thumb-fallback {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: #f0fae6;
+        border: 1.5px dashed #d4f09b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #88d200;
+        font-size: 1.3rem;
+    }
+
+    .sales-page .product-name-cell {
+        font-weight: 700;
+        color: #1a1a1a;
+        transition: 0.15s;
+        white-space: nowrap;
+    }
+
+    .sales-page .table-green-white tbody tr:hover .product-name-cell {
+        color: #6fa800;
+    }
+
+    .sales-page .buyer-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+        .sales-page .buyer-cell .buyer-name {
+            font-weight: 700;
+            color: #1a1a1a;
+            white-space: nowrap;
+        }
+
+        .sales-page .buyer-cell .buyer-email {
+            font-size: 0.78rem;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+    .sales-page .info-pill {
+        background: #f0fae6;
+        color: #4c7800;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .sales-page .table-green-white tbody tr:hover .info-pill {
+        background: #d4f09b;
+    }
+
+    .sales-page .price-cell {
+        font-weight: 700;
+        color: #4c7800;
+        white-space: nowrap;
+    }
+
+    .sales-page .status-badge-row {
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 60px;
+        font-size: 0.76rem;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+        .sales-page .status-badge-row.status-pending {
+            background: #fff6e0;
+            color: #a66a00;
+        }
+
+        .sales-page .status-badge-row.status-delivered,
+        .sales-page .status-badge-row.status-completed,
+        .sales-page .status-badge-row.status-accepted {
+            background: #eaf7d6;
+            color: #4c7800;
+        }
+
+        .sales-page .status-badge-row.status-cancelled,
+        .sales-page .status-badge-row.status-rejected,
+        .sales-page .status-badge-row.status-returned {
+            background: #fdeaea;
+            color: #a51b1b;
+        }
+
+        .sales-page .status-badge-row.status-processing,
+        .sales-page .status-badge-row.status-shipped {
+            background: #e6f1fc;
+            color: #1a5fa5;
+        }
+
+    /* action buttons */
+    .sales-page .actions-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sales-page .btn-action {
+        border-radius: 60px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        letter-spacing: 0.25px;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .sales-page .btn-details {
+        background: #88d200;
+        color: white;
+        border-color: #88d200;
+    }
+
+        .sales-page .btn-details:hover {
+            background: #6fa800;
+            border-color: #6fa800;
+            color: white;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
+        }
+
+    .sales-page .btn-delete {
+        background: transparent;
+        color: #a51b1b;
+        border: 1.5px solid #f0c8c8;
+    }
+
+        .sales-page .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
+        }
+
+    /* footer */
+    .sales-page .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.84rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .sales-page .table-footer i {
+            color: #88d200;
+            margin: 0 4px;
+        }
+
+        .sales-page .table-footer .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+            .sales-page .table-footer .pill:hover {
+                background: #88d200;
+                color: white;
+            }
+
+    /* ===== DELETE MODAL ===== */
+    .sales-page .delete-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInOverlaySales 0.3s ease;
+    }
+
+    @@keyframes fadeInOverlaySales {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .sales-page .delete-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 440px;
+        width: 90%;
+        position: relative;
+        animation: modalSlideUpSales 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    @@keyframes modalSlideUpSales {
+        from {
+            transform: scale(0.8) translateY(40px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .sales-page .delete-modal .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: #dc3545;
+        animation: pulseIconSales 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulseIconSales {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .sales-page .delete-modal h3 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .sales-page .delete-modal p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .sales-page .delete-modal .order-id-highlight {
+        color: #dc3545;
+        font-weight: 700;
+        background: #fff5f5;
+        padding: 2px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .sales-page .delete-modal .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .sales-page .delete-modal .btn-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        flex: 1;
+    }
+
+        .sales-page .delete-modal .btn-cancel:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+    .sales-page .delete-modal .btn-confirm-delete {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        cursor: pointer;
+        flex: 1;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .sales-page .delete-modal .btn-confirm-delete:hover {
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+        }
+
+    /* ===== SUCCESS TOAST ===== */
+    .sales-page .toast-container-custom {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        min-width: 320px;
+        max-width: 450px;
+        pointer-events: none;
+    }
+
+    .sales-page .toast-success {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-left: 8px solid #88d200;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
+        padding: 20px 28px;
+        color: #1a1a2e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 1;
+        pointer-events: none;
+        animation: slideInRightSales 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInRightSales {
+        from {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .sales-page .toast-success i {
+        font-size: 2rem;
+        color: #88d200;
+        background: linear-gradient(135deg, #f0fae6, #d4f09b);
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
+        animation: checkBounceSales 0.6s ease;
+    }
+
+    @@keyframes checkBounceSales {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .sales-page .toast-success .toast-content {
+        flex: 1;
+    }
+
+    .sales-page .toast-success .toast-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 1rem;
+    }
+
+    .sales-page .toast-success .toast-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .sales-page .toast-success.hide {
+        animation: slideOutRightSales 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes slideOutRightSales {
+        from {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    .sales-page .fade-out {
+        animation: fadeOutSales 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes fadeOutSales {
+        0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+    }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .sales-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .sales-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .sales-page .brand-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .sales-page .table-green-white thead th,
+        .sales-page .table-green-white tbody td {
+            padding: 10px 10px;
+            font-size: 0.84rem;
+        }
+
+        .sales-page .btn-action {
+            padding: 6px 12px;
+            font-size: 0.7rem;
+        }
+
+        .sales-page .actions-wrap {
+            gap: 4px;
+        }
+
+        .sales-page .table-green-white tbody td:first-child {
+            padding-left: 14px;
+        }
+
+        .sales-page .table-green-white tbody td:last-child {
+            padding-right: 14px;
+        }
+
+        .sales-page .toast-container-custom {
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            min-width: unset;
+            max-width: unset;
+        }
+
+        .sales-page .delete-modal {
+            padding: 2rem 1.5rem;
+        }
+
+            .sales-page .delete-modal .modal-actions {
+                flex-direction: column;
+            }
+
+        .sales-page .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .sales-page .toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sales-page .search-box {
+            max-width: unset;
+        }
+
+        .sales-page .toolbar-right {
+            justify-content: space-between;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .sales-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+
+        .sales-page .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .sales-page .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="sales-page">
+    <div class="container-cust">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h1 class="heading-green">
+                        Orders Received
+                        <span>@Model.Count()</span>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge">
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> seller account
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert-success-cust">
+                    <i class="fas fa-check-circle"></i> @TempData["Message"]
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="alert-info-cust">
+                    <i class="fas fa-box-open"></i>
+                    No orders have been placed for your products yet.
+                </div>
+            }
+            else
+            {
+                <!-- stat cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-box"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count()</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count(o => o.Status != null && o.Status.ToLower() == "pending")</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count(o => o.Status != null && (o.Status.ToLower() == "delivered" || o.Status.ToLower() == "completed"))</div>
+                            <div class="stat-label">Delivered</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                        <div>
+                            <div class="stat-value">Rs. @Model.Sum(o => o.PricePaid)</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- search / toolbar -->
+                <div class="toolbar-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="orderSearch" placeholder="Search by product, buyer, email or status..." onkeyup="filterOrders()" />
+                    </div>
+                    <div class="toolbar-right">
+                        <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                        <span class="scroll-hint">
+                            <i class="fas fa-arrows-left-right"></i> click &amp; drag to scroll
+                        </span>
+                    </div>
+                </div>
+
+                <!-- table -->
+                <div class="table-responsive-cust" id="orderTableScroll">
+                    <table class="table table-green-white">
+                        <thead>
+                            <tr>
+                                <th><span class="th-inner"><i class="fas fa-image fa-fw-lead"></i> Image</span></th>
+                                <th class="sortable" onclick="sortTable(1, this)"><span class="th-inner"><i class="fas fa-box-open fa-fw-lead"></i> Product <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th class="sortable" onclick="sortTable(2, this)"><span class="th-inner"><i class="fas fa-user fa-fw-lead"></i> Buyer <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-hashtag fa-fw-lead"></i> Quantity</span></th>
+                                <th class="sortable" onclick="sortTable(4, this)"><span class="th-inner"><i class="fas fa-rupee-sign fa-fw-lead"></i> Total Price <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-credit-card fa-fw-lead"></i> Payment</span></th>
+                                <th class="sortable" onclick="sortTable(6, this)"><span class="th-inner"><i class="fas fa-calendar-alt fa-fw-lead"></i> Order Date <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-info-circle fa-fw-lead"></i> Status</span></th>
+                                <th class="text-end"><span class="th-inner"><i class="fas fa-bolt fa-fw-lead"></i> Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowIndex = 0;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                rowIndex++;
+                                var statusClass = (item.Status ?? "").ToLower().Replace(" ", "-");
+                                <tr style="--i: @rowIndex;" data-order-id="@item.Id">
+                                    <td>
+                                        @{
+                                            var imgFile = GetProductImageFileName(item.Product?.Image1);
+                                        }
+                                        @if (!string.IsNullOrEmpty(imgFile))
+                                        {
+                                            <img src="~/images/products/@imgFile"
+                                                 class="product-thumb"
+                                                 onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-fallback',innerHTML:'<i class=\'fas fa-image\'></i>'}));" />
+                                        }
+                                        else
+                                        {
+                                            <div class="thumb-fallback"><i class="fas fa-image"></i></div>
+                                        }
+                                    </td>
+                                    <td><span class="product-name-cell">@item.Product?.Name</span></td>
+                                    <td>
+                                        <div class="buyer-cell">
+                                            <span class="buyer-name">@item.User?.UserName</span>
+                                            <span class="buyer-email">@item.User?.Email</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="info-pill">@item.Quantity</span></td>
+                                    <td><span class="price-cell">Rs. @item.PricePaid</span></td>
+                                    <td><span class="info-pill">@(item.Payment?.ModeofPayment ?? "N/A")</span></td>
+                                    <td><span class="info-pill">@item.OrderDate.ToString("dd-MMM-yyyy")</span></td>
+                                    <td>
+                                        <span class="status-badge-row status-@statusClass">
+                                            <i class="fas fa-circle" style="font-size: 0.45rem;"></i> @item.Status
+                                        </span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div class="actions-wrap" style="justify-content: flex-end;">
+                                            <a asp-action="Myproductsorderdetails" asp-route-id="@item.Id" class="btn btn-action btn-details">
+                                                <i class="fas fa-eye"></i> Details
+                                            </a>
+                                            <button type="button" class="btn btn-action btn-delete"
+                                                    onclick="openDeleteModal('@item.Id')">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="empty-state-row" id="noResultsRow" style="display: none;">
+                                <td colspan="9">
+                                    <i class="fas fa-inbox"></i>
+                                    No matching orders found.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- footer -->
+                <div class="table-footer">
+                    <span>
+                        <i class="fas fa-arrow-right"></i> hover rows · click headers to sort · green theme
+                    </span>
+                    <span class="pill">
+                        <i class="fas fa-box"></i> @Model.Count() orders
+                    </span>
+                </div>
+            }
+
+        </div> <!-- end admin-card -->
+    </div> <!-- end container-cust -->
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div id="deleteModal" class="delete-modal-overlay">
+        <div class="delete-modal">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete This Order?</h3>
+            <p>
+                Are you sure you want to delete order
+                <span class="order-id-highlight" id="modalOrderId">#0</span>?
+                <br>
+                <small style="color: #dc3545; font-weight: 500;">
+                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
+                </small>
+            </p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn-confirm-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS TOAST ===== -->
+    <div id="successToast" class="toast-container-custom">
+        <div id="toastMessage" class="toast-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="toast-content">
+                <div class="toast-title">Deleting...</div>
+                <div class="toast-message" id="toastText">Redirecting to delete confirmation</div>
+            </div>
+        </div>
+    </div>
+</div> <!-- end sales-page -->
+
+<script>
+    let deleteOrderId = null;
+
+    // Live search filter across product, buyer, email, payment and status columns
+    function filterOrders() {
+        const query = document.getElementById('orderSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.sales-page .table-green-white tbody tr:not(#noResultsRow)');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(query);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
+
+        const totalRows = rows.length;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
+    }
+
+    // Click-to-sort table columns
+    let sortDirections = {};
+    function sortTable(colIndex, headerEl) {
+        const table = headerEl.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
+
+        const asc = !sortDirections[colIndex];
+        sortDirections = {};
+        sortDirections[colIndex] = asc;
+
+        table.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+        headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+        rows.sort((a, b) => {
+            const cellA = a.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const cellB = b.children[colIndex].textContent.replace(/[^0-9.\-a-zA-Z]/g, '').trim().toLowerCase();
+            const numA = parseFloat(cellA), numB = parseFloat(cellB);
+            const bothNumeric = !isNaN(numA) && !isNaN(numB);
+            const cmp = bothNumeric ? (numA - numB) : cellA.localeCompare(cellB);
+            return asc ? cmp : -cmp;
+        });
+
+        rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
+    }
+
+    function openDeleteModal(orderId) {
+        deleteOrderId = orderId;
+        document.getElementById('modalOrderId').textContent = '#' + orderId;
+
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+
+        const modalContent = modal.querySelector('.delete-modal');
+        modalContent.style.animation = 'none';
+        setTimeout(() => {
+            modalContent.style.animation = 'modalSlideUpSales 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deleteOrderId = null;
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (deleteOrderId) {
+            const idToDelete = deleteOrderId; // capture before closeDeleteModal() clears it
+            const row = document.querySelector(`tr[data-order-id="${idToDelete}"]`);
+            closeDeleteModal();
+            showSuccessToast('Deleted!', 'The order was removed successfully.');
+
+            if (row) {
+                row.classList.add('fade-out');
+            }
+
+            setTimeout(() => {
+                window.location.href = '@Url.Action("Myproductsorderdeletelogic", "User")/' + idToDelete;
+            }, 900);
+        }
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    function showSuccessToast(title, message) {
+        const toast = document.getElementById('toastMessage');
+        const textSpan = document.getElementById('toastText');
+        const titleEl = toast.querySelector('.toast-title');
+
+        if (titleEl) titleEl.innerText = title;
+        if (textSpan) textSpan.innerText = message;
+
+        toast.classList.remove('hide');
+        toast.style.display = 'flex';
+
+        toast.style.animation = 'none';
+        setTimeout(() => {
+            toast.style.animation = 'slideInRightSales 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+
+        clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => { toast.style.display = 'none'; }, 500);
+        }, 4000);
+    }
+
+    // ===== Click & drag horizontal scrolling for the table =====
+    (function () {
+        const scroller = document.getElementById('orderTableScroll');
+        if (!scroller) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeftStart;
+
+        scroller.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scroller.classList.add('dragging');
+            startX = e.pageX - scroller.offsetLeft;
+            scrollLeftStart = scroller.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mouseleave', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scroller.offsetLeft;
+            const walk = (x - startX);
+            scroller.scrollLeft = scrollLeftStart - walk;
+        });
+
+        // touch support
+        let touchStartX = 0;
+        let touchScrollStart = 0;
+        scroller.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX;
+            touchScrollStart = scroller.scrollLeft;
+        }, { passive: true });
+
+        scroller.addEventListener('touchmove', (e) => {
+            const dx = e.touches[0].pageX - touchStartX;
+            scroller.scrollLeft = touchScrollStart - dx;
+        }, { passive: true });
+    })();
+</script>

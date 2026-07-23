@@ -1,0 +1,1185 @@
+@model Art_Gallery.Models.AuctionDetails
+@using System.Linq
+@{
+    ViewData["Title"] = "Bid Details";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+    var bidHistory = (ViewBag.PreviousBids as IEnumerable<Art_Gallery.Models.AuctionDetails> ?? Enumerable.Empty<Art_Gallery.Models.AuctionDetails>())
+        .OrderBy(b => b.bidamount)
+        .ToList();
+
+    string GetImgFileName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+        var normalized = raw.Replace('\\', '/');
+        return normalized.Substring(normalized.LastIndexOf('/') + 1);
+    }
+
+    var img1 = GetImgFileName(Model.Product?.Image1);
+    var img2 = GetImgFileName(Model.Product?.Image2);
+    var img3 = GetImgFileName(Model.Product?.Image3);
+    var imageCount = new[] { img1, img2, img3 }.Count(i => !string.IsNullOrEmpty(i));
+
+    bool isHighest = ViewBag.IsHighestBidder != null && (bool)ViewBag.IsHighestBidder;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .bid-detail-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+        overflow-x: hidden;
+        background: radial-gradient(circle at 12% 0%, rgba(136, 210, 0, 0.06), transparent 45%), radial-gradient(circle at 100% 20%, rgba(136, 210, 0, 0.05), transparent 40%);
+    }
+
+        .bid-detail-page *, .bid-detail-page *::before, .bid-detail-page *::after {
+            box-sizing: border-box;
+        }
+
+        .bid-detail-page .container-cust {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .bid-detail-page .user-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111,168,0,0.22), 0 4px 18px rgba(136,210,0,0.06);
+            border: 1px solid rgba(136,210,0,0.12);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.4rem;
+        }
+
+            .bid-detail-page .user-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        .bid-detail-page .breadcrumb-strip {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .bid-detail-page .breadcrumb-strip a {
+                color: #5c7a2e;
+                text-decoration: none;
+            }
+
+                .bid-detail-page .breadcrumb-strip a:hover {
+                    text-decoration: underline;
+                }
+
+            .bid-detail-page .breadcrumb-strip i {
+                font-size: 0.65rem;
+                color: #a3c96a;
+            }
+
+        .bid-detail-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.6rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .bid-detail-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .bid-detail-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .bid-detail-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .bid-detail-page .heading-green {
+            font-weight: 700;
+            font-size: 1.7rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .bid-detail-page .heading-sub {
+            font-size: 0.85rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .bid-detail-page .btn-action {
+            border-radius: 60px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            letter-spacing: 0.25px;
+            transition: all 0.25s cubic-bezier(0.2,0,0,1);
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .bid-detail-page .btn-back-a {
+            background: white;
+            color: #6fa800;
+            border: 1.5px solid #88d200;
+        }
+
+            .bid-detail-page .btn-back-a:hover {
+                background: #f0fae6;
+                transform: translateY(-3px) scale(1.04);
+                box-shadow: 0 12px 20px rgba(136,210,0,0.18);
+            }
+
+        /* ===== rank / position banner ===== */
+        .bid-detail-page .position-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 22px;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            flex-wrap: wrap;
+        }
+
+            .bid-detail-page .position-banner.leading {
+                background: linear-gradient(135deg, #eaf7d6, #d4f09b);
+                border: 1px solid #b8dd7a;
+            }
+
+            .bid-detail-page .position-banner.outbid {
+                background: linear-gradient(135deg, #fdeaea, #fbd6d6);
+                border: 1px solid #f0a8a8;
+            }
+
+        .bid-detail-page .position-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .bid-detail-page .position-banner.leading .position-icon {
+            background: #6fa800;
+            box-shadow: 0 10px 22px rgba(111,168,0,0.35);
+        }
+
+        .bid-detail-page .position-banner.outbid .position-icon {
+            background: #c23c5a;
+            box-shadow: 0 10px 22px rgba(194,60,90,0.3);
+        }
+
+        .bid-detail-page .position-title {
+            font-weight: 800;
+            font-size: 1.15rem;
+        }
+
+        .bid-detail-page .position-banner.leading .position-title {
+            color: #3f5f00;
+        }
+
+        .bid-detail-page .position-banner.outbid .position-title {
+            color: #8a1f1f;
+        }
+
+        .bid-detail-page .position-desc {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .bid-detail-page .position-banner.leading .position-desc {
+            color: #5c7a2e;
+        }
+
+        .bid-detail-page .position-banner.outbid .position-desc {
+            color: #a85050;
+        }
+
+        .bid-detail-page .position-rank {
+            margin-left: auto;
+            text-align: center;
+            background: rgba(255,255,255,0.6);
+            border-radius: 14px;
+            padding: 8px 18px;
+        }
+
+            .bid-detail-page .position-rank .pr-num {
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: #1a1a1a;
+                line-height: 1;
+            }
+
+            .bid-detail-page .position-rank .pr-label {
+                font-size: 0.66rem;
+                font-weight: 700;
+                color: #5c7a2e;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-top: 2px;
+            }
+
+        /* ===== hero: gallery + summary ===== */
+        .bid-detail-page .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+            align-items: start;
+        }
+
+        .bid-detail-page .gallery-main {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 1.6rem;
+            overflow: hidden;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            box-shadow: 0 14px 30px rgba(136,210,0,0.16);
+            position: relative;
+            cursor: zoom-in;
+        }
+
+            .bid-detail-page .gallery-main img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: opacity 0.35s ease, transform 0.5s ease;
+            }
+
+            .bid-detail-page .gallery-main:hover img {
+                transform: scale(1.05);
+            }
+
+            .bid-detail-page .gallery-main .no-img {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #88d200;
+                gap: 8px;
+                cursor: default;
+            }
+
+                .bid-detail-page .gallery-main .no-img i {
+                    font-size: 3rem;
+                }
+
+            .bid-detail-page .gallery-main .zoom-hint {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                background: rgba(26,26,26,0.55);
+                color: #fff;
+                font-size: 0.7rem;
+                font-weight: 600;
+                padding: 5px 10px;
+                border-radius: 40px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                opacity: 0;
+                transition: opacity 0.2s;
+                pointer-events: none;
+            }
+
+            .bid-detail-page .gallery-main:hover .zoom-hint {
+                opacity: 1;
+            }
+
+        .bid-detail-page .img-count-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(26,26,26,0.55);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 5px 11px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bid-detail-page .thumb-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .bid-detail-page .thumb-box {
+            width: 74px;
+            height: 74px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: #f0fae6;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+            .bid-detail-page .thumb-box img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            .bid-detail-page .thumb-box:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 18px rgba(136,210,0,0.28);
+            }
+
+            .bid-detail-page .thumb-box.active {
+                border-color: #88d200;
+                box-shadow: 0 6px 16px rgba(136,210,0,0.35);
+            }
+
+        .bid-detail-page .summary-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .bid-detail-page .product-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .bid-detail-page .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .bid-detail-page .status-badge-row {
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-size: 0.78rem;
+            letter-spacing: 0.2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+            .bid-detail-page .status-badge-row.status-pending {
+                background: #fff6e0;
+                color: #a66a00;
+            }
+
+            .bid-detail-page .status-badge-row.status-active,
+            .bid-detail-page .status-badge-row.status-outbid {
+                background: #e6f1fc;
+                color: #1a5fa5;
+            }
+
+            .bid-detail-page .status-badge-row.status-won,
+            .bid-detail-page .status-badge-row.status-accepted {
+                background: #eaf7d6;
+                color: #4c7800;
+            }
+
+            .bid-detail-page .status-badge-row.status-cancelled,
+            .bid-detail-page .status-badge-row.status-rejected,
+            .bid-detail-page .status-badge-row.status-lost {
+                background: #fdeaea;
+                color: #a51b1b;
+            }
+
+        .bid-detail-page .price-highlight {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .bid-detail-page .price-box {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 12px 20px;
+            flex: 1;
+            min-width: 140px;
+            transition: all 0.25s;
+        }
+
+            .bid-detail-page .price-box:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136,210,0,0.22);
+            }
+
+            .bid-detail-page .price-box.accent {
+                background: #fdeaea;
+                border-color: #f0a8a8;
+            }
+
+                .bid-detail-page .price-box.accent:hover {
+                    background: #f8d4d4;
+                }
+
+            .bid-detail-page .price-box .p-label {
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #5c7a2e;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-bottom: 4px;
+            }
+
+            .bid-detail-page .price-box.accent .p-label {
+                color: #a85050;
+            }
+
+            .bid-detail-page .price-box .p-value {
+                font-size: 1.25rem;
+                font-weight: 800;
+                color: #1a1a1a;
+            }
+
+            .bid-detail-page .price-box .p-diff {
+                font-size: 0.72rem;
+                font-weight: 700;
+                margin-top: 2px;
+                color: #4c7800;
+            }
+
+        /* ===== quick stats ===== */
+        .bid-detail-page .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.4rem;
+        }
+
+        .bid-detail-page .qs-item {
+            background: rgba(255,255,255,0.97);
+            border: 1px solid rgba(136,210,0,0.14);
+            border-radius: 1.2rem;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 22px -14px rgba(111,168,0,0.25);
+            transition: all 0.2s;
+        }
+
+            .bid-detail-page .qs-item:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 14px 26px -12px rgba(136,210,0,0.3);
+            }
+
+        .bid-detail-page .qs-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #f0fae6;
+            color: #6fa800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+
+        .bid-detail-page .qs-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #5c7a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .bid-detail-page .qs-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            line-height: 1.2;
+        }
+
+        /* ===== section title / cards ===== */
+        .bid-detail-page .section-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+            .bid-detail-page .section-title .st-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .bid-detail-page .section-title i {
+                background: #88d200;
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.9rem;
+                box-shadow: 0 6px 14px rgba(136,210,0,0.3);
+            }
+
+            .bid-detail-page .section-title .timeline-caption {
+                font-size: 0.74rem;
+                font-weight: 600;
+                color: #5c7a2e;
+            }
+
+        .bid-detail-page .cards-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.4rem;
+        }
+
+        .bid-detail-page .sub-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 1.6rem;
+            padding: 1.6rem;
+            box-shadow: 0 14px 30px -14px rgba(111,168,0,0.2);
+            border: 1px solid rgba(136,210,0,0.12);
+        }
+
+        .bid-detail-page .standalone-card {
+            margin-bottom: 1.4rem;
+        }
+
+        .bid-detail-page .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 24px;
+        }
+
+        .bid-detail-page .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #f9fdf2;
+            border: 1px solid rgba(136,210,0,0.1);
+            transition: all 0.2s;
+        }
+
+            .bid-detail-page .info-row:hover {
+                background: #f0fae6;
+                border-color: #d4f09b;
+                transform: translateX(3px);
+            }
+
+            .bid-detail-page .info-row .k {
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: #5c7a2e;
+                white-space: nowrap;
+            }
+
+            .bid-detail-page .info-row .v {
+                font-size: 0.88rem;
+                font-weight: 700;
+                color: #1a1a1a;
+                text-align: right;
+                word-break: break-word;
+            }
+
+        /* ===== seller card ===== */
+        .bid-detail-page .seller-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .bid-detail-page .seller-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #88d200, #6fa800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 8px 18px rgba(136,210,0,0.3);
+        }
+
+        .bid-detail-page .seller-name {
+            font-weight: 800;
+            color: #1a1a1a;
+            font-size: 1rem;
+        }
+
+        .bid-detail-page .seller-tag {
+            font-size: 0.74rem;
+            color: #5c7a2e;
+            font-weight: 600;
+        }
+
+        .bid-detail-page .seller-contact-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #f9fdf2;
+            border: 1px solid rgba(136,210,0,0.1);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+            .bid-detail-page .seller-contact-row:hover {
+                background: #f0fae6;
+                color: #1a1a1a;
+                transform: translateX(3px);
+            }
+
+            .bid-detail-page .seller-contact-row i {
+                color: #6fa800;
+                width: 16px;
+            }
+
+        /* ===== timeline ===== */
+        .bid-detail-page .timeline {
+            position: relative;
+            padding-left: 6px;
+        }
+
+        .bid-detail-page .timeline-item {
+            position: relative;
+            padding-bottom: 22px;
+            padding-left: 46px;
+        }
+
+            .bid-detail-page .timeline-item::before {
+                content: "";
+                position: absolute;
+                left: 17px;
+                top: 34px;
+                bottom: -10px;
+                width: 2px;
+                background: rgba(136,210,0,0.25);
+            }
+
+            .bid-detail-page .timeline-item:last-child::before {
+                display: none;
+            }
+
+        .bid-detail-page .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #f0fae6;
+            border: 2px solid #88d200;
+            color: #6fa800;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bid-detail-page .timeline-item.is-leading .timeline-dot {
+            background: #88d200;
+            color: white;
+        }
+
+        .bid-detail-page .timeline-item.is-current .timeline-dot {
+            border-color: #1a5fa5;
+        }
+
+        .bid-detail-page .timeline-content {
+            background: #f9fdf2;
+            border: 1px solid rgba(136,210,0,0.12);
+            border-radius: 14px;
+            padding: 12px 16px;
+            transition: all 0.2s;
+        }
+
+            .bid-detail-page .timeline-content:hover {
+                background: #f0fae6;
+            }
+
+        .bid-detail-page .timeline-item.is-current .timeline-content {
+            border-color: #1a5fa5;
+            background: #eaf3fb;
+        }
+
+        .bid-detail-page .timeline-amount {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #1a1a1a;
+        }
+
+        .bid-detail-page .timeline-user {
+            font-size: 0.82rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .bid-detail-page .timeline-badges {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .bid-detail-page .tl-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 40px;
+        }
+
+            .bid-detail-page .tl-badge.leading {
+                background: #eaf7d6;
+                color: #4c7800;
+            }
+
+            .bid-detail-page .tl-badge.current {
+                background: #e6f1fc;
+                color: #1a5fa5;
+            }
+
+            .bid-detail-page .tl-badge.status {
+                background: #f0fae6;
+                color: #5c7a2e;
+            }
+
+        .bid-detail-page .timeline-empty {
+            color: #888;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        /* lightbox */
+        .bid-detail-page .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,10,0.88);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            animation: lbFadeInB 0.2s ease;
+        }
+
+            .bid-detail-page .lightbox-overlay.open {
+                display: flex;
+            }
+
+            .bid-detail-page .lightbox-overlay img {
+                max-width: 90vw;
+                max-height: 85vh;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            }
+
+        .bid-detail-page .lightbox-close {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            color: #fff;
+            font-size: 1.6rem;
+            background: rgba(255,255,255,0.12);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+            .bid-detail-page .lightbox-close:hover {
+                background: rgba(255,255,255,0.25);
+            }
+
+    @@keyframes lbFadeInB {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .bid-detail-page .hero-grid, .bid-detail-page .cards-row {
+            grid-template-columns: 1fr;
+        }
+
+        .bid-detail-page .info-grid, .bid-detail-page .quick-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .bid-detail-page .user-card {
+            padding: 1.2rem;
+        }
+
+        .bid-detail-page .header-section {
+            flex-direction: column;
+            align-items: start;
+        }
+
+        .bid-detail-page .quick-stats, .bid-detail-page .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bid-detail-page .position-rank {
+            margin-left: 0;
+        }
+    }
+</style>
+
+<div class="bid-detail-page">
+    <div class="container-cust">
+
+        <div class="breadcrumb-strip">
+            <a asp-action="Userallbids">My Bids</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Bid #@Model.Id</span>
+        </div>
+
+        <!-- header -->
+        <div class="user-card">
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon"><i class="fas fa-gavel"></i></div>
+                    <div>
+                        <h1 class="heading-green">Bid Details</h1>
+                        <div class="heading-sub">Bid #@Model.Id &middot; @Model.Product?.Name</div>
+                    </div>
+                </div>
+                <a asp-action="MyBids" class="btn-action btn-back-a">
+                    <i class="fas fa-arrow-left"></i> Back to My Bids
+                </a>
+            </div>
+
+            <!-- position banner -->
+            <div class="position-banner @(isHighest ? "leading" : "outbid")">
+                <div class="position-icon">
+                    <i class="fas @(isHighest ? "fa-crown" : "fa-arrow-trend-up")"></i>
+                </div>
+                <div>
+                    <div class="position-title">@(isHighest ? "You're the Highest Bidder!" : "You've Been Outbid")</div>
+                    <div class="position-desc">
+                        @if (isHighest)
+                        {
+                            <span>You're currently leading this auction at Rs. @Model.bidamount</span>
+                        }
+                        else
+                        {
+                            <span>The current highest bid is Rs. @ViewBag.HighestBid — consider raising your bid</span>
+                        }
+                    </div>
+                </div>
+                <div class="position-rank">
+                    <div class="pr-num">#@ViewBag.YourRank</div>
+                    <div class="pr-label">Your Rank</div>
+                </div>
+            </div>
+
+            <!-- hero -->
+            <div class="hero-grid">
+                <div>
+                    <div class="gallery-main" id="galleryMain" onclick="openLightbox()">
+                        @if (!string.IsNullOrEmpty(img1))
+                        {
+                            <img id="mainImg" src="~/images/products/@img1" alt="@Model.Product?.Name"
+                                 onerror="handleImgError(this, 'no-img', 'fa-image', 'No image available')" />
+                            @if (imageCount > 1)
+                            {
+                                <div class="img-count-badge"><i class="fas fa-images"></i> @imageCount</div>
+                            }
+                            <div class="zoom-hint"><i class="fas fa-search-plus"></i> Click to zoom</div>
+                        }
+                        else
+                        {
+                            <div class="no-img" id="mainImgFallback"><i class="fas fa-image"></i><span>No image available</span></div>
+                        }
+                    </div>
+                    <div class="thumb-row">
+                        @if (!string.IsNullOrEmpty(img1))
+                        {
+                            <div class="thumb-box active" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img1)', this)">
+                                <img src="~/images/products/@img1" />
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(img2))
+                        {
+                            <div class="thumb-box" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img2)', this)">
+                                <img src="~/images/products/@img2" />
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(img3))
+                        {
+                            <div class="thumb-box" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img3)', this)">
+                                <img src="~/images/products/@img3" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="summary-col">
+                    <div>
+                        <h2 class="product-title">@Model.Product?.Name</h2>
+                    </div>
+
+                    <div class="badge-row">
+                        @{
+                            var bidStatusClass = (Model.bidstatus ?? "").ToLower().Replace(" ", "-");
+                        }
+                        <span class="status-badge-row status-@bidStatusClass">
+                            <i class="fas fa-circle" style="font-size:0.45rem;"></i> Status: @Model.bidstatus
+                        </span>
+                        <span class="status-badge-row status-@(isHighest ? "won" : "outbid")">
+                            <i class="fas @(isHighest ? "fa-crown" : "fa-exclamation-triangle")" style="font-size:0.7rem;"></i>
+                            @(isHighest ? "Highest Bidder" : "Outbid")
+                        </span>
+                    </div>
+
+                    <div class="price-highlight">
+                        <div class="price-box">
+                            <div class="p-label">Your Bid</div>
+                            <div class="p-value">Rs. @Model.bidamount</div>
+                        </div>
+                        <div class="price-box @(isHighest ? "" : "accent")">
+                            <div class="p-label">Highest Bid</div>
+                            <div class="p-value">Rs. @ViewBag.HighestBid</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- quick stats -->
+        <div class="quick-stats">
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-gavel"></i></div>
+                <div>
+                    <div class="qs-label">Total Bids</div>
+                    <div class="qs-value">@ViewBag.TotalBids</div>
+                </div>
+            </div>
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-ranking-star"></i></div>
+                <div>
+                    <div class="qs-label">Your Rank</div>
+                    <div class="qs-value">#@ViewBag.YourRank</div>
+                </div>
+            </div>
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-layer-group"></i></div>
+                <div>
+                    <div class="qs-label">Category</div>
+                    <div class="qs-value">@(Model.Product?.SubCategory?.category?.Name ?? "—")</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- product info + seller info -->
+        <div class="cards-row">
+            <div class="sub-card">
+                <div class="section-title">
+                    <div class="st-left"><i class="fas fa-box-open"></i> Product Information</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row" style="grid-column: 1 / -1;"><span class="k">Product</span><span class="v">@Model.Product?.Name</span></div>
+                    <div class="info-row"><span class="k">Category</span><span class="v">@Model.Product?.SubCategory?.category?.Name</span></div>
+                    <div class="info-row"><span class="k">Sub Category</span><span class="v">@Model.Product?.SubCategory?.Name</span></div>
+                </div>
+            </div>
+
+            <div class="sub-card">
+                <div class="section-title">
+                    <div class="st-left"><i class="fas fa-store"></i> Seller Information</div>
+                </div>
+                <div class="seller-row">
+                    <div class="seller-avatar">
+                        @(string.IsNullOrEmpty(Model.Product?.User?.UserName) ? "?" : Model.Product.User.UserName.Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <div class="seller-name">@Model.Product?.User?.UserName</div>
+                        <div class="seller-tag">Listed this item</div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Product?.User?.Email))
+                {
+                    <a href="mailto:@Model.Product.User.Email" class="seller-contact-row"><i class="fas fa-envelope"></i> @Model.Product.User.Email</a>
+                }
+                @if (!string.IsNullOrEmpty(Model.Product?.User?.PhoneNumber))
+                {
+                    <a href="tel:@Model.Product.User.PhoneNumber" class="seller-contact-row"><i class="fas fa-phone"></i> @Model.Product.User.PhoneNumber</a>
+                }
+            </div>
+        </div>
+
+        <!-- previous bids timeline -->
+        <div class="sub-card standalone-card" style="margin-top:1.4rem;">
+            <div class="section-title">
+                <div class="st-left"><i class="fas fa-history"></i> Previous Bids</div>
+                <span class="timeline-caption">Ordered from lowest to highest</span>
+            </div>
+            @if (bidHistory.Any())
+            {
+                var maxBid = bidHistory.Max(b => b.bidamount);
+                <div class="timeline">
+                    @for (int i = 0; i < bidHistory.Count; i++)
+                    {
+                        var b = bidHistory[i];
+                        bool isLeading = b.bidamount == maxBid;
+                        bool isCurrent = b.Id == Model.Id;
+                        <div class="timeline-item @(isCurrent ? "is-current" : "") @(isLeading ? "is-leading" : "")">
+                            <div class="timeline-dot">@(i + 1)</div>
+                            <div class="timeline-content">
+                                <div class="timeline-amount">Rs. @b.bidamount</div>
+                                <div class="timeline-user">@(b.User?.UserName ?? "Unknown bidder")</div>
+                                <div class="timeline-badges">
+                                    @if (isLeading)
+                                    {
+                                        <span class="tl-badge leading"><i class="fas fa-crown"></i> Leading</span>
+                                    }
+                                    @if (isCurrent)
+                                    {
+                                        <span class="tl-badge current">Your Bid</span>
+                                    }
+                                    <span class="tl-badge status">@b.bidstatus</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="timeline-empty"><i class="fas fa-info-circle"></i> No other bids have been placed yet.</div>
+            }
+        </div>
+
+    </div>
+
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox(event)"><i class="fas fa-times"></i></button>
+        <img id="lightboxImg" src="" alt="" />
+    </div>
+</div>
+
+<script>
+    function handleImgError(imgEl, fallbackClass, iconClass, extraText) {
+        const div = document.createElement('div');
+        div.className = fallbackClass;
+        div.style.width = '100%'; div.style.height = '100%';
+        div.style.display = 'flex'; div.style.flexDirection = extraText ? 'column' : 'row';
+        div.style.alignItems = 'center'; div.style.justifyContent = 'center';
+        div.innerHTML = '<i class="fas ' + iconClass + '"></i>' + (extraText ? '<span>' + extraText + '</span>' : '');
+        imgEl.replaceWith(div);
+    }
+
+    function switchMainImage(url, thumbEl) {
+        const main = document.getElementById('galleryMain');
+        let img = document.getElementById('mainImg');
+        if (!img) {
+            main.innerHTML = '<img id="mainImg" src="" alt="" /><div class="zoom-hint"><i class="fas fa-search-plus"></i> Click to zoom</div>';
+            img = document.getElementById('mainImg');
+        }
+        img.style.opacity = 0;
+        setTimeout(() => { img.src = url; img.style.opacity = 1; }, 150);
+        document.querySelectorAll('.thumb-box').forEach(t => t.classList.remove('active'));
+        thumbEl.classList.add('active');
+    }
+
+    function openLightbox() {
+        const mainImg = document.getElementById('mainImg');
+        if (!mainImg || !mainImg.src) return;
+        document.getElementById('lightboxImg').src = mainImg.src;
+        document.getElementById('lightboxOverlay').classList.add('open');
+    }
+    function closeLightbox(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('lightboxOverlay').classList.remove('open');
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
+</script>

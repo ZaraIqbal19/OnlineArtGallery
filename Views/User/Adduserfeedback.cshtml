@@ -1,0 +1,1278 @@
+@model IEnumerable<Art_Gallery.Models.Feedback>
+@{
+    ViewData["Title"] = "All Users Feedback";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    /* ===== everything scoped under .feedback-page so it can't leak into the admin shell ===== */
+    .feedback-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .feedback-page *,
+        .feedback-page *::before,
+        .feedback-page *::after {
+            box-sizing: border-box;
+        }
+
+        .feedback-page .container-cust {
+            max-width: 1220px;
+            margin: 0 auto;
+        }
+
+        .feedback-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .feedback-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        /* header */
+        .feedback-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .feedback-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .feedback-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .feedback-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .feedback-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+            .feedback-page .heading-green span {
+                background: #88d200;
+                color: white;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 0.2rem 1rem;
+                border-radius: 60px;
+                letter-spacing: 0.3px;
+            }
+
+        .feedback-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .feedback-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        /* success alert from TempData */
+        .feedback-page .alert-success-cust {
+            background: #f0fae6;
+            border: 1.5px solid #88d200;
+            color: #4c7800;
+            border-radius: 16px;
+            padding: 14px 22px;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .feedback-page .alert-success-cust i {
+                color: #88d200;
+                font-size: 1.1rem;
+            }
+
+        .feedback-page .alert-info-cust {
+            background: #f0fae6;
+            border: 1.5px dashed #d4f09b;
+            color: #5c7a2e;
+            border-radius: 16px;
+            padding: 30px 22px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+            .feedback-page .alert-info-cust i {
+                display: block;
+                font-size: 2rem;
+                color: #d4f09b;
+                margin-bottom: 10px;
+            }
+
+        /* stat cards */
+        .feedback-page .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 1.4rem;
+        }
+
+        .feedback-page .stat-card {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.25s;
+        }
+
+            .feedback-page .stat-card:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
+            }
+
+        .feedback-page .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #88d200;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+        }
+
+        .feedback-page .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1a1a1a;
+            line-height: 1.1;
+        }
+
+        .feedback-page .stat-label {
+            font-size: 0.76rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* toolbar / search */
+        .feedback-page .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .feedback-page .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            border-radius: 60px;
+            padding: 9px 20px;
+            flex: 1;
+            max-width: 340px;
+            transition: all 0.2s;
+        }
+
+            .feedback-page .search-box:focus-within {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
+            }
+
+            .feedback-page .search-box i {
+                color: #6fa800;
+            }
+
+            .feedback-page .search-box input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 0.88rem;
+                width: 100%;
+                color: #1a1a1a;
+            }
+
+        .feedback-page .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-page .result-count {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* table */
+        .feedback-page .table-responsive-cust {
+            border-radius: 1.6rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 6px;
+        }
+
+        .feedback-page .table-green-white {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+            min-width: 900px;
+            table-layout: fixed;
+            margin-bottom: 0;
+        }
+
+            /* ----- column widths so header + body line up and the actions
+                         column always has room for all 3 buttons on one row ----- */
+            .feedback-page .table-green-white col.col-user {
+                width: 18%;
+            }
+
+            .feedback-page .table-green-white col.col-email {
+                width: 20%;
+            }
+
+            .feedback-page .table-green-white col.col-message {
+                width: 34%;
+            }
+
+            .feedback-page .table-green-white col.col-actions {
+                width: 28%;
+            }
+
+            .feedback-page .table-green-white thead th {
+                background: #88d200;
+                color: white;
+                font-weight: 600;
+                font-size: 0.76rem;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                padding: 15px 18px;
+                border: none;
+                text-align: left;
+                vertical-align: middle;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+                .feedback-page .table-green-white thead th .th-inner {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    width: 100%;
+                }
+
+                .feedback-page .table-green-white thead th.text-end {
+                    text-align: right;
+                }
+
+                    .feedback-page .table-green-white thead th.text-end .th-inner {
+                        justify-content: flex-end;
+                    }
+
+                .feedback-page .table-green-white thead th:first-child {
+                    border-radius: 20px 0 0 20px;
+                    padding-left: 26px;
+                }
+
+                .feedback-page .table-green-white thead th:last-child {
+                    border-radius: 0 20px 20px 0;
+                    padding-right: 26px;
+                }
+
+                .feedback-page .table-green-white thead th.sortable {
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                    .feedback-page .table-green-white thead th.sortable .sort-icon {
+                        margin-left: 6px;
+                        font-size: 0.63rem;
+                        opacity: 0.6;
+                        transition: opacity 0.2s, transform 0.2s;
+                        flex-shrink: 0;
+                    }
+
+                    .feedback-page .table-green-white thead th.sortable:hover .sort-icon {
+                        opacity: 1;
+                    }
+
+                .feedback-page .table-green-white thead th.sort-asc .sort-icon,
+                .feedback-page .table-green-white thead th.sort-desc .sort-icon {
+                    opacity: 1;
+                }
+
+                .feedback-page .table-green-white thead th.sort-desc .sort-icon {
+                    transform: rotate(180deg);
+                }
+
+        .feedback-page .empty-state-row td {
+            text-align: center;
+            padding: 40px 20px !important;
+            color: #8a9a6e;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 20px !important;
+        }
+
+        .feedback-page .empty-state-row i {
+            display: block;
+            font-size: 2rem;
+            color: #d4f09b;
+            margin-bottom: 10px;
+        }
+
+        /* ----- row: base state + relative positioning for the hover accent bar ----- */
+        .feedback-page .table-green-white tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid rgba(136, 210, 0, 0.06);
+            opacity: 0;
+            position: relative;
+            animation: fadeSlideFb 0.45s forwards;
+            animation-delay: calc(0.05s * var(--i, 1));
+        }
+
+    @@keyframes fadeSlideFb {
+        0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* ----- enhanced row hover: lift + glow + left accent bar that grows in ----- */
+    .feedback-page .table-green-white tbody tr td:first-child {
+        position: relative;
+    }
+
+        .feedback-page .table-green-white tbody tr td:first-child::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 4px;
+            border-radius: 4px;
+            background: #88d200;
+            transform: scaleY(0);
+            transform-origin: center;
+            transition: transform 0.25s ease;
+        }
+
+    .feedback-page .table-green-white tbody tr:hover {
+        background: #fbffef;
+        border-color: #b8dd7a;
+        transform: scale(1.008) translateY(-3px);
+        box-shadow: 0 16px 32px rgba(111, 168, 0, 0.16);
+    }
+
+        .feedback-page .table-green-white tbody tr:hover td:first-child::before {
+            transform: scaleY(1);
+        }
+
+    .feedback-page .table-green-white tbody td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        border: none;
+        background: transparent;
+        font-size: 0.92rem;
+        overflow: hidden;
+    }
+
+        .feedback-page .table-green-white tbody td:first-child {
+            padding-left: 26px;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .feedback-page .table-green-white tbody td:last-child {
+            padding-right: 26px;
+            border-radius: 0 18px 18px 0;
+        }
+
+    .feedback-page .customer-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .feedback-page .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #88d200, #6fa800);
+        color: white;
+        font-weight: 700;
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+        transition: transform 0.2s;
+    }
+
+    .feedback-page .table-green-white tbody tr:hover .user-avatar {
+        transform: scale(1.1) rotate(-4deg);
+    }
+
+    .feedback-page .user-name {
+        font-weight: 700;
+        color: #1a1a1a;
+        transition: 0.15s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .feedback-page .table-green-white tbody tr:hover .user-name {
+        color: #6fa800;
+    }
+
+    .feedback-page .email-cell {
+        color: #5c7a2e;
+        font-weight: 600;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .feedback-page .message-cell {
+        color: #495057;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    /* ===== actions: forced onto a single row, never wraps ===== */
+    .feedback-page .actions-wrap {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-end;
+        white-space: nowrap;
+    }
+
+    .feedback-page .btn-action {
+        border-radius: 60px;
+        padding: 8px 14px;
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.2px;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .feedback-page .btn-edit-fb {
+        background: #fff6e0;
+        color: #a66a00;
+        border-color: #ffe4a3;
+    }
+
+        .feedback-page .btn-edit-fb:hover {
+            background: #ffc107;
+            color: #1a1a1a;
+            border-color: #ffc107;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(255, 193, 7, 0.3);
+        }
+
+    .feedback-page .btn-details {
+        background: #88d200;
+        color: white;
+        border-color: #88d200;
+    }
+
+        .feedback-page .btn-details:hover {
+            background: #6fa800;
+            border-color: #6fa800;
+            color: white;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
+        }
+
+    .feedback-page .btn-delete {
+        background: transparent;
+        color: #a51b1b;
+        border: 1.5px solid #f0c8c8;
+    }
+
+        .feedback-page .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
+        }
+
+    /* footer */
+    .feedback-page .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.84rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .feedback-page .table-footer i {
+            color: #88d200;
+            margin: 0 4px;
+        }
+
+        .feedback-page .table-footer .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+            transition: 0.15s;
+        }
+
+            .feedback-page .table-footer .pill:hover {
+                background: #88d200;
+                color: white;
+            }
+
+    /* ===== DELETE MODAL ===== */
+    .feedback-page .delete-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInOverlayFb 0.3s ease;
+    }
+
+    @@keyframes fadeInOverlayFb {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .feedback-page .delete-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 440px;
+        width: 90%;
+        position: relative;
+        animation: modalSlideUpFb 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    @@keyframes modalSlideUpFb {
+        from {
+            transform: scale(0.8) translateY(40px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .feedback-page .delete-modal .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: #dc3545;
+        animation: pulseIconFb 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulseIconFb {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .feedback-page .delete-modal h3 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .feedback-page .delete-modal p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .feedback-page .delete-modal .modal-user-preview {
+        background: #f9fdf2;
+        border: 1px solid rgba(136, 210, 0, 0.18);
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 1.4rem;
+        text-align: left;
+    }
+
+        .feedback-page .delete-modal .modal-user-preview .mu-name {
+            font-weight: 700;
+            color: #1a1a1a;
+            font-size: 0.92rem;
+        }
+
+        .feedback-page .delete-modal .modal-user-preview .mu-msg {
+            color: #6c757d;
+            font-size: 0.82rem;
+            margin-top: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+    .feedback-page .delete-modal .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .feedback-page .delete-modal .btn-cancel {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        flex: 1;
+    }
+
+        .feedback-page .delete-modal .btn-cancel:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+    .feedback-page .delete-modal .btn-confirm-delete {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        cursor: pointer;
+        flex: 1;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .feedback-page .delete-modal .btn-confirm-delete:hover {
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+        }
+
+    /* ===== SUCCESS TOAST ===== */
+    .feedback-page .toast-container-custom {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        min-width: 320px;
+        max-width: 450px;
+        pointer-events: none;
+    }
+
+    .feedback-page .toast-success {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-left: 8px solid #88d200;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
+        padding: 20px 28px;
+        color: #1a1a2e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 1;
+        pointer-events: none;
+        animation: slideInRightFb 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInRightFb {
+        from {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .feedback-page .toast-success i {
+        font-size: 2rem;
+        color: #88d200;
+        background: linear-gradient(135deg, #f0fae6, #d4f09b);
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
+        animation: checkBounceFb 0.6s ease;
+    }
+
+    @@keyframes checkBounceFb {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .feedback-page .toast-success .toast-content {
+        flex: 1;
+    }
+
+    .feedback-page .toast-success .toast-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 1rem;
+    }
+
+    .feedback-page .toast-success .toast-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .feedback-page .toast-success.hide {
+        animation: slideOutRightFb 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes slideOutRightFb {
+        from {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    .feedback-page .fade-out {
+        animation: fadeOutFb 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+
+    @@keyframes fadeOutFb {
+        0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+    }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .feedback-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .feedback-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .feedback-page .brand-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .feedback-page .table-green-white thead th,
+        .feedback-page .table-green-white tbody td {
+            padding: 10px 10px;
+            font-size: 0.84rem;
+        }
+
+        .feedback-page .btn-action {
+            padding: 6px 10px;
+            font-size: 0.68rem;
+        }
+
+        .feedback-page .actions-wrap {
+            gap: 4px;
+        }
+
+        .feedback-page .table-green-white tbody td:first-child {
+            padding-left: 14px;
+        }
+
+        .feedback-page .table-green-white tbody td:last-child {
+            padding-right: 14px;
+        }
+
+        .feedback-page .toast-container-custom {
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            min-width: unset;
+            max-width: unset;
+        }
+
+        .feedback-page .delete-modal {
+            padding: 2rem 1.5rem;
+        }
+
+            .feedback-page .delete-modal .modal-actions {
+                flex-direction: column;
+            }
+
+        .feedback-page .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .feedback-page .toolbar-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .feedback-page .search-box {
+            max-width: unset;
+        }
+
+        .feedback-page .toolbar-right {
+            justify-content: space-between;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .feedback-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+    }
+</style>
+
+<div class="feedback-page">
+    <div class="container-cust">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h1 class="heading-green">
+                        User Feedback
+                        <span>@Model.Count()</span>
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge">
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> admin view
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert-success-cust">
+                    <i class="fas fa-check-circle"></i> @TempData["Message"]
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="alert-info-cust">
+                    <i class="fas fa-comment-slash"></i>
+                    No feedback has been submitted yet.
+                </div>
+            }
+            else
+            {
+                <!-- stat cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count()</div>
+                            <div class="stat-label">Total Feedback</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Select(x => x.User?.Id).Distinct().Count()</div>
+                            <div class="stat-label">Unique Users</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                        <div>
+                            <div class="stat-value">@Model.Count()</div>
+                            <div class="stat-label">Awaiting Review</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- search / toolbar -->
+                <div class="toolbar-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="feedbackSearch" placeholder="Search by name, email or message..." onkeyup="filterFeedback()" />
+                    </div>
+                    <div class="toolbar-right">
+                        <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
+                    </div>
+                </div>
+
+                <!-- table -->
+                <div class="table-responsive-cust">
+                    <table class="table table-green-white">
+                        <colgroup>
+                            <col class="col-user" />
+                            <col class="col-email" />
+                            <col class="col-message" />
+                            <col class="col-actions" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="sortable" onclick="sortFeedbackTable(0, this)"><span class="th-inner"><i class="fas fa-user fa-fw-lead"></i> User Name <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th class="sortable" onclick="sortFeedbackTable(1, this)"><span class="th-inner"><i class="fas fa-envelope fa-fw-lead"></i> Email <i class="fas fa-sort sort-icon"></i></span></th>
+                                <th><span class="th-inner"><i class="fas fa-comment fa-fw-lead"></i> Feedback</span></th>
+                                <th class="text-end"><span class="th-inner"><i class="fas fa-bolt fa-fw-lead"></i> Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowIndex = 0;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                rowIndex++;
+                                var userName = item.User?.UserName ?? "";
+                                var userEmail = item.User?.Email ?? "";
+                                <tr style="--i: @rowIndex;" data-feedback-id="@item.Id">
+                                    <td>
+                                        <div class="customer-cell">
+                                            <div class="user-avatar">@(string.IsNullOrEmpty(userName) ? "?" : userName.Substring(0, 1).ToUpper())</div>
+                                            <span class="user-name">@userName</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="email-cell">@userEmail</span></td>
+                                    <td><span class="message-cell">@item.message</span></td>
+                                    <td style="text-align: right;">
+                                        <div class="actions-wrap">
+                                            <a asp-action="Edituserfeedback" asp-route-id="@item.Id" class="btn-action btn-edit-fb">
+                                                <i class="fas fa-pen"></i> Edit
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn-action btn-details">
+                                                <i class="fas fa-eye"></i> Details
+                                            </a>
+                                            <button type="button" class="btn-action btn-delete"
+                                                    onclick="openDeleteModal('@item.Id', '@Html.Raw(Html.Encode(userName).Replace("'", "\\'"))', '@Html.Raw(Html.Encode(item.message).Replace("'", "\\'"))')">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="empty-state-row" id="noResultsRow" style="display: none;">
+                                <td colspan="4">
+                                    <i class="fas fa-inbox"></i>
+                                    No matching feedback found.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- footer -->
+                <div class="table-footer">
+                    <span>
+                        <i class="fas fa-arrow-right"></i> hover rows · click headers to sort · green theme
+                    </span>
+                    <span class="pill">
+                        <i class="fas fa-comment-dots"></i> @Model.Count() feedback entries
+                    </span>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
+    <div id="deleteModal" class="delete-modal-overlay">
+        <div class="delete-modal">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Delete This Feedback?</h3>
+            <p>
+                Are you sure you want to delete this feedback entry?
+                <br>
+                <small style="color: #dc3545; font-weight: 500;">
+                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
+                </small>
+            </p>
+            <div class="modal-user-preview" id="modalUserPreview">
+                <div class="mu-name" id="modalUserName">—</div>
+                <div class="mu-msg" id="modalUserMsg">—</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <a href="#" class="btn-confirm-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS TOAST ===== -->
+    <div id="successToast" class="toast-container-custom">
+        <div id="toastMessage" class="toast-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="toast-content">
+                <div class="toast-title">Deleting...</div>
+                <div class="toast-message" id="toastText">Redirecting to delete confirmation</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deleteFeedbackId = null;
+
+    // Live search filter across username, email and message columns
+    function filterFeedback() {
+        const query = document.getElementById('feedbackSearch').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('.feedback-page .table-green-white tbody tr:not(#noResultsRow)');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(query);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
+
+        const totalRows = rows.length;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
+    }
+
+    // Click-to-sort table columns
+    let feedbackSortDirections = {};
+    function sortFeedbackTable(colIndex, headerEl) {
+        const table = headerEl.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
+
+        const asc = !feedbackSortDirections[colIndex];
+        feedbackSortDirections = {};
+        feedbackSortDirections[colIndex] = asc;
+
+        table.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+        headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+        rows.sort((a, b) => {
+            const cellA = a.children[colIndex].textContent.trim().toLowerCase();
+            const cellB = b.children[colIndex].textContent.trim().toLowerCase();
+            const cmp = cellA.localeCompare(cellB);
+            return asc ? cmp : -cmp;
+        });
+
+        rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
+    }
+
+    function openDeleteModal(feedbackId, userName, message) {
+        deleteFeedbackId = feedbackId;
+        document.getElementById('modalUserName').textContent = userName || 'Unknown user';
+        document.getElementById('modalUserMsg').textContent = message || '';
+
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.setAttribute('href', '@Url.Action("Deleteuserfeebacklogic", "Admin")/' + feedbackId);
+
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+
+        const modalContent = modal.querySelector('.delete-modal');
+        modalContent.style.animation = 'none';
+        setTimeout(() => {
+            modalContent.style.animation = 'modalSlideUpFb 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deleteFeedbackId = null;
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!deleteFeedbackId) return;
+
+        const targetUrl = this.getAttribute('href');
+        const row = document.querySelector(`tr[data-feedback-id="${deleteFeedbackId}"]`);
+        closeDeleteModal();
+        showSuccessToast('Deleting...', 'Removing this feedback entry.');
+
+        if (row) row.classList.add('fade-out');
+
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 700);
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    function showSuccessToast(title, message) {
+        const toast = document.getElementById('toastMessage');
+        const textSpan = document.getElementById('toastText');
+        const titleEl = toast.querySelector('.toast-title');
+
+        if (titleEl) titleEl.innerText = title;
+        if (textSpan) textSpan.innerText = message;
+
+        toast.style.display = 'flex';
+        toast.classList.remove('hide');
+
+        toast.style.animation = 'none';
+        setTimeout(() => {
+            toast.style.animation = 'slideInRightFb 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 10);
+    }
+</script>

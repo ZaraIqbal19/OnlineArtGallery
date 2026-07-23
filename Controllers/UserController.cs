@@ -1,24 +1,31 @@
-﻿using Art_Gallery.Data;
+﻿using Art_Gallery.Areas.Identity.Data;
+using Art_Gallery.Data;
 using Art_Gallery.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Tasks.Deployment.Bootstrapper;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
+using static NuGet.Packaging.PackagingConstants;
 using static System.Net.Mime.MediaTypeNames;
 namespace Art_Gallery.Controllers
 {
     public class UserController : Controller
     {
         Art_GalleryContext bridge;
+        // ✅
+        private readonly IPasswordHasher<Art_GalleryUser> _passwordHasher;
 
-        public UserController(Art_GalleryContext _bridge)
+        public UserController(Art_GalleryContext _bridge, IPasswordHasher<Art_GalleryUser> passwordHasher)
         {
             bridge = _bridge;
+            _passwordHasher = passwordHasher;
         }
 
         public IActionResult Index()
@@ -411,17 +418,17 @@ namespace Art_Gallery.Controllers
                 .Include(p => p.User)
                 .Where(p => p.SubCategoryId == product.SubCategoryId && p.Id != product.Id)
                 .Take(3)
-                .ToList(); 
+                .ToList();
 
 
             return View(product);
         }
-        
-        public IActionResult Placeorderlogic(int ProductId, String ContactPhone,String ShippingAddress, int Quantity, int? WishlistId,String ModeofPayment) 
+
+        public IActionResult Placeorderlogic(int ProductId, String ContactPhone, String ShippingAddress, int Quantity, int? WishlistId, String ModeofPayment)
 
         {
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-          var prodid=  bridge.products.Find(ProductId);
+            var prodid = bridge.products.Find(ProductId);
 
             var price = prodid.price;
             decimal pricePaid = Convert.ToDecimal(prodid.price) * Quantity;
@@ -438,16 +445,16 @@ namespace Art_Gallery.Controllers
                     return RedirectToAction("Placeorder", new { id = ProductId });
                 }
             }
-             var order =new Order()
-            {   
+            var order = new Order()
+            {
                 WishlistId = WishlistId,
-                ProductId=ProductId,
-                UserId=userid,
+                ProductId = ProductId,
+                UserId = userid,
                 OrderDate = DateTime.Now,
-                ContactPhone=ContactPhone,
-                ShippingAddress=ShippingAddress,
-                Quantity=Quantity,
-                PricePaid=pricePaid,
+                ContactPhone = ContactPhone,
+                ShippingAddress = ShippingAddress,
+                Quantity = Quantity,
+                PricePaid = pricePaid,
 
             };
             bridge.orders.Add(order);
@@ -455,8 +462,8 @@ namespace Art_Gallery.Controllers
 
             var payment = new Payment()
             {
-                ModeofPayment=ModeofPayment,
-                OrderId=order.Id,
+                ModeofPayment = ModeofPayment,
+                OrderId = order.Id,
             };
             bridge.payments.Add(payment);
             bridge.SaveChanges();
@@ -494,7 +501,7 @@ namespace Art_Gallery.Controllers
             return View(product);
         }
 
-    
+
         public IActionResult Placebidlogic(int id, float bidamount)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -532,7 +539,7 @@ namespace Art_Gallery.Controllers
             };
 
             product.BidPrice = bidamount;
-           
+
 
 
 
@@ -544,9 +551,771 @@ namespace Art_Gallery.Controllers
         }
 
 
-    
+        public IActionResult Myorders()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var orders = bridge.orders
+                .Include(o => o.Product)
+                .Include(o => o.Payment)
+                .Include(o => o.User)
+                .Where(o => o.UserId == userId)
+                .ToList();
+
+            return View(orders);
+        }
+
+
+        public IActionResult Myorderdetails(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
+            var myorderdetails = bridge.orders
+       .Include(o => o.User)
+       .Include(o => o.Payment)
+       .Include(o => o.Product)
+           .ThenInclude(p => p.SubCategory)
+               .ThenInclude(sc => sc.category)
+       .FirstOrDefault(o => o.Id == id && o.UserId == userId);
+            return View(myorderdetails);
+
+        }
+
+
+      
+
+        public IActionResult Myproductsorders()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var sales = bridge.orders
+                .Include(o => o.User)
+                .Include(o => o.Payment)
+                .Include(o => o.Product)
+                .Where(o => o.Product.UserId == userId)
+                .ToList();
+
+            return View(sales);
+        }
+
+
+
+        public IActionResult Myproductsorderdetails(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var orderdetails = bridge.orders
+                .Include(o => o.User)
+                .Include(o => o.Payment)
+                .Include(o => o.Product)
+                    .ThenInclude(p => p.SubCategory)
+                        .ThenInclude(sc => sc.category)
+                .FirstOrDefault(o => o.Id == id && o.Product.UserId == userId);
+
+
+            return View(orderdetails);
+        }
+
+        public IActionResult markorderasprocessinglogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+            if (order == null) return NotFound();
+            order.Status = "Processing";
+            bridge.SaveChanges();
+
+            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
+
+
+            return RedirectToAction("Myproductsorderdetails", new { id = id });
+        }
+
+        public IActionResult markorderasdispatchedlogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+            if (order == null) return NotFound();
+
+            order.Status = "Dispatched";
+            bridge.SaveChanges();
+
+            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
+
+
+            return RedirectToAction("Myproductsorderdetails", new { id = id });
+        }
+
+        public IActionResult markorderasdeliveredlogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+            if (order == null) return NotFound();
+
+            order.Status = "Delivered";
+            bridge.SaveChanges();
+
+            TempData["Message"] = $"Order marked as {order.Status} successfully.";
+
+
+            return RedirectToAction("Myproductsorderdetails", new { id = id });
+        }
+
+        public IActionResult markorderasrejectedlogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+
+
+            order.Status = "Rejected";
+            bridge.SaveChanges();
+
+            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
+
+
+
+            return RedirectToAction("Myproductsorderdetails", new { id = id });
+        }
+
+
+
+        public IActionResult Myproductsorderdeletelogic(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var order = bridge.orders
+                .Include(o => o.Payment)
+                .Include(o => o.Product)
+                .FirstOrDefault(o => o.Id == id && o.Product.UserId == userId);
+
+
+
+            if (order.Payment != null)
+            {
+                bridge.payments.Remove(order.Payment);
+            }
+
+            bridge.orders.Remove(order);
+
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Order has been successfully deleted.";
+
+            return RedirectToAction("Myproductsorders");
+        }
+
+
+        public IActionResult Myauctionproductsbids()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
+            var auctiondetails = bridge.auctionDetails
+                   .Include(a => a.User)
+                   .Include(a => a.Product)
+                       .ThenInclude(p => p.SubCategory)
+                           .ThenInclude(sc => sc.category)
+                   .Where(a => a.Product.UserId == userId)
+                   .ToList();
+            return View(auctiondetails);
+        }
+
+
+        //function to display a detailed a information of a bid
+
+        public IActionResult Auctionproductsbiddetails(int id)
+        {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
+            var biddetails = bridge.auctionDetails
+          .Include(d => d.User)
+          .Include(d => d.Product)
+              .ThenInclude(p => p.SubCategory)
+                  .ThenInclude(sc => sc.category)
+          .FirstOrDefault(d => d.Id == id && d.Product.UserId == userId);
+
+
+
+            ViewBag.PreviousBids = bridge.auctionDetails
+                .Include(b => b.User)
+                .Where(b => b.ProductId == biddetails.ProductId)
+                .OrderByDescending(b => b.bidamount)
+                .ToList();
+
+            return View(biddetails);
+
+
+
+        }
+
+        //function to permanentely a bid from the auctiondetails table
+
+        public IActionResult Auctionproductsbiddeletelogic(int id)
+
+
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var bid = bridge.auctionDetails
+                .Include(a => a.Product)
+                .FirstOrDefault(a => a.Id == id && a.Product.UserId == userId);
+
+
+            bridge.auctionDetails.Remove(bid);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Auction bid successfully deleted.";
+
+            return RedirectToAction("Myauctionproductsbids");
+
+        }
+
+
+
+        public IActionResult Myprofile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = bridge.Users.FirstOrDefault(x => x.Id == userId);
+
+            var orders = bridge.orders
+                .Include(o => o.Product)
+                .Include(o => o.Payment)
+                .Where(o => o.UserId == userId)
+                .ToList();
+
+            var wishlist = bridge.wishlist.Include(w => w.Product).Where(w => w.UserId == userId).ToList();
+            var bids = bridge.auctionDetails.Include(b => b.Product).Where(b => b.UserId == userId).ToList();
+
+            ViewBag.User = user;
+            ViewBag.Orders = orders;
+            ViewBag.Wishlist = wishlist;
+            ViewBag.Bids = bids;
+
+            ViewBag.TotalOrders = orders.Count;
+            ViewBag.TotalWishlist = wishlist.Count;
+            ViewBag.TotalBids = bids.Count;
+            ViewBag.PendingOrders = orders.Count(x => x.Status == "Pending");
+            ViewBag.ProcessingOrders = orders.Count(x => x.Status == "Processing");
+            ViewBag.DispatchedOrders = orders.Count(x => x.Status == "Dispatched");
+            ViewBag.DeliveredOrders = orders.Count(x => x.Status == "Delivered");
+            ViewBag.CancelledOrders = orders.Count(x => x.Status == "Cancelled");
+            ViewBag.TotalItemsPurchased = orders.Sum(x => x.Quantity);
+            ViewBag.TotalMoneySpent = orders.Sum(x => x.PricePaid);
+            ViewBag.AverageOrderValue = orders.Count > 0 ? orders.Average(x => x.PricePaid) : 0;
+            ViewBag.HighestOrder = orders.Count > 0 ? orders.Max(x => x.PricePaid) : 0;
+            ViewBag.LowestOrder = orders.Count > 0 ? orders.Min(x => x.PricePaid) : 0;
+            ViewBag.PaidOrders = orders.Count(x => x.Payment != null);
+            ViewBag.UnpaidOrders = orders.Count(x => x.Payment == null);
+            ViewBag.CODOrders = orders.Count(x => x.Payment != null && x.Payment.ModeofPayment == "Cash On Delivery");
+            ViewBag.CardOrders = orders.Count(x => x.Payment != null && x.Payment.ModeofPayment == "Card");
+            ViewBag.UniqueProductsPurchased = orders.Select(x => x.ProductId).Distinct().Count();
+            ViewBag.FirstOrderDate = orders.Any() ? (DateTime?)orders.Min(x => x.OrderDate) : null;
+            ViewBag.LastOrderDate = orders.Any() ? (DateTime?)orders.Max(x => x.OrderDate) : null;
+
+            // ---- Monthly spending trend (last 6 months) ----
+            var monthlySpending = orders
+                .Where(o => o.OrderDate >= DateTime.Now.AddMonths(-5).Date)
+                .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new
+                {
+                    Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                    Total = g.Sum(x => x.PricePaid)
+                })
+                .ToList();
+
+            ViewBag.MonthlySpendingLabels = monthlySpending.Select(x => x.Label).ToList();
+            ViewBag.MonthlySpendingValues = monthlySpending.Select(x => x.Total).ToList();
+
+            decimal lastMonthTotal = monthlySpending.Count > 0 ? monthlySpending[monthlySpending.Count - 1].Total : 0;
+            decimal prevMonthTotal = monthlySpending.Count > 1 ? monthlySpending[monthlySpending.Count - 2].Total : 0;
+            ViewBag.SpendingTrendPercent = prevMonthTotal > 0
+                ? Math.Round((double)((lastMonthTotal - prevMonthTotal) / prevMonthTotal) * 100, 1)
+                : (double?)null;
+
+            // ---- Top 5 products by quantity purchased ----
+            var topProducts = orders
+                .Where(o => o.Product != null)
+                .GroupBy(o => o.Product.Name)
+                .Select(g => new
+                {
+                    Name = g.Key,
+                    Qty = g.Sum(x => x.Quantity),
+                    Spent = g.Sum(x => x.PricePaid)
+                })
+                .OrderByDescending(x => x.Qty)
+                .Take(5)
+                .ToList();
+
+            ViewBag.TopProductNames = topProducts.Select(x => x.Name).ToList();
+            ViewBag.TopProductQty = topProducts.Select(x => x.Qty).ToList();
+            ViewBag.TopProductSpent = topProducts.Select(x => x.Spent).ToList();
+            ViewBag.TopProductMaxQty = topProducts.Count > 0 ? topProducts.Max(x => x.Qty) : 1;
+
+            // ---- Wishlist & bidding insights ----
+            ViewBag.WishlistCount = wishlist.Count;
+            ViewBag.TotalBidsCount = bids.Count;
+            ViewBag.HighestBidAmount = bids.Any() ? bids.Max(b => b.bidamount) : 0;
+            ViewBag.ActiveBidsCount = bids.Count(b => b.bidstatus == "Pending");
+            ViewBag.WonBidsCount = bids.Count(b => b.bidstatus == "Won");
+
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult UpdateProfile(string UserName, string Email, string PhoneNumber, string Address, int Age, string Gender)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = bridge.Users.FirstOrDefault(x => x.Id == userId);
+            if (user == null) return NotFound();
+
+            user.UserName = UserName;
+            user.Email = Email;
+            user.PhoneNumber = PhoneNumber;
+            user.address = Address;
+            user.age = Age;
+            user.gender = Gender;
+
+            bridge.SaveChanges();
+            TempData["ProfileSuccess"] = "Profile updated successfully.";
+            return RedirectToAction("Myprofile");
+        }
+
+
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangePassword(string CurrentPassword, string NewPassword, string ConfirmPassword)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // ClaimsPrincipal — correct use of capital "User" here
+            var user = bridge.Users.FirstOrDefault(x => x.Id == userId);  // your entity — lowercase "user"
+            if (user == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(CurrentPassword) || string.IsNullOrWhiteSpace(NewPassword) || string.IsNullOrWhiteSpace(ConfirmPassword))
+            {
+                TempData["PasswordError"] = "All fields are required.";
+                return RedirectToAction("Myprofile");
+            }
+
+            var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, CurrentPassword);
+
+            if (verifyResult == PasswordVerificationResult.Failed)
+            {
+                TempData["PasswordError"] = "Current password is incorrect.";
+                return RedirectToAction("Myprofile");
+            }
+
+            if (NewPassword != ConfirmPassword)
+            {
+                TempData["PasswordError"] = "New password and confirmation do not match.";
+                return RedirectToAction("Myprofile");
+            }
+
+            if (NewPassword.Length < 6)
+            {
+                TempData["PasswordError"] = "New password must be at least 6 characters long.";
+                return RedirectToAction("Myprofile");
+            }
+
+            if (NewPassword == CurrentPassword)
+            {
+                TempData["PasswordError"] = "New password must be different from the current password.";
+                return RedirectToAction("Myprofile");
+            }
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, NewPassword);
+            bridge.SaveChanges();
+
+            TempData["PasswordSuccess"] = "Password updated successfully.";
+            return RedirectToAction("Myprofile");
+        }
+
+        public IActionResult Usersellerprofile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Seller Information
+            var seller = bridge.Users.FirstOrDefault(x => x.Id == userId);
+
+            // Products uploaded by seller
+            var products = bridge.products
+                .Include(p => p.SubCategory)
+                .Where(p => p.UserId == userId)
+                .ToList();
+
+            var productIds = products.Select(x => x.Id).ToList();
+
+            // Orders of seller's products
+            var orders = bridge.orders
+                .Include(o => o.User)
+                .Include(o => o.Product)
+                .Include(o => o.Payment)
+                .Where(o => productIds.Contains(o.ProductId))
+                .ToList();
+
+            // Bids on seller's products
+            var bids = bridge.auctionDetails
+                .Include(b => b.User)
+                .Include(b => b.Product)
+                .Where(b => productIds.Contains(b.ProductId))
+                .ToList();
+
+            ViewBag.Seller = seller;
+            ViewBag.Products = products;
+            ViewBag.Orders = orders;
+            ViewBag.Bids = bids;
+
+            // Product Analytics
+            ViewBag.TotalProducts = products.Count;
+            ViewBag.AvailableProducts = products.Count(x => x.quantity > 0);
+            ViewBag.OutOfStockProducts = products.Count(x => x.quantity == 0);
+
+            // Sales Analytics
+            ViewBag.TotalOrders = orders.Count;
+            ViewBag.TotalItemsSold = orders.Sum(x => x.Quantity);
+            ViewBag.TotalRevenue = orders.Sum(x => x.PricePaid);
+
+            ViewBag.AverageOrderValue = orders.Any()
+                ? orders.Average(x => x.PricePaid)
+                : 0;
+
+            ViewBag.HighestSale = orders.Any()
+                ? orders.Max(x => x.PricePaid)
+                : 0;
+
+            ViewBag.LowestSale = orders.Any()
+                ? orders.Min(x => x.PricePaid)
+                : 0;
+
+            // Order Status
+            ViewBag.Pending = orders.Count(x => x.Status == "Pending");
+            ViewBag.Processing = orders.Count(x => x.Status == "Processing");
+            ViewBag.Dispatched = orders.Count(x => x.Status == "Dispatched");
+            ViewBag.Delivered = orders.Count(x => x.Status == "Delivered");
+            ViewBag.Cancelled = orders.Count(x => x.Status == "Cancelled");
+
+            // Payment Analytics
+            ViewBag.CardPayments = orders.Count(x => x.Payment != null &&
+                                                     x.Payment.ModeofPayment == "Card");
+
+            ViewBag.CODPayments = orders.Count(x => x.Payment != null &&
+                                                    x.Payment.ModeofPayment == "Cash On Delivery");
+
+            // Customers
+            ViewBag.TotalCustomers = orders
+                .Select(x => x.UserId)
+                .Distinct()
+                .Count();
+
+            ViewBag.RepeatCustomers = orders
+                .GroupBy(x => x.UserId)
+                .Count(g => g.Count() > 1);
+
+            // Bids
+            ViewBag.TotalBids = bids.Count;
+            ViewBag.UniqueBidders = bids
+                .Select(x => x.UserId)
+                .Distinct()
+                .Count();
+
+            ViewBag.HighestBid = bids.Any()
+                ? bids.Max(x => x.bidamount)
+                : 0;
+
+            ViewBag.LowestBid = bids.Any()
+                ? bids.Min(x => x.bidamount)
+                : 0;
+
+            ViewBag.AverageBid = bids.Any()
+                ? bids.Average(x => x.bidamount)
+                : 0;
+
+            // Dates
+            if (orders.Any())
+            {
+                ViewBag.FirstSale = orders.Min(x => x.OrderDate);
+                ViewBag.LastSale = orders.Max(x => x.OrderDate);
+            }
+
+
+            var now = DateTime.Now;
+
+            // Seller's products
+            var sellerProducts = bridge.products
+                .Where(p => p.UserId == userId)
+                .ToList();
+
+            var sellerProductIds = sellerProducts.Select(p => p.Id).ToList();
+
+            // Orders received for seller's products
+            var sales = bridge.orders
+                .Include(o => o.Product)
+                .Include(o => o.User)
+                .Include(o => o.Payment)
+                .Where(o => sellerProductIds.Contains(o.ProductId))
+                .ToList();
+
+            ViewBag.TotalSales = sales.Count;
+            ViewBag.TotalRevenue = sales.Sum(x => x.PricePaid);
+            ViewBag.TotalItemsSold = sales.Sum(x => x.Quantity);
+
+
+            var weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+
+            ViewBag.ThisWeekSales = sales.Count(x => x.OrderDate >= weekStart);
+
+            ViewBag.ThisWeekRevenue = sales
+                .Where(x => x.OrderDate >= weekStart)
+                .Sum(x => x.PricePaid);
+
+            var lastMonth = now.AddMonths(-1);
+
+            ViewBag.LastMonthSales = sales.Count(x =>
+                x.OrderDate.Month == lastMonth.Month &&
+                x.OrderDate.Year == lastMonth.Year);
+
+            ViewBag.LastMonthRevenue = sales
+                .Where(x => x.OrderDate.Month == lastMonth.Month &&
+                            x.OrderDate.Year == lastMonth.Year)
+                .Sum(x => x.PricePaid);
+
+            ViewBag.TotalProducts = sellerProducts.Count;
+            ViewBag.AvailableProducts = sellerProducts.Count(x => x.quantity > 0);
+            ViewBag.OutOfStock = sellerProducts.Count(x => x.quantity == 0);
+            ViewBag.TotalStock = sellerProducts.Sum(x => x.quantity);
+
+
+            ViewBag.TotalProducts = sellerProducts.Count;
+            ViewBag.AvailableProducts = sellerProducts.Count(x => x.quantity > 0);
+            ViewBag.OutOfStock = sellerProducts.Count(x => x.quantity == 0);
+            ViewBag.TotalStock = sellerProducts.Sum(x => x.quantity);
+
+            ViewBag.PendingSales = sales.Count(x => x.Status == "Pending");
+            ViewBag.ProcessingSales = sales.Count(x => x.Status == "Processing");
+            ViewBag.DispatchedSales = sales.Count(x => x.Status == "Dispatched");
+            ViewBag.DeliveredSales = sales.Count(x => x.Status == "Delivered");
+            ViewBag.CancelledSales = sales.Count(x => x.Status == "Cancelled");
+
+            ViewBag.TotalCustomers = sales
+    .Select(x => x.UserId)
+    .Distinct()
+    .Count();
+
+            ViewBag.RepeatCustomers = sales
+                .GroupBy(x => x.UserId)
+                .Count(x => x.Count() > 1);
+
+
+            var sellerBids = bridge.auctionDetails
+    .Include(b => b.Product)
+    .Include(b => b.User)
+    .Where(b => sellerProductIds.Contains(b.ProductId))
+    .ToList();
+
+            ViewBag.TotalBidsReceived = sellerBids.Count;
+            ViewBag.UniqueBidders = sellerBids.Select(x => x.UserId).Distinct().Count();
+            ViewBag.HighestBid = sellerBids.Any() ? sellerBids.Max(x => x.bidamount) : 0;
+            ViewBag.AverageBid = sellerBids.Any() ? sellerBids.Average(x => x.bidamount) : 0;
+
+            return View();
+        }
+
+
+
+        public IActionResult Userallbids()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var Userbids = bridge.auctionDetails
+                .Include(b => b.Product)
+                    .ThenInclude(p => p.SubCategory)
+                .Include(b => b.User)
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.Id)
+                .ToList();
+
+            return View(Userbids);
+        }
+
+        public IActionResult Userbiddetails(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var Userbiddetails = bridge.auctionDetails
+                .Include(b => b.User)
+                .Include(b => b.Product)
+                    .ThenInclude(p => p.SubCategory)
+                        .ThenInclude(sc => sc.category)
+                .Include(b => b.Product)
+                    .ThenInclude(p => p.User) // Seller
+                .FirstOrDefault(b => b.Id == id && b.UserId == userId);
+
+
+
+            var previousBids = bridge.auctionDetails
+                .Include(b => b.User)
+                .Where(b => b.ProductId == Userbiddetails.ProductId)
+                .OrderByDescending(b => b.bidamount)
+                .ToList();
+
+            ViewBag.PreviousBids = previousBids;
+
+            ViewBag.HighestBid = previousBids.Any()
+                ? previousBids.Max(x => x.bidamount)
+                : 0;
+
+            ViewBag.TotalBids = previousBids.Count;
+
+            ViewBag.YourRank = previousBids
+                .OrderByDescending(x => x.bidamount)
+                .ToList()
+                .FindIndex(x => x.Id == Userbiddetails.Id) + 1;
+
+            ViewBag.IsHighestBidder = previousBids.Any() &&
+                                      previousBids.First().Id == Userbiddetails.Id;
+
+            return View(Userbiddetails);
+        }
+
+
+
+        public IActionResult Adduserfeedback()
+        {
+            return View();
+        }
+
+        public IActionResult Adduserfeedbacklogic(Feedback feedback)
+        {
+            feedback.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bridge.feedbacks.Add(feedback);
+            bridge.SaveChanges();
+
+            
+            TempData["Message"] = "Thanks alot  for giving your feedback.";
+
+
+
+            return RedirectToAction("Adduserfeedback");
+
+        }
+        
+        public IActionResult Allusersfeedbacks()
+        {
+            var Usersfeedbacks = bridge.feedbacks
+       .Include(f => f.User)
+       .ToList();
+            return View(Usersfeedbacks);
+        }
+
+        public IActionResult Edituserfeedback(int id)
+        {
+            var feedback = bridge.feedbacks.Find(id);
+            return View(feedback);
+        }
+
+        public IActionResult Edituserfeedbacklogic(int id, String message)
+        {
+            var Feedback = bridge.feedbacks.Find(id);
+
+            Feedback.message = message;
+
+            bridge.SaveChanges();
+            TempData["Message"] = " feedback  updated sucessfully";
+
+            return RedirectToAction("Allusersfeedbacks");
+        }
+
+
+        public IActionResult Deleteuserfeebacklogic(int id) {
+
+
+            var Feedbackid = bridge.feedbacks.Find(id);
+            bridge.feedbacks.Remove(Feedbackid);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "User feedback  deleted sucessfully";
+
+
+            return RedirectToAction("Allusersfeedbacks");
+        }
+
+        public IActionResult Addproductreview(int productid)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var order = bridge.orders
+                .Include(o => o.Product)
+                    .ThenInclude(p => p.SubCategory)
+                        .ThenInclude(sc => sc.category)
+                .Include(o => o.Product)
+                    .ThenInclude(p => p.User) // Seller
+                .Include(o => o.User) // Buyer
+                .FirstOrDefault(o =>
+                    o.ProductId == productid &&
+                    o.UserId == userId &&
+                    o.Status == "Delivered");
+
+       
+
+            var productmodel = new ProductReview
+            {
+                ProductId = order.ProductId,
+                Product = order.Product,
+                UserId = userId,
+            };
+
+            return View(productmodel);
+        }
+
+        [HttpPost]
+        public IActionResult Addproductreviewlogic(int productId, float ratings, string reviewMessage)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var deliveredOrder = bridge.orders
+                .FirstOrDefault(o =>
+                    o.ProductId == productId &&
+                    o.UserId == userId &&
+                    o.Status == "Delivered");
+
+            if (deliveredOrder == null)
+            {
+                TempData["Message"] = "You cannot review this product.";
+                return RedirectToAction("Myorders");
+            }
+
+            var alreadyReviewed = bridge.productReviews
+                .Any(r => r.ProductId == productId && r.UserId == userId);
+
+            if (alreadyReviewed)
+            {
+                TempData["Message"] = "You have already reviewed this product.";
+                return RedirectToAction("Myorders");
+            }
+
+            ProductReview review = new ProductReview()
+            {
+                ProductId = productId,
+                UserId = userId,
+                Ratings = ratings,
+                ReviewMessage = reviewMessage
+            };
+
+            bridge.productReviews.Add(review);
+            bridge.SaveChanges();
+
+            TempData["Message"] = "Review submitted successfully.";
+
+            return RedirectToAction("Myorders");
+        }
+
+
+        
+
+
 
     }
 }
-      
-    

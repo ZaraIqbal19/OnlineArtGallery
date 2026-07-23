@@ -1,0 +1,1306 @@
+@model Art_Gallery.Models.AuctionDetails
+@using System.Text.Json
+@using System.Linq
+@{
+    ViewData["Title"] = "Auction Bid Details";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+@functions {
+    string JsStr(string? val) => JsonSerializer.Serialize(val ?? "");
+
+    bool IsAvailableForBid(string? val)
+    {
+        if (string.IsNullOrWhiteSpace(val)) return false;
+        var v = val.Trim();
+        return v.Equals("yes", StringComparison.OrdinalIgnoreCase)
+            || v.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || v.Equals("available", StringComparison.OrdinalIgnoreCase)
+            || v.Equals("1", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // The DB column sometimes holds just a filename ("abc.jpg") and sometimes
+    // a full path ("/images/products/abc.jpg" or "images\products\abc.jpg")
+    // depending on how the row was seeded/uploaded. This normalizes either
+    // case down to a bare filename so it can be safely combined with
+    // "~/images/products/" without doubling the folder.
+    string GetImgFileName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+        var normalized = raw.Replace('\\', '/');
+        return normalized.Substring(normalized.LastIndexOf('/') + 1);
+    }
+}
+
+@{
+    var bidHistory = (ViewBag.PreviousBids as IEnumerable<Art_Gallery.Models.AuctionDetails> ?? Enumerable.Empty<Art_Gallery.Models.AuctionDetails>())
+        .OrderBy(b => b.bidamount)
+        .ToList();
+
+    var img1 = GetImgFileName(Model.Product?.Image1);
+    var img2 = GetImgFileName(Model.Product?.Image2);
+    var img3 = GetImgFileName(Model.Product?.Image3);
+    var imageCount = new[] { img1, img2, img3 }.Count(i => !string.IsNullOrEmpty(i));
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .auction-user-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+        overflow-x: hidden;
+        background: radial-gradient(circle at 12% 0%, rgba(136, 210, 0, 0.06), transparent 45%), radial-gradient(circle at 100% 20%, rgba(136, 210, 0, 0.05), transparent 40%);
+    }
+
+        .auction-user-page *, .auction-user-page *::before, .auction-user-page *::after {
+            box-sizing: border-box;
+        }
+
+        .auction-user-page .container-cust {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .auction-user-page .user-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.4rem;
+        }
+
+            .auction-user-page .user-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        .auction-user-page .breadcrumb-strip {
+            font-size: 0.8rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .auction-user-page .breadcrumb-strip a {
+                color: #5c7a2e;
+                text-decoration: none;
+            }
+
+                .auction-user-page .breadcrumb-strip a:hover {
+                    text-decoration: underline;
+                }
+
+            .auction-user-page .breadcrumb-strip i {
+                font-size: 0.65rem;
+                color: #a3c96a;
+            }
+
+        .auction-user-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.6rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .auction-user-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .auction-user-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .auction-user-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .auction-user-page .heading-green {
+            font-weight: 700;
+            font-size: 1.7rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .auction-user-page .heading-sub {
+            font-size: 0.85rem;
+            color: #5c7a2e;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .auction-user-page .btn-action {
+            border-radius: 60px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            letter-spacing: 0.25px;
+            transition: all 0.25s cubic-bezier(0.2,0,0,1);
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .auction-user-page .btn-back-a {
+            background: white;
+            color: #6fa800;
+            border: 1.5px solid #88d200;
+        }
+
+            .auction-user-page .btn-back-a:hover {
+                background: #f0fae6;
+                transform: translateY(-3px) scale(1.04);
+                box-shadow: 0 12px 20px rgba(136,210,0,0.18);
+            }
+
+        /* hero */
+        .auction-user-page .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+            align-items: start;
+        }
+
+        .auction-user-page .gallery-main {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 1.6rem;
+            overflow: hidden;
+            background: #f0fae6;
+            border: 1.5px solid #d4f09b;
+            box-shadow: 0 14px 30px rgba(136,210,0,0.16);
+            position: relative;
+            cursor: zoom-in;
+        }
+
+            .auction-user-page .gallery-main img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: opacity 0.35s ease, transform 0.5s ease;
+            }
+
+            .auction-user-page .gallery-main:hover img {
+                transform: scale(1.05);
+            }
+
+            .auction-user-page .gallery-main .no-img {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #88d200;
+                gap: 8px;
+                cursor: default;
+            }
+
+                .auction-user-page .gallery-main .no-img i {
+                    font-size: 3rem;
+                }
+
+            .auction-user-page .gallery-main .zoom-hint {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                background: rgba(26,26,26,0.55);
+                color: #fff;
+                font-size: 0.7rem;
+                font-weight: 600;
+                padding: 5px 10px;
+                border-radius: 40px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                opacity: 0;
+                transition: opacity 0.2s;
+                pointer-events: none;
+            }
+
+            .auction-user-page .gallery-main:hover .zoom-hint {
+                opacity: 1;
+            }
+
+        .auction-user-page .img-count-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(26,26,26,0.55);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 5px 11px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .auction-user-page .thumb-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .auction-user-page .thumb-box {
+            width: 74px;
+            height: 74px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: #f0fae6;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+            .auction-user-page .thumb-box img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            .auction-user-page .thumb-box:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 18px rgba(136,210,0,0.28);
+            }
+
+            .auction-user-page .thumb-box.active {
+                border-color: #88d200;
+                box-shadow: 0 6px 16px rgba(136,210,0,0.35);
+            }
+
+                .auction-user-page .thumb-box.active::after {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(136,210,0,0.12);
+                }
+
+        .auction-user-page .thumb-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0fae6;
+            color: #88d200;
+            font-size: 1.3rem;
+        }
+
+        .auction-user-page .summary-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .auction-user-page .product-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .auction-user-page .product-desc {
+            color: #6c757d;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .auction-user-page .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .auction-user-page .status-badge-row {
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-size: 0.78rem;
+            letter-spacing: 0.2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+            .auction-user-page .status-badge-row.status-pending {
+                background: #fff6e0;
+                color: #a66a00;
+            }
+
+            .auction-user-page .status-badge-row.status-won,
+            .auction-user-page .status-badge-row.status-completed,
+            .auction-user-page .status-badge-row.status-accepted,
+            .auction-user-page .status-badge-row.status-yes {
+                background: #eaf7d6;
+                color: #4c7800;
+            }
+
+            .auction-user-page .status-badge-row.status-cancelled,
+            .auction-user-page .status-badge-row.status-rejected,
+            .auction-user-page .status-badge-row.status-lost,
+            .auction-user-page .status-badge-row.status-no {
+                background: #fdeaea;
+                color: #a51b1b;
+            }
+
+            .auction-user-page .status-badge-row.status-active,
+            .auction-user-page .status-badge-row.status-outbid {
+                background: #e6f1fc;
+                color: #1a5fa5;
+            }
+
+        .auction-user-page .price-highlight {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .auction-user-page .price-box {
+            background: #f0fae6;
+            border: 1px solid #d4f09b;
+            border-radius: 16px;
+            padding: 12px 20px;
+            flex: 1;
+            min-width: 140px;
+            transition: all 0.25s;
+        }
+
+            .auction-user-page .price-box:hover {
+                background: #d4f09b;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 22px rgba(136,210,0,0.22);
+            }
+
+            .auction-user-page .price-box .p-label {
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #5c7a2e;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-bottom: 4px;
+            }
+
+            .auction-user-page .price-box .p-value {
+                font-size: 1.25rem;
+                font-weight: 800;
+                color: #1a1a1a;
+            }
+
+            .auction-user-page .price-box .p-diff {
+                font-size: 0.72rem;
+                font-weight: 700;
+                margin-top: 2px;
+                color: #4c7800;
+            }
+
+        /* countdown */
+        .auction-user-page .countdown-card {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border-radius: 20px;
+            padding: 20px 22px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 34px rgba(26,26,26,0.28);
+        }
+
+            .auction-user-page .countdown-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        .auction-user-page .countdown-label {
+            color: #d4f09b;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+            .auction-user-page .countdown-label span.lbl-text {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .auction-user-page .countdown-label i {
+                color: #88d200;
+            }
+
+        .auction-user-page .countdown-duration {
+            font-size: 0.68rem;
+            color: #9fbf7a;
+            font-weight: 600;
+        }
+
+        .auction-user-page .countdown-units {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .auction-user-page .countdown-unit {
+            background: rgba(136,210,0,0.12);
+            border: 1px solid rgba(136,210,0,0.35);
+            border-radius: 14px;
+            padding: 12px 6px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+            .auction-user-page .countdown-unit:hover {
+                background: rgba(136,210,0,0.22);
+                transform: translateY(-2px);
+            }
+
+            .auction-user-page .countdown-unit .num {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #fff;
+                font-variant-numeric: tabular-nums;
+                transition: transform 0.15s;
+            }
+
+                .auction-user-page .countdown-unit .num.tick {
+                    animation: tickPulseU 0.4s ease;
+                }
+
+            .auction-user-page .countdown-unit .lbl {
+                font-size: 0.65rem;
+                color: #d4f09b;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-top: 4px;
+            }
+
+    @@keyframes tickPulseU {
+        0% {
+            transform: scale(1.25);
+            color: #d4f09b;
+        }
+
+        100% {
+            transform: scale(1);
+            color: #fff;
+        }
+    }
+
+    .auction-user-page .countdown-card.ending-soon {
+        box-shadow: 0 16px 34px rgba(220,53,69,0.3);
+    }
+
+        .auction-user-page .countdown-card.ending-soon .countdown-unit {
+            background: rgba(220,53,69,0.15);
+            border-color: rgba(220,53,69,0.45);
+            animation: urgentGlowU 1.2s ease-in-out infinite;
+        }
+
+    @@keyframes urgentGlowU {
+        0%, 100% {
+            box-shadow: 0 0 0 rgba(220,53,69,0);
+        }
+
+        50% {
+            box-shadow: 0 0 14px rgba(220,53,69,0.45);
+        }
+    }
+
+    .auction-user-page .countdown-card.ended {
+        background: linear-gradient(135deg, #4a1a1a, #2d1010);
+    }
+
+        .auction-user-page .countdown-card.ended .countdown-label {
+            color: #ffb3b3;
+        }
+
+            .auction-user-page .countdown-card.ended .countdown-label i {
+                color: #dc3545;
+            }
+
+        .auction-user-page .countdown-card.ended .ended-msg {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    /* quick stats */
+    .auction-user-page .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 1.4rem;
+    }
+
+    .auction-user-page .qs-item {
+        background: rgba(255,255,255,0.97);
+        border: 1px solid rgba(136,210,0,0.14);
+        border-radius: 1.2rem;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 22px -14px rgba(111,168,0,0.25);
+        transition: all 0.2s;
+    }
+
+        .auction-user-page .qs-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px -12px rgba(136,210,0,0.3);
+        }
+
+    .auction-user-page .qs-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #f0fae6;
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+    }
+
+    .auction-user-page .qs-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #5c7a2e;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .auction-user-page .qs-value {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        line-height: 1.2;
+    }
+
+    /* info section */
+    .auction-user-page .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+        .auction-user-page .section-title .st-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auction-user-page .section-title i {
+            background: #88d200;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 6px 14px rgba(136,210,0,0.3);
+        }
+
+        .auction-user-page .section-title .timeline-caption {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #5c7a2e;
+        }
+
+    .auction-user-page .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 24px;
+    }
+
+    .auction-user-page .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.1);
+        transition: all 0.2s;
+    }
+
+        .auction-user-page .info-row:hover {
+            background: #f0fae6;
+            border-color: #d4f09b;
+            transform: translateX(3px);
+        }
+
+        .auction-user-page .info-row .k {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #5c7a2e;
+            white-space: nowrap;
+        }
+
+        .auction-user-page .info-row .v {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: right;
+            word-break: break-word;
+        }
+
+    .auction-user-page .cards-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.4rem;
+    }
+
+    .auction-user-page .sub-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 1.6rem;
+        padding: 1.6rem;
+        box-shadow: 0 14px 30px -14px rgba(111,168,0,0.2);
+        border: 1px solid rgba(136,210,0,0.12);
+        opacity: 0;
+        animation: fadeSlideU 0.5s forwards;
+    }
+
+    .auction-user-page .standalone-card {
+        margin-bottom: 1.4rem;
+    }
+
+    .auction-user-page .cards-row .sub-card:nth-of-type(1) {
+        animation-delay: 0.05s;
+    }
+
+    .auction-user-page .cards-row .sub-card:nth-of-type(2) {
+        animation-delay: 0.12s;
+    }
+
+    @@keyframes fadeSlideU {
+        0% {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* timeline */
+    .auction-user-page .timeline {
+        position: relative;
+        padding-left: 6px;
+    }
+
+    .auction-user-page .timeline-item {
+        position: relative;
+        padding-bottom: 22px;
+        padding-left: 46px;
+    }
+
+        .auction-user-page .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: 17px;
+            top: 34px;
+            bottom: -10px;
+            width: 2px;
+            background: rgba(136,210,0,0.25);
+        }
+
+        .auction-user-page .timeline-item:last-child::before {
+            display: none;
+        }
+
+    .auction-user-page .timeline-dot {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #f0fae6;
+        border: 2px solid #88d200;
+        color: #6fa800;
+        font-weight: 800;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auction-user-page .timeline-item.is-leading .timeline-dot {
+        background: #88d200;
+        color: white;
+    }
+
+    .auction-user-page .timeline-item.is-current .timeline-dot {
+        border-color: #1a5fa5;
+    }
+
+    .auction-user-page .timeline-content {
+        background: #f9fdf2;
+        border: 1px solid rgba(136,210,0,0.12);
+        border-radius: 14px;
+        padding: 12px 16px;
+        transition: all 0.2s;
+    }
+
+        .auction-user-page .timeline-content:hover {
+            background: #f0fae6;
+        }
+
+    .auction-user-page .timeline-item.is-current .timeline-content {
+        border-color: #1a5fa5;
+        background: #eaf3fb;
+    }
+
+    .auction-user-page .timeline-amount {
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1a1a1a;
+    }
+
+    .auction-user-page .timeline-user {
+        font-size: 0.82rem;
+        color: #5c7a2e;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .auction-user-page .timeline-badges {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .auction-user-page .tl-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 40px;
+    }
+
+        .auction-user-page .tl-badge.leading {
+            background: #eaf7d6;
+            color: #4c7800;
+        }
+
+        .auction-user-page .tl-badge.current {
+            background: #e6f1fc;
+            color: #1a5fa5;
+        }
+
+        .auction-user-page .tl-badge.status {
+            background: #f0fae6;
+            color: #5c7a2e;
+        }
+
+    .auction-user-page .timeline-empty {
+        color: #888;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0;
+    }
+
+    /* lightbox */
+    .auction-user-page .lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,10,0.88);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        animation: lbFadeIn 0.2s ease;
+    }
+
+        .auction-user-page .lightbox-overlay.open {
+            display: flex;
+        }
+
+        .auction-user-page .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+    .auction-user-page .lightbox-close {
+        position: absolute;
+        top: 24px;
+        right: 32px;
+        color: #fff;
+        font-size: 1.6rem;
+        background: rgba(255,255,255,0.12);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s;
+    }
+
+        .auction-user-page .lightbox-close:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+    @@keyframes lbFadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .auction-user-page .hero-grid, .auction-user-page .cards-row {
+            grid-template-columns: 1fr;
+        }
+
+        .auction-user-page .info-grid, .auction-user-page .quick-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .auction-user-page .user-card {
+            padding: 1.2rem;
+        }
+
+        .auction-user-page .header-section {
+            flex-direction: column;
+            align-items: start;
+        }
+
+        .auction-user-page .quick-stats, .auction-user-page .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .auction-user-page .countdown-units {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .auction-user-page .countdown-unit .num {
+            font-size: 1.15rem;
+        }
+    }
+</style>
+
+<div class="auction-user-page">
+    <div class="container-cust">
+
+        <div class="breadcrumb-strip">
+            <a asp-action="Myauctionproductsbids">My Bids</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Bid #@Model.Id</span>
+        </div>
+
+        <!-- header -->
+        <div class="user-card">
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon"><i class="fas fa-gavel"></i></div>
+                    <div>
+                        <h1 class="heading-green">Auction Bid Details</h1>
+                        <div class="heading-sub">Bid #@Model.Id &middot; @Model.Product?.Name</div>
+                    </div>
+                </div>
+                <a asp-action="Myauctionproductsbids" class="btn-action btn-back-a">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <!-- hero: gallery + summary/countdown -->
+            <div class="hero-grid">
+                <div>
+                    <div class="gallery-main" id="galleryMain" onclick="openLightbox()">
+                        @if (!string.IsNullOrEmpty(img1))
+                        {
+                            <img id="mainImg" src="~/images/products/@img1" alt="@Model.Product?.Name"
+                                 onerror="handleImgError(this, 'no-img', 'fa-image', 'No image available')" />
+                            @if (imageCount > 1)
+                            {
+                                <div class="img-count-badge"><i class="fas fa-images"></i> @imageCount</div>
+                            }
+                            <div class="zoom-hint"><i class="fas fa-search-plus"></i> Click to zoom</div>
+                        }
+                        else
+                        {
+                            <div class="no-img" id="mainImgFallback"><i class="fas fa-image"></i><span>No image available</span></div>
+                        }
+                    </div>
+                    <div class="thumb-row">
+                        @if (!string.IsNullOrEmpty(img1))
+                        {
+                            <div class="thumb-box active" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img1)', this)">
+                                <img src="~/images/products/@img1" onerror="handleImgError(this, 'thumb-fallback', 'fa-image')" />
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(img2))
+                        {
+                            <div class="thumb-box" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img2)', this)">
+                                <img src="~/images/products/@img2" onerror="handleImgError(this, 'thumb-fallback', 'fa-image')" />
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(img3))
+                        {
+                            <div class="thumb-box" onclick="event.stopPropagation(); switchMainImage('@Url.Content("~/images/products/" + img3)', this)">
+                                <img src="~/images/products/@img3" onerror="handleImgError(this, 'thumb-fallback', 'fa-image')" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="summary-col">
+                    <div>
+                        <h2 class="product-title">@Model.Product?.Name</h2>
+                        <p class="product-desc">@Model.Product?.Description</p>
+                    </div>
+
+                    <div class="badge-row">
+                        @{
+                            var bidStatusClass = (Model.bidstatus ?? "").ToLower().Replace(" ", "-");
+                        }
+                        <span class="status-badge-row status-@bidStatusClass">
+                            <i class="fas fa-circle" style="font-size:0.45rem;"></i> Your Bid: @Model.bidstatus
+                        </span>
+                        <span class="status-badge-row status-@(IsAvailableForBid(Model.Product?.AvailableForBid) ? "yes" : "no")">
+                            <i class="fas fa-gavel" style="font-size:0.7rem;"></i>
+                            @(IsAvailableForBid(Model.Product?.AvailableForBid) ? "Auction Open" : "Not Available")
+                        </span>
+                    </div>
+
+                    <div class="price-highlight">
+                        <div class="price-box">
+                            <div class="p-label">Your Bid</div>
+                            <div class="p-value">Rs. @Model.bidamount</div>
+                            @if (Model.Product != null)
+                            {
+                                <div class="p-diff">+Rs. @(Model.bidamount - Model.Product.BidPrice) above starting</div>
+                            }
+                        </div>
+                        <div class="price-box">
+                            <div class="p-label">Starting Price</div>
+                            <div class="p-value">Rs. @Model.Product?.BidPrice</div>
+                        </div>
+                    </div>
+
+                    <!-- countdown timer -->
+                    <div class="countdown-card" id="countdownCard"
+                         data-start="@Model.Product?.BidStartDate.ToString("yyyy-MM-dd")"
+                         data-end="@Model.Product?.BidEndDate.ToString("yyyy-MM-dd")">
+                        <div class="countdown-label">
+                            <span class="lbl-text"><i class="fas fa-hourglass-half"></i> Auction Ends In</span>
+                            <span class="countdown-duration" id="countdownDuration"></span>
+                        </div>
+                        <div class="countdown-units" id="countdownUnits">
+                            <div class="countdown-unit"><div class="num" id="cd-days">--</div><div class="lbl">Days</div></div>
+                            <div class="countdown-unit"><div class="num" id="cd-hours">--</div><div class="lbl">Hours</div></div>
+                            <div class="countdown-unit"><div class="num" id="cd-mins">--</div><div class="lbl">Mins</div></div>
+                            <div class="countdown-unit"><div class="num" id="cd-secs">--</div><div class="lbl">Secs</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- quick stats -->
+        <div class="quick-stats">
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-tag"></i></div>
+                <div>
+                    <div class="qs-label">List Price</div>
+                    <div class="qs-value">Rs. @Model.Product?.price</div>
+                </div>
+            </div>
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-layer-group"></i></div>
+                <div>
+                    <div class="qs-label">Category</div>
+                    <div class="qs-value">@(Model.Product?.SubCategory?.category?.Name ?? "—")</div>
+                </div>
+            </div>
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-tags"></i></div>
+                <div>
+                    <div class="qs-label">Sub Category</div>
+                    <div class="qs-value">@(Model.Product?.SubCategory?.Name ?? "—")</div>
+                </div>
+            </div>
+            <div class="qs-item">
+                <div class="qs-icon"><i class="fas fa-gavel"></i></div>
+                <div>
+                    <div class="qs-label">Total Bids</div>
+                    <div class="qs-value">@bidHistory.Count</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- your bid + auction info -->
+        <div class="cards-row">
+            <div class="sub-card">
+                <div class="section-title">
+                    <div class="st-left"><i class="fas fa-receipt"></i> Your Bid</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row"><span class="k">Bidder Name</span><span class="v">@Model.User?.UserName</span></div>
+                    <div class="info-row" style="grid-column: 1 / -1;"><span class="k">Bidder Email</span><span class="v">@Model.User?.Email</span></div>
+                    <div class="info-row"><span class="k">Bid Amount</span><span class="v">Rs. @Model.bidamount</span></div>
+                    <div class="info-row"><span class="k">Bid Status</span><span class="v">@Model.bidstatus</span></div>
+                </div>
+            </div>
+
+            <div class="sub-card">
+                <div class="section-title">
+                    <div class="st-left"><i class="fas fa-clock"></i> Auction Period</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row" style="grid-column: 1 / -1;"><span class="k">Starting Price</span><span class="v">Rs. @Model.Product?.BidPrice</span></div>
+                    <div class="info-row"><span class="k">Start Date</span><span class="v">@Model.Product?.BidStartDate</span></div>
+                    <div class="info-row"><span class="k">End Date</span><span class="v">@Model.Product?.BidEndDate</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- previous bids timeline -->
+        <div class="sub-card standalone-card">
+            <div class="section-title">
+                <div class="st-left"><i class="fas fa-history"></i> Previous Bids</div>
+                <span class="timeline-caption">Ordered from lowest to highest</span>
+            </div>
+            @if (bidHistory.Any())
+            {
+                var maxBid = bidHistory.Max(b => b.bidamount);
+                <div class="timeline">
+                    @for (int i = 0; i < bidHistory.Count; i++)
+                    {
+                        var b = bidHistory[i];
+                        bool isLeading = b.bidamount == maxBid;
+                        bool isCurrent = b.Id == Model.Id;
+                        <div class="timeline-item @(isCurrent ? "is-current" : "") @(isLeading ? "is-leading" : "")">
+                            <div class="timeline-dot">@(i + 1)</div>
+                            <div class="timeline-content">
+                                <div class="timeline-amount">Rs. @b.bidamount</div>
+                                <div class="timeline-user">@(b.User?.UserName ?? "Unknown bidder")</div>
+                                <div class="timeline-badges">
+                                    @if (isLeading)
+                                    {
+                                        <span class="tl-badge leading"><i class="fas fa-crown"></i> Leading</span>
+                                    }
+                                    @if (isCurrent)
+                                    {
+                                        <span class="tl-badge current">Your Bid</span>
+                                    }
+                                    <span class="tl-badge status">@b.bidstatus</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="timeline-empty"><i class="fas fa-info-circle"></i> No other bids have been placed yet.</div>
+            }
+        </div>
+
+    </div>
+
+    <!-- lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox(event)"><i class="fas fa-times"></i></button>
+        <img id="lightboxImg" src="" alt="" />
+    </div>
+</div>
+
+<script>
+    function handleImgError(imgEl, fallbackClass, iconClass, extraText) {
+        const div = document.createElement('div');
+        div.className = fallbackClass;
+        div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.display = 'flex';
+        div.style.flexDirection = extraText ? 'column' : 'row';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'center';
+        div.innerHTML = '<i class="fas ' + iconClass + '"></i>' + (extraText ? '<span>' + extraText + '</span>' : '');
+        imgEl.replaceWith(div);
+    }
+
+    function switchMainImage(url, thumbEl) {
+        const main = document.getElementById('galleryMain');
+        let img = document.getElementById('mainImg');
+        if (!img) {
+            main.innerHTML = '<img id="mainImg" src="" alt="" /><div class="zoom-hint"><i class="fas fa-search-plus"></i> Click to zoom</div>';
+            img = document.getElementById('mainImg');
+        }
+        img.style.opacity = 0;
+        setTimeout(() => {
+            img.src = url;
+            img.style.opacity = 1;
+        }, 150);
+
+        document.querySelectorAll('.thumb-box').forEach(t => t.classList.remove('active'));
+        thumbEl.classList.add('active');
+    }
+
+    function openLightbox() {
+        const mainImg = document.getElementById('mainImg');
+        if (!mainImg || !mainImg.src) return;
+        document.getElementById('lightboxImg').src = mainImg.src;
+        document.getElementById('lightboxOverlay').classList.add('open');
+    }
+
+    function closeLightbox(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('lightboxOverlay').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+
+    (function () {
+        const card = document.getElementById('countdownCard');
+        if (!card) return;
+        const startRaw = card.getAttribute('data-start');
+        const endRaw = card.getAttribute('data-end');
+        if (!endRaw) {
+            card.querySelector('.lbl-text').innerHTML = '<i class="fas fa-question-circle"></i> No end date set';
+            return;
+        }
+        const endTime = new Date(endRaw + 'T23:59:59').getTime();
+
+        if (startRaw) {
+            const startTime = new Date(startRaw + 'T00:00:00').getTime();
+            const totalDays = Math.max(0, Math.round((endTime - startTime) / (1000 * 60 * 60 * 24)));
+            document.getElementById('countdownDuration').textContent = totalDays + ' day listing';
+        }
+
+        const elDays = document.getElementById('cd-days');
+        const elHours = document.getElementById('cd-hours');
+        const elMins = document.getElementById('cd-mins');
+        const elSecs = document.getElementById('cd-secs');
+
+        let prev = { d: null, h: null, m: null, s: null };
+
+        function pulse(el, newVal, prevVal) {
+            el.textContent = String(newVal).padStart(2, '0');
+            if (prevVal !== null && prevVal !== newVal) {
+                el.classList.remove('tick');
+                void el.offsetWidth;
+                el.classList.add('tick');
+            }
+        }
+
+        function tick() {
+            const now = new Date().getTime();
+            const diff = endTime - now;
+
+            if (diff <= 0) {
+                card.classList.add('ended');
+                card.classList.remove('ending-soon');
+                card.querySelector('.lbl-text').innerHTML = '<i class="fas fa-flag-checkered"></i> Auction Status';
+                document.getElementById('countdownUnits').outerHTML = '<div class="ended-msg" id="countdownUnits"><i class="fas fa-times-circle"></i> This auction has ended</div>';
+                clearInterval(timerHandle);
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            pulse(elDays, d, prev.d);
+            pulse(elHours, h, prev.h);
+            pulse(elMins, m, prev.m);
+            pulse(elSecs, s, prev.s);
+            prev = { d, h, m, s };
+
+            if (diff < 1000 * 60 * 60 * 24) {
+                card.classList.add('ending-soon');
+            } else {
+                card.classList.remove('ending-soon');
+            }
+        }
+
+        tick();
+        const timerHandle = setInterval(tick, 1000);
+    })();
+</script>

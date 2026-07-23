@@ -1,0 +1,760 @@
+@model Art_Gallery.Models.Feedback
+@{
+    ViewData["Title"] = "Edit Feedback";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    /* ===== scoped under .feedback-page, matching the All Users Feedback admin theme ===== */
+    .feedback-page {
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .feedback-page *,
+        .feedback-page *::before,
+        .feedback-page *::after {
+            box-sizing: border-box;
+        }
+
+        .feedback-page .container-cust {
+            max-width: 880px;
+            margin: 0 auto;
+        }
+
+        .feedback-page .admin-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+            border: 1px solid rgba(136, 210, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .feedback-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+            }
+
+        /* header */
+        .feedback-page .header-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+        }
+
+        .feedback-page .brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .feedback-page .brand-icon {
+            background: #88d200;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+            .feedback-page .brand-icon:hover {
+                transform: rotate(-6deg) scale(1.04);
+                background: #6fa800;
+            }
+
+        .feedback-page .heading-green {
+            font-weight: 700;
+            font-size: 1.85rem;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .feedback-page .heading-sub {
+            color: #5c7a2e;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .feedback-page .status-badge {
+            background: white;
+            border: 1.5px solid #88d200;
+            color: #6fa800;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+            .feedback-page .status-badge i {
+                color: #88d200;
+                margin-right: 6px;
+            }
+
+        /* alert */
+        .feedback-page .alert-success-cust {
+            background: #f0fae6;
+            border: 1.5px solid #88d200;
+            color: #4c7800;
+            border-radius: 16px;
+            padding: 14px 22px;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .feedback-page .alert-success-cust i {
+                color: #88d200;
+                font-size: 1.1rem;
+            }
+
+        /* user preview card */
+        .feedback-page .user-preview-card {
+            background: #f9fdf2;
+            border: 1px solid rgba(136, 210, 0, 0.18);
+            border-radius: 18px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 1.6rem;
+        }
+
+        .feedback-page .user-avatar-lg {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #88d200, #6fa800);
+            color: white;
+            font-weight: 700;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(136, 210, 0, 0.32);
+        }
+
+        .feedback-page .user-preview-meta .up-name {
+            font-weight: 700;
+            color: #1a1a1a;
+            font-size: 1rem;
+        }
+
+        .feedback-page .user-preview-meta .up-email {
+            color: #5c7a2e;
+            font-weight: 600;
+            font-size: 0.82rem;
+            margin-top: 2px;
+        }
+
+        .feedback-page .user-preview-badge {
+            margin-left: auto;
+            background: #f0fae6;
+            border: 1px dashed #d4f09b;
+            color: #5c7a2e;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 5px 12px;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+
+        /* section title */
+        .feedback-page .section-title-ed {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+            .feedback-page .section-title-ed i {
+                color: #88d200;
+                font-size: 0.85rem;
+            }
+
+        /* form */
+        .feedback-page .form-group-ed {
+            margin-bottom: 1.3rem;
+            position: relative;
+        }
+
+        .feedback-page .input-wrapper-ed {
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+            .feedback-page .input-wrapper-ed:focus-within {
+                transform: scale(1.005);
+            }
+
+        .feedback-page .textarea-ed {
+            width: 100%;
+            padding: 0.9rem 1.1rem;
+            border-radius: 18px;
+            border: 2px solid #e9edf4;
+            background: rgba(255, 255, 255, 0.7);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 450;
+            color: #0f172a;
+            resize: vertical;
+            min-height: 160px;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+            .feedback-page .textarea-ed::placeholder {
+                color: #94a3b8;
+                opacity: 0.6;
+            }
+
+            .feedback-page .textarea-ed:focus {
+                border-color: #88d200;
+                background: white;
+                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.02);
+                outline: none;
+            }
+
+            .feedback-page .textarea-ed.is-valid {
+                border-color: #88d200;
+                background: rgba(136, 210, 0, 0.05);
+                box-shadow: 0 0 0 6px rgba(136, 210, 0, 0.08);
+            }
+
+            .feedback-page .textarea-ed.is-invalid {
+                border-color: #dc3545;
+                background: rgba(220, 53, 69, 0.03);
+                box-shadow: 0 0 0 6px rgba(220, 53, 69, 0.08);
+            }
+
+        .feedback-page .status-icon-ed {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            font-size: 1rem;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+            .feedback-page .status-icon-ed.show {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .feedback-page .status-icon-ed.valid {
+                color: #6fa800;
+            }
+
+            .feedback-page .status-icon-ed.invalid {
+                color: #dc3545;
+            }
+
+        .feedback-page .char-count-ed {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            text-align: right;
+            margin-top: 0.35rem;
+        }
+
+        .feedback-page .validation-message-ed {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a51b1b;
+            margin-top: 0.4rem;
+            display: none;
+            align-items: center;
+            gap: 0.35rem;
+            background: #fdf1f1;
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            border-left: 3px solid #dc3545;
+        }
+
+            .feedback-page .validation-message-ed.show {
+                display: flex;
+                animation: edSlideDown 0.35s ease;
+            }
+
+    @@keyframes edSlideDown {
+        0% {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .feedback-page .validation-summary-ed {
+        background: #fdf1f1;
+        border-radius: 16px;
+        padding: 0.7rem 1.1rem;
+        border-left: 4px solid #dc3545;
+        margin-bottom: 1.1rem;
+        font-size: 0.8rem;
+        color: #a51b1b;
+        display: none;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+        .feedback-page .validation-summary-ed.show {
+            display: flex;
+            animation: edSlideDown 0.4s ease;
+        }
+
+    /* actions */
+    .feedback-page .form-actions-ed {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 0.4rem;
+    }
+
+    .feedback-page .btn-save-ed {
+        flex: 1;
+        padding: 0.85rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        background: #88d200;
+        color: white;
+        font-size: 0.92rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        box-shadow: 0 12px 24px rgba(136, 210, 0, 0.32);
+        cursor: pointer;
+    }
+
+        .feedback-page .btn-save-ed:hover:not(:disabled) {
+            background: #6fa800;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 16px 32px rgba(106, 168, 0, 0.4);
+        }
+
+        .feedback-page .btn-save-ed:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .feedback-page .btn-save-ed:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+    .feedback-page .btn-save-spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2.5px solid rgba(255,255,255,0.35);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: edSpin 0.8s linear infinite;
+    }
+
+    @@keyframes edSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .feedback-page .btn-cancel-ed {
+        padding: 0.85rem 1.5rem;
+        border-radius: 50px;
+        border: 1.5px solid #e9edf4;
+        background: #f1f3f5;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.25s ease;
+    }
+
+        .feedback-page .btn-cancel-ed:hover {
+            background: #e9ecef;
+            color: #1a1a1a;
+            transform: translateY(-2px);
+        }
+
+    /* meta footer */
+    .feedback-page .meta-footer-ed {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(136, 210, 0, 0.12);
+        color: #6c757d;
+        font-size: 0.82rem;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .feedback-page .meta-footer-ed i {
+            color: #88d200;
+            margin-right: 4px;
+        }
+
+        .feedback-page .meta-footer-ed .pill {
+            background: #f0fae6;
+            padding: 0.2rem 1.1rem;
+            border-radius: 60px;
+            color: #2d2d2d;
+            font-weight: 500;
+        }
+
+    /* ===== SUCCESS TOAST (matches list page) ===== */
+    .feedback-page .toast-container-custom {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        min-width: 320px;
+        max-width: 450px;
+        pointer-events: none;
+    }
+
+    .feedback-page .toast-success {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-left: 8px solid #88d200;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
+        padding: 20px 28px;
+        color: #1a1a2e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 1;
+        pointer-events: none;
+        animation: slideInRightEd 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInRightEd {
+        from {
+            transform: translateX(120%) scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .feedback-page .toast-success i {
+        font-size: 2rem;
+        color: #88d200;
+        background: linear-gradient(135deg, #f0fae6, #d4f09b);
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
+        animation: checkBounceEd 0.6s ease;
+    }
+
+    @@keyframes checkBounceEd {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .feedback-page .toast-success .toast-content {
+        flex: 1;
+    }
+
+    .feedback-page .toast-success .toast-title {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 1rem;
+    }
+
+    .feedback-page .toast-success .toast-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .feedback-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .feedback-page .heading-green {
+            font-size: 1.45rem;
+        }
+
+        .feedback-page .brand-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        .feedback-page .form-actions-ed {
+            flex-direction: column;
+        }
+
+        .feedback-page .user-preview-card {
+            flex-wrap: wrap;
+        }
+
+        .feedback-page .user-preview-badge {
+            margin-left: 0;
+        }
+
+        .feedback-page .toast-container-custom {
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            min-width: unset;
+            max-width: unset;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .feedback-page .header-section {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.8rem;
+        }
+    }
+</style>
+
+<div class="feedback-page">
+    <div class="container-cust">
+        <div class="admin-card">
+
+            <!-- header -->
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <div>
+                        <h1 class="heading-green">Edit Feedback</h1>
+                        <div class="heading-sub">Update or correct this submission on behalf of the user</div>
+                    </div>
+                </div>
+                <div class="status-badge">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> admin edit
+                </div>
+            </div>
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert-success-cust">
+                    <i class="fas fa-check-circle"></i> @TempData["Message"]
+                </div>
+            }
+
+            <!-- submitter preview -->
+            @{
+                var editUserName = Model.User?.UserName ?? "";
+                var editUserEmail = Model.User?.Email ?? "";
+            }
+            <div class="user-preview-card">
+                <div class="user-avatar-lg">@(string.IsNullOrEmpty(editUserName) ? "?" : editUserName.Substring(0, 1).ToUpper())</div>
+                <div class="user-preview-meta">
+                    <div class="up-name">@(string.IsNullOrEmpty(editUserName) ? "Unknown user" : editUserName)</div>
+                    <div class="up-email">@editUserEmail</div>
+                </div>
+                <div class="user-preview-badge"><i class="fas fa-hashtag"></i> Feedback #@Model.Id</div>
+            </div>
+
+            <form id="editFeedbackForm" asp-action="Edituserfeedbacklogic" method="post" novalidate>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="UserId" />
+
+                <div asp-validation-summary="ModelOnly" class="validation-summary-ed" id="edValidationSummary"></div>
+
+                <div class="form-group-ed">
+                    <div class="section-title-ed"><i class="fas fa-comment"></i> Feedback Message</div>
+                    <div class="input-wrapper-ed">
+                        <textarea asp-for="message" id="edMessage" class="textarea-ed" rows="7"
+                                  placeholder="Update the feedback message..."></textarea>
+                        <i class="fas fa-check-circle status-icon-ed valid" id="edValidIcon"></i>
+                        <i class="fas fa-exclamation-circle status-icon-ed invalid" id="edInvalidIcon"></i>
+                    </div>
+                    <div class="char-count-ed"><span id="edCharCount">0</span> characters</div>
+                    <span asp-validation-for="message" class="validation-message-ed" id="edMessageValidation"></span>
+                </div>
+
+                <div class="form-actions-ed">
+                    <button type="submit" class="btn-save-ed" id="edSaveBtn">
+                        <i class="fas fa-save"></i>
+                        <span id="edBtnText">Save Changes</span>
+                        <span class="btn-save-spinner" id="edBtnSpinner"></span>
+                    </button>
+                    <a asp-action="Edituserfeedbacklogic" class="btn-cancel-ed">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+
+            <div class="meta-footer-ed">
+                <span><i class="fas fa-info-circle"></i> Editing does not notify the original submitter</span>
+                <span class="pill"><i class="fas fa-hashtag"></i> ID @Model.Id</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS TOAST ===== -->
+    <div class="toast-container-custom">
+        <div id="edToast" class="toast-success" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <div class="toast-content">
+                <div class="toast-title">Saving...</div>
+                <div class="toast-message" id="edToastText">Updating this feedback entry.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.getElementById('edMessage');
+            const validIcon = document.getElementById('edValidIcon');
+            const invalidIcon = document.getElementById('edInvalidIcon');
+            const charCount = document.getElementById('edCharCount');
+            const messageValidation = document.getElementById('edMessageValidation');
+            const summary = document.getElementById('edValidationSummary');
+            const form = document.getElementById('editFeedbackForm');
+            const saveBtn = document.getElementById('edSaveBtn');
+            const btnText = document.getElementById('edBtnText');
+            const btnSpinner = document.getElementById('edBtnSpinner');
+            const minLength = 5;
+
+            function updateCharCount() {
+                charCount.textContent = textarea.value.length;
+            }
+
+            function validateField(showMessage) {
+                const value = textarea.value.trim();
+                const existingError = textarea.closest('.form-group-ed').querySelector('.field-validation-error');
+                const hasServerError = existingError && existingError.textContent.trim().length > 0;
+
+                if (value.length === 0 || hasServerError) {
+                    textarea.classList.remove('is-valid');
+                    if (showMessage) {
+                        textarea.classList.add('is-invalid');
+                        validIcon.classList.remove('show');
+                        invalidIcon.classList.add('show');
+                        messageValidation.textContent = hasServerError ? existingError.textContent.trim() : 'Feedback message is required.';
+                        messageValidation.classList.add('show');
+                    }
+                    return false;
+                } else if (value.length < minLength) {
+                    textarea.classList.remove('is-valid');
+                    textarea.classList.add('is-invalid');
+                    validIcon.classList.remove('show');
+                    invalidIcon.classList.add('show');
+                    messageValidation.textContent = `Please enter at least ${minLength} characters.`;
+                    messageValidation.classList.add('show');
+                    return false;
+                } else {
+                    textarea.classList.remove('is-invalid');
+                    textarea.classList.add('is-valid');
+                    invalidIcon.classList.remove('show');
+                    validIcon.classList.add('show');
+                    messageValidation.classList.remove('show');
+                    return true;
+                }
+            }
+
+            textarea.addEventListener('input', function () {
+                updateCharCount();
+                validateField(textarea.classList.contains('is-invalid'));
+                if (summary) summary.classList.remove('show');
+            });
+
+            textarea.addEventListener('blur', function () { validateField(true); });
+
+            updateCharCount();
+
+            const serverError = textarea.closest('.form-group-ed').querySelector('.field-validation-error');
+            if (serverError && serverError.textContent.trim()) {
+                validateField(true);
+                if (summary) summary.classList.add('show');
+            }
+
+            form.addEventListener('submit', function (e) {
+                const isValid = validateField(true);
+                if (!isValid) {
+                    e.preventDefault();
+                    textarea.focus();
+                    return;
+                }
+
+                btnText.textContent = 'Saving...';
+                btnSpinner.style.display = 'inline-block';
+                saveBtn.disabled = true;
+
+                const toast = document.getElementById('edToast');
+                toast.querySelector('.toast-title').innerText = 'Saving...';
+                document.getElementById('edToastText').innerText = 'Updating this feedback entry.';
+                toast.style.display = 'flex';
+            });
+        });
+    </script>
+}

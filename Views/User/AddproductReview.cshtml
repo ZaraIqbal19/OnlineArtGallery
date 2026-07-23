@@ -1,0 +1,1244 @@
+﻿@model Art_Gallery.Models.ProductReview
+@{
+    ViewData["Title"] = "Write a Review";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<style>
+    .review-page {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f0f4f8;
+        background-image: radial-gradient(ellipse at 0% 0%, rgba(136, 210, 0, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(106, 168, 0, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(212, 240, 155, 0.05) 0%, transparent 70%);
+        padding: 3rem 1.5rem 4rem;
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        color: #0f172a;
+    }
+
+        .review-page *, .review-page *::before, .review-page *::after {
+            box-sizing: border-box;
+        }
+
+    .rv-bg-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(110px);
+        pointer-events: none;
+        z-index: 0;
+        animation: rvFloatOrb 30s ease-in-out infinite alternate;
+    }
+
+    .rv-bg-orb-1 {
+        width: 520px;
+        height: 520px;
+        background: rgba(136, 210, 0, 0.08);
+        top: -180px;
+        right: -180px;
+    }
+
+    .rv-bg-orb-2 {
+        width: 440px;
+        height: 440px;
+        background: rgba(106, 168, 0, 0.06);
+        bottom: -160px;
+        left: -160px;
+        animation-delay: -12s;
+    }
+
+    @@keyframes rvFloatOrb {
+        0% {
+            transform: translate(0,0) scale(1);
+        }
+
+        50% {
+            transform: translate(40px,-40px) scale(1.15);
+        }
+
+        100% {
+            transform: translate(-30px,30px) scale(0.9);
+        }
+    }
+
+    .rv-container {
+        position: relative;
+        z-index: 1;
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    /* ── Hero ── */
+    .rv-hero {
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto 2rem;
+        animation: rvSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    @@keyframes rvSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .rv-hero-icon {
+        width: 68px;
+        height: 68px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+        color: white;
+        box-shadow: 0 16px 40px -10px rgba(136, 210, 0, 0.40), inset 0 2px 0 rgba(255,255,255,0.25);
+        position: relative;
+    }
+
+        .rv-hero-icon::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 27px;
+            background: linear-gradient(135deg, rgba(136, 210, 0, 0.15), rgba(106, 168, 0, 0.05));
+            z-index: -1;
+            animation: rvPulseRing 4s ease-in-out infinite;
+        }
+
+    @@keyframes rvPulseRing {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
+        }
+
+        50% {
+            transform: scale(1.3);
+            opacity: 0.08;
+        }
+    }
+
+    .rv-hero h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 0.5rem;
+    }
+
+        .rv-hero h1 .highlight {
+            background: linear-gradient(145deg, #88d200, #6fa800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+    .rv-hero p {
+        color: #64748b;
+        font-size: 0.98rem;
+        line-height: 1.6;
+    }
+
+    /* ── Product preview strip ── */
+    .rv-product-card {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 1.1rem 1.4rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 45px -25px rgba(106, 168, 0, 0.3);
+        animation: rvSlideUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .rv-product-thumb {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(145deg, #d4f09b, #88d200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        overflow: hidden;
+        box-shadow: 0 8px 20px -6px rgba(136, 210, 0, 0.4);
+    }
+
+        .rv-product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .rv-product-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .rv-product-info .rv-product-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .rv-product-info .rv-product-sub {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+    .rv-product-badge {
+        background: rgba(136, 210, 0, 0.1);
+        color: #6fa800;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.3rem 0.9rem;
+        border-radius: 40px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ── Main layout: form + side ── */
+    .rv-layout {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 1.6rem;
+        align-items: start;
+        animation: rvSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .rv-card {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        border-radius: 32px;
+        padding: 2.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.06), 0 30px 60px -20px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .rv-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200, #6fa800);
+            background-size: 400% 100%;
+            animation: rvGradientMove 6s linear infinite;
+        }
+
+    @@keyframes rvGradientMove {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        100% {
+            background-position: 400% 50%;
+        }
+    }
+
+    .rv-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+        .rv-section-title i {
+            color: #88d200;
+            font-size: 0.85rem;
+        }
+
+    /* ── Rating (big, interactive) ── */
+    .rv-rating-block {
+        text-align: center;
+        margin-bottom: 1.9rem;
+        padding: 1.4rem 1rem;
+        background: rgba(240, 250, 230, 0.35);
+        border: 1.5px dashed #d4f09b;
+        border-radius: 20px;
+    }
+
+    .rv-rating-row {
+        display: flex;
+        justify-content: center;
+        gap: 0.6rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .rv-star {
+        font-size: 2.2rem;
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+        .rv-star:hover, .rv-star.active {
+            color: #88d200;
+            transform: scale(1.18) rotate(-4deg);
+        }
+
+    .rv-rating-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #6fa800;
+        min-height: 1.3em;
+    }
+
+    .rv-rating-hint {
+        font-size: 0.74rem;
+        color: #94a3b8;
+        margin-top: 0.2rem;
+    }
+
+    .rv-rating-error {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #ef4444;
+        margin-top: 0.5rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+
+        .rv-rating-error.show {
+            display: flex;
+            animation: rvShake 0.4s ease;
+        }
+
+    @@keyframes rvShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-6px);
+        }
+
+        75% {
+            transform: translateX(6px);
+        }
+    }
+
+    /* ── Textarea ── */
+    .rv-form-group {
+        margin-bottom: 1.3rem;
+        position: relative;
+    }
+
+    .rv-input-wrapper {
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+        .rv-input-wrapper:focus-within {
+            transform: scale(1.005);
+        }
+
+    .rv-textarea {
+        width: 100%;
+        padding: 0.9rem 1.1rem;
+        border-radius: 18px;
+        border: 2px solid #e9edf4;
+        background: rgba(255, 255, 255, 0.6);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 450;
+        color: #0f172a;
+        resize: vertical;
+        min-height: 160px;
+        transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(4px);
+    }
+
+        .rv-textarea::placeholder {
+            color: #94a3b8;
+            opacity: 0.6;
+        }
+
+        .rv-textarea:focus {
+            border-color: #88d200;
+            background: white;
+            box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.02);
+            outline: none;
+        }
+
+        .rv-textarea.is-valid {
+            border-color: #88d200;
+            background: rgba(136, 210, 0, 0.04);
+            box-shadow: 0 0 0 6px rgba(136, 210, 0, 0.06);
+        }
+
+        .rv-textarea.is-invalid {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.03);
+            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.06);
+        }
+
+    .rv-status-icon {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        font-size: 1rem;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+    }
+
+        .rv-status-icon.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .rv-status-icon.valid {
+            color: #6fa800;
+        }
+
+        .rv-status-icon.invalid {
+            color: #ef4444;
+        }
+
+    .rv-char-count {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        text-align: right;
+        margin-top: 0.35rem;
+    }
+
+        .rv-char-count.warn {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+    .rv-validation-message {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #ef4444;
+        margin-top: 0.4rem;
+        display: none;
+        align-items: center;
+        gap: 0.35rem;
+        background: #fef2f2;
+        padding: 0.3rem 0.9rem;
+        border-radius: 40px;
+        border-left: 3px solid #ef4444;
+    }
+
+        .rv-validation-message.show {
+            display: flex;
+            animation: rvSlideDown 0.35s ease;
+        }
+
+    @@keyframes rvSlideDown {
+        0% {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .rv-validation-summary-errors {
+        background: #fef2f2;
+        border-radius: 16px;
+        padding: 0.7rem 1.1rem;
+        border-left: 4px solid #ef4444;
+        margin-bottom: 1.1rem;
+        font-size: 0.8rem;
+        color: #991b1b;
+        display: none;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+        .rv-validation-summary-errors.show {
+            display: flex;
+            animation: rvSlideDown 0.4s ease;
+        }
+
+    /* ── Quick-tag helper chips (insert phrases into the review) ── */
+    .rv-tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .rv-tag-chip {
+        padding: 0.42rem 0.9rem;
+        border-radius: 40px;
+        border: 1.5px solid #e9edf4;
+        background: rgba(255,255,255,0.5);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6fa800;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+        .rv-tag-chip:hover {
+            border-color: #88d200;
+            background: rgba(136, 210, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+    /* ── Buttons ── */
+    .rv-actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .rv-btn-submit {
+        flex: 1;
+        padding: 0.9rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        color: white;
+        font-size: 0.92rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 12px 32px -10px rgba(136, 210, 0, 0.40);
+        cursor: pointer;
+    }
+
+        .rv-btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 20px 48px -12px rgba(106, 168, 0, 0.45);
+        }
+
+        .rv-btn-submit:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .rv-btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+    .rv-btn-spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2.5px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: rvSpin 0.8s linear infinite;
+    }
+
+    @@keyframes rvSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .rv-btn-back {
+        padding: 0.9rem 1.5rem;
+        border-radius: 50px;
+        border: 2px solid #e9edf4;
+        background: rgba(255,255,255,0.6);
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.35s ease;
+    }
+
+        .rv-btn-back:hover {
+            border-color: #88d200;
+            color: #0f172a;
+            background: rgba(136, 210, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+    /* ── Side panel ── */
+    .rv-side {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    .rv-side-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 1.4rem;
+    }
+
+        .rv-side-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+            .rv-side-card h4 i {
+                color: #88d200;
+            }
+
+    .rv-tip-item {
+        display: flex;
+        gap: 0.65rem;
+        margin-bottom: 0.85rem;
+    }
+
+        .rv-tip-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .rv-tip-dot {
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: rgba(136, 210, 0, 0.12);
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+    }
+
+    .rv-tip-item p {
+        font-size: 0.78rem;
+        color: #64748b;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .rv-guideline-card {
+        background: linear-gradient(150deg, rgba(136, 210, 0, 0.08), rgba(106, 168, 0, 0.03));
+        border: 1px solid rgba(136, 210, 0, 0.15);
+    }
+
+        .rv-guideline-card ul {
+            margin: 0;
+            padding-left: 1.1rem;
+        }
+
+        .rv-guideline-card li {
+            font-size: 0.78rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+    /* ── Success modal ── */
+    .rv-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+    }
+
+        .rv-modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+    .rv-confetti-piece {
+        position: absolute;
+        top: -10%;
+        width: 8px;
+        height: 14px;
+        opacity: 0;
+        border-radius: 2px;
+    }
+
+    .rv-modal-overlay.show .rv-confetti-piece {
+        animation: rvConfettiFall 2.4s ease-in forwards;
+    }
+
+    @@keyframes rvConfettiFall {
+        0% {
+            opacity: 1;
+            transform: translateY(0) rotate(0deg);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(420px) rotate(540deg);
+        }
+    }
+
+    .rv-modal {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 32px;
+        padding: 2.6rem 2.2rem 2.2rem;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.28);
+        transform: scale(0.7) translateY(30px);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+    }
+
+    .rv-modal-overlay.show .rv-modal {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    .rv-modal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200);
+        background-size: 400% 100%;
+        animation: rvGradientMove 6s linear infinite;
+    }
+
+    .rv-modal-check {
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 1.2rem;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 16px 40px -10px rgba(136, 210, 0, 0.45);
+        position: relative;
+    }
+
+        .rv-modal-check i {
+            color: white;
+            font-size: 2.2rem;
+            opacity: 0;
+            transform: scale(0.3) rotate(-40deg);
+        }
+
+    .rv-modal-overlay.show .rv-modal-check i {
+        animation: rvCheckPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+    }
+
+    @@keyframes rvCheckPop {
+        to {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    .rv-modal-check::after, .rv-modal-check::before {
+        content: '';
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 3px solid rgba(136, 210, 0, 0.25);
+        animation: rvRingPulse 1.8s ease-out infinite;
+    }
+
+    .rv-modal-check::before {
+        animation-delay: 0.6s;
+    }
+
+    @@keyframes rvRingPulse {
+        0% {
+            transform: scale(0.9);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: scale(1.45);
+            opacity: 0;
+        }
+    }
+
+    .rv-modal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: rgba(136, 210, 0, 0.1);
+        color: #6fa800;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.25rem 0.8rem;
+        border-radius: 40px;
+        margin-bottom: 0.7rem;
+    }
+
+    .rv-modal h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .rv-modal p.rv-modal-msg {
+        color: #64748b;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin-bottom: 1rem;
+    }
+
+    .rv-modal-stars {
+        display: flex;
+        justify-content: center;
+        gap: 0.3rem;
+        margin-bottom: 1.4rem;
+    }
+
+        .rv-modal-stars i {
+            color: #d4f09b;
+            font-size: 1rem;
+        }
+
+            .rv-modal-stars i.filled {
+                color: #88d200;
+            }
+
+    .rv-modal-close {
+        padding: 0.75rem 2.2rem;
+        border: none;
+        border-radius: 50px;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 10px 28px -10px rgba(136, 210, 0, 0.40);
+        width: 100%;
+    }
+
+        .rv-modal-close:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 16px 36px -10px rgba(106, 168, 0, 0.45);
+        }
+
+    @@media (max-width: 860px) {
+        .rv-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .rv-card {
+            padding: 1.5rem 1.2rem 1.8rem;
+            border-radius: 24px;
+        }
+
+        .rv-actions {
+            flex-direction: column;
+        }
+
+        .rv-hero h1 {
+            font-size: 1.6rem;
+        }
+
+        .rv-product-card {
+            flex-wrap: wrap;
+        }
+
+        .rv-star {
+            font-size: 1.8rem;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<div class="review-page">
+    <div class="rv-bg-orb rv-bg-orb-1"></div>
+    <div class="rv-bg-orb rv-bg-orb-2"></div>
+
+    <div class="rv-container">
+
+        <!-- Hero -->
+        <div class="rv-hero">
+            <div class="rv-hero-icon"><i class="fas fa-star"></i></div>
+            <h1>Write a <span class="highlight">Review</span></h1>
+            <p>Tell other collectors what you thought — your rating and review help others shop with confidence.</p>
+        </div>
+
+        <!-- Product being reviewed -->
+        <div class="rv-product-card">
+            <div class="rv-product-thumb">
+                @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.Image1))
+                {
+                    <img src="@Model.Product.Image1" alt="@Model.Product.Name" />
+                }
+                else
+                {
+                    <i class="fas fa-image"></i>
+                }
+            </div>
+            <div class="rv-product-info">
+                <div class="rv-product-name">@(Model.Product?.Name ?? "Selected Product")</div>
+                <div class="rv-product-sub">
+                    @if (Model.Product != null)
+                    {
+                        @: @Model.Product.price.ToString("C")
+                    }
+                    else
+                    {
+                        @: You're reviewing this item
+                    }
+                </div>
+            </div>
+            <div class="rv-product-badge"><i class="fas fa-shopping-bag"></i> Verified Purchase</div>
+        </div>
+
+        <!-- Layout: form + side -->
+        <div class="rv-layout">
+
+            <!-- Form Card -->
+            <div class="rv-card">
+                <form id="reviewForm" asp-action="Addproductreviewlogic" method="post" novalidate>
+
+                    <div asp-validation-summary="ModelOnly" class="rv-validation-summary-errors" id="rvValidationSummary"></div>
+
+                    <!-- hidden fields: not user-editable, posted automatically -->
+                    <input type="hidden" asp-for="Ratings" id="rvRatingInput" />
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="ProductId" />
+
+                    <!-- Rating -->
+                    <div class="rv-rating-block">
+                        <div class="rv-section-title" style="justify-content:center;"><i class="fas fa-star"></i> Overall Rating</div>
+                        <div class="rv-rating-row" id="rvRatingRow">
+                            <i class="fas fa-star rv-star" data-value="1"></i>
+                            <i class="fas fa-star rv-star" data-value="2"></i>
+                            <i class="fas fa-star rv-star" data-value="3"></i>
+                            <i class="fas fa-star rv-star" data-value="4"></i>
+                            <i class="fas fa-star rv-star" data-value="5"></i>
+                        </div>
+                        <div class="rv-rating-label" id="rvRatingLabel"></div>
+                        <div class="rv-rating-hint">Tap a star to rate this product</div>
+                        <div class="rv-rating-error" id="rvRatingError"><i class="fas fa-exclamation-circle"></i> Please select a rating.</div>
+                    </div>
+
+                    <!-- Quick tags -->
+                    <div class="rv-form-group">
+                        <div class="rv-section-title"><i class="fas fa-magic"></i> Quick Add</div>
+                        <div class="rv-tag-row" id="rvTagRow">
+                            <div class="rv-tag-chip" data-phrase="Great quality and exactly as described.">Great quality</div>
+                            <div class="rv-tag-chip" data-phrase="Fast shipping and well packaged.">Fast shipping</div>
+                            <div class="rv-tag-chip" data-phrase="Would definitely recommend to others.">Would recommend</div>
+                            <div class="rv-tag-chip" data-phrase="Good value for the price.">Good value</div>
+                        </div>
+                    </div>
+
+                    <!-- Review message -->
+                    <div class="rv-form-group">
+                        <div class="rv-section-title"><i class="fas fa-pen"></i> Your Review</div>
+                        <div class="rv-input-wrapper">
+                            <textarea asp-for="ReviewMessage" id="rvMessage" class="rv-textarea" rows="7"
+                                      placeholder="What did you like or dislike? How did you use this piece?"></textarea>
+                            <i class="fas fa-check-circle rv-status-icon valid" id="rvValidIcon"></i>
+                            <i class="fas fa-exclamation-circle rv-status-icon invalid" id="rvInvalidIcon"></i>
+                        </div>
+                        <div class="rv-char-count" id="rvCharCount"><span id="rvCharCountNum">0</span> / 500 characters</div>
+                        <span asp-validation-for="ReviewMessage" class="rv-validation-message" id="rvMessageValidation"></span>
+                    </div>
+
+                    <div class="rv-actions">
+                        <button type="submit" class="rv-btn-submit" id="rvSubmitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span id="rvBtnText">Submit Review</span>
+                            <span class="rv-btn-spinner" id="rvBtnSpinner"></span>
+                        </button>
+                        <a asp-action="Index" class="rv-btn-back">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="rv-side">
+                <div class="rv-side-card">
+                    <h4><i class="fas fa-lightbulb"></i> Tips for a great review</h4>
+                    <div class="rv-tip-item">
+                        <div class="rv-tip-dot"><i class="fas fa-check"></i></div>
+                        <p>Mention what you expected versus what you got.</p>
+                    </div>
+                    <div class="rv-tip-item">
+                        <div class="rv-tip-dot"><i class="fas fa-check"></i></div>
+                        <p>Talk about quality, packaging, and shipping speed.</p>
+                    </div>
+                    <div class="rv-tip-item">
+                        <div class="rv-tip-dot"><i class="fas fa-check"></i></div>
+                        <p>Keep it honest — balanced reviews help buyers most.</p>
+                    </div>
+                </div>
+
+                <div class="rv-side-card rv-guideline-card">
+                    <h4><i class="fas fa-shield-alt"></i> Review Guidelines</h4>
+                    <ul>
+                        <li>No personal or contact information</li>
+                        <li>Keep language respectful and constructive</li>
+                        <li>Reviews are public and tied to your account</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="rv-modal-overlay" id="rvSuccessModal">
+    <div class="rv-modal">
+        <div class="rv-modal-badge"><i class="fas fa-sparkles"></i> Review Submitted</div>
+        <div class="rv-modal-check"><i class="fas fa-check"></i></div>
+        <h2>Thanks for Your Review!</h2>
+        <p class="rv-modal-msg">Your feedback has been posted and will help other shoppers make better decisions.</p>
+        <div class="rv-modal-stars" id="rvModalStars"></div>
+        <button class="rv-modal-close" id="rvModalCloseBtn">Continue Browsing</button>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.getElementById('rvMessage');
+            const validIcon = document.getElementById('rvValidIcon');
+            const invalidIcon = document.getElementById('rvInvalidIcon');
+            const charCountNum = document.getElementById('rvCharCountNum');
+            const charCountWrap = document.getElementById('rvCharCount');
+            const messageValidation = document.getElementById('rvMessageValidation');
+            const summary = document.getElementById('rvValidationSummary');
+            const form = document.getElementById('reviewForm');
+            const submitBtn = document.getElementById('rvSubmitBtn');
+            const btnText = document.getElementById('rvBtnText');
+            const btnSpinner = document.getElementById('rvBtnSpinner');
+            const maxLength = 500;
+            const minLength = 10;
+
+            // ── Star rating (bound directly to the model's Ratings field) ──
+            let selectedRating = parseInt(document.getElementById('rvRatingInput').value) || 0;
+            const stars = document.querySelectorAll('#rvRatingRow .rv-star');
+            const ratingInput = document.getElementById('rvRatingInput');
+            const ratingLabel = document.getElementById('rvRatingLabel');
+            const ratingError = document.getElementById('rvRatingError');
+            const ratingText = { 1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Great', 5: 'Excellent!' };
+
+            function paintStars(value) {
+                stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.value) <= value));
+            }
+
+            if (selectedRating > 0) {
+                paintStars(selectedRating);
+                ratingLabel.textContent = ratingText[selectedRating] || '';
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', () => paintStars(parseInt(star.dataset.value)));
+                star.addEventListener('mouseleave', () => paintStars(selectedRating));
+                star.addEventListener('click', () => {
+                    selectedRating = parseInt(star.dataset.value);
+                    ratingInput.value = selectedRating;
+                    paintStars(selectedRating);
+                    ratingLabel.textContent = ratingText[selectedRating] || '';
+                    ratingError.classList.remove('show');
+                });
+            });
+
+            // ── Quick-add tag chips ──
+            document.querySelectorAll('#rvTagRow .rv-tag-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const phrase = chip.dataset.phrase;
+                    const current = textarea.value.trim();
+                    textarea.value = current.length ? current + ' ' + phrase : phrase;
+                    textarea.dispatchEvent(new Event('input'));
+                    textarea.focus();
+                });
+            });
+
+            function updateCharCount() {
+                const len = textarea.value.length;
+                charCountNum.textContent = len;
+                charCountWrap.classList.toggle('warn', len > maxLength);
+            }
+
+            function validateField(showMessage) {
+                const value = textarea.value.trim();
+                const existingError = textarea.closest('.rv-form-group').querySelector('.field-validation-error');
+                const hasServerError = existingError && existingError.textContent.trim().length > 0;
+
+                if (value.length === 0 || hasServerError) {
+                    textarea.classList.remove('is-valid');
+                    if (showMessage) {
+                        textarea.classList.add('is-invalid');
+                        validIcon.classList.remove('show');
+                        invalidIcon.classList.add('show');
+                        messageValidation.textContent = hasServerError ? existingError.textContent.trim() : 'Please write a review before submitting.';
+                        messageValidation.classList.add('show');
+                    }
+                    return false;
+                } else if (value.length < minLength) {
+                    textarea.classList.remove('is-valid');
+                    textarea.classList.add('is-invalid');
+                    validIcon.classList.remove('show');
+                    invalidIcon.classList.add('show');
+                    messageValidation.textContent = `Please enter at least ${minLength} characters.`;
+                    messageValidation.classList.add('show');
+                    return false;
+                } else if (value.length > maxLength) {
+                    textarea.classList.remove('is-valid');
+                    textarea.classList.add('is-invalid');
+                    validIcon.classList.remove('show');
+                    invalidIcon.classList.add('show');
+                    messageValidation.textContent = `Please keep your review under ${maxLength} characters.`;
+                    messageValidation.classList.add('show');
+                    return false;
+                } else {
+                    textarea.classList.remove('is-invalid');
+                    textarea.classList.add('is-valid');
+                    invalidIcon.classList.remove('show');
+                    validIcon.classList.add('show');
+                    messageValidation.classList.remove('show');
+                    return true;
+                }
+            }
+
+            textarea.addEventListener('input', function () {
+                updateCharCount();
+                validateField(textarea.classList.contains('is-invalid'));
+                if (summary) summary.classList.remove('show');
+            });
+
+            textarea.addEventListener('blur', function () { validateField(true); });
+
+            updateCharCount();
+
+            const serverError = textarea.closest('.rv-form-group').querySelector('.field-validation-error');
+            if (serverError && serverError.textContent.trim()) {
+                validateField(true);
+                if (summary) summary.classList.add('show');
+            }
+
+            form.addEventListener('submit', function (e) {
+                const messageValid = validateField(true);
+                let ratingValid = true;
+
+                if (!selectedRating || selectedRating < 1) {
+                    ratingValid = false;
+                    ratingError.classList.add('show');
+                }
+
+                if (!messageValid || !ratingValid) {
+                    e.preventDefault();
+                    if (!ratingValid) {
+                        document.getElementById('rvRatingRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        textarea.focus();
+                    }
+                    return;
+                }
+
+                sessionStorage.setItem('rvLastRating', selectedRating);
+
+                btnText.textContent = 'Submitting...';
+                btnSpinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+            });
+
+            // ── Confetti (used only if this page renders after a same-page success state) ──
+            function launchConfetti(container) {
+                const colors = ['#88d200', '#6fa800', '#d4f09b', '#4ecdc4'];
+                for (let i = 0; i < 24; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'rv-confetti-piece';
+                    piece.style.left = Math.random() * 100 + '%';
+                    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.animationDelay = (Math.random() * 0.6) + 's';
+                    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    container.appendChild(piece);
+                    setTimeout(() => piece.remove(), 3000);
+                }
+            }
+
+            // Show the success modal if we're redirected back here right after a submit
+            // (e.g. controller returns this view with TempData/ViewBag flag instead of redirecting away)
+            const justSubmitted = @Html.Raw(Json.Serialize(TempData["ReviewSubmitted"] ?? ViewData["ReviewSubmitted"]));
+            if (justSubmitted) {
+                const modal = document.getElementById('rvSuccessModal');
+                const modalStars = document.getElementById('rvModalStars');
+                const lastRating = sessionStorage.getItem('rvLastRating');
+
+                if (lastRating) {
+                    modalStars.innerHTML = '';
+                    for (let i = 1; i <= 5; i++) {
+                        const star = document.createElement('i');
+                        star.className = 'fas fa-star' + (i <= parseInt(lastRating) ? ' filled' : '');
+                        modalStars.appendChild(star);
+                    }
+                    sessionStorage.removeItem('rvLastRating');
+                } else {
+                    modalStars.style.display = 'none';
+                }
+
+                modal.classList.add('show');
+                launchConfetti(modal);
+
+                document.getElementById('rvModalCloseBtn').addEventListener('click', () => {
+                    modal.classList.remove('show');
+                });
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('show');
+                });
+            }
+        });
+    </script>
+}

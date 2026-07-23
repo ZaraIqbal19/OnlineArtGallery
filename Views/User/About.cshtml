@@ -1,241 +1,818 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "About Us";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
-@{
-	Layout = "~/Views/Shared/_UserLayout.cshtml";
-}
-<!-- start banner Area -->
+
+<!-- Banner Area -->
 <section class="banner-area relative" id="home">
-	<div class="overlay overlay-bg"></div>
-	<div class="container">
-		<div class="row d-flex align-items-center justify-content-center">
-			<div class="about-content col-lg-12">
-				<h1 class="text-white">
-					About Us
-				</h1>
-				<p class="text-white link-nav"><a href="index.html">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="about.html"> About Us</a></p>
-			</div>
-		</div>
-	</div>
+    <div class="overlay overlay-bg"></div>
+
+    <div class="container">
+
+        <div class="row d-flex align-items-center justify-content-center">
+
+            <div class="about-content col-lg-12 text-center">
+
+                <h1 class="text-white">
+                    About Our Art Gallery
+                </h1>
+
+                <p class="text-white mt-3">
+                    Discover, Buy, Sell, and Auction Beautiful Artwork from Talented Artists Around the World.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
-<!-- End banner Area -->
-<!-- Start quote Area -->
+<!-- End Banner -->
+<!-- Quote Section -->
+
 <section class="quote-area pt-100">
-	<div class="container">
-		<div class="row">
-			<div class="col-lg-6 quote-left">
-				<h1>
-					<span>Music</span> gives soul to the universe, <br>
-					wings to the <span>mind</span>, flight <br>
-					to the <span>imagination</span>.
-				</h1>
-			</div>
-			<div class="col-lg-6 quote-right">
-				<p>
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-				</p>
-			</div>
-		</div>
-	</div>
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-6 quote-left">
+
+                <h1>
+
+                    <span>Art</span> inspires creativity,
+
+                    <br>
+
+                    connects <span>artists</span>
+
+                    <br>
+
+                    with passionate
+
+                    <span>collectors.</span>
+
+                </h1>
+
+            </div>
+
+            <div class="col-lg-6 quote-right">
+
+                <p>
+
+                    Our Art Gallery is a modern online marketplace designed for artists
+                    and art lovers. Artists can upload their creations, manage sales,
+                    and participate in online auctions while buyers can explore unique
+                    paintings, digital artwork, sketches, photography, and handmade
+                    masterpieces.
+
+                </p>
+
+                <br>
+
+                <p>
+
+                    We believe every artwork deserves an audience. Our platform connects
+                    talented creators with collectors in a secure and transparent
+                    environment.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
-<!-- End quote Area -->
-<!-- Start service Area -->
-<section class="service-area section-gap" id="about">
-	<div class="container">
-		<div class="row">
-			<div class="col-lg-4">
-				<div class="single-service">
-					<span class="lnr lnr-clock"></span>
-					<h4>Openning Hours</h4>
-					<p>
-						Mon - Fri: 10.00am to 05.00pm
-						Sat: 12.00pm to 03.00 pm
-						Sunday Closed
-					</p>
-					<div class="overlay">
-						<div class="text">
-							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
-							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-lg-4">
-				<div class="single-service">
-					<span class="lnr lnr-rocket"></span>
-					<h4>Ongoing Exhibitions</h4>
-					<p>
-						Mon - Fri: 10.00am to 05.00pm
-						Sat: 12.00pm to 03.00 pm
-						Sunday Closed
-					</p>
-					<div class="overlay">
-						<div class="text">
-							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
-							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-lg-4">
-				<div class="single-service">
-					<span class="lnr lnr-briefcase"></span>
-					<h4>Openning Events</h4>
-					<p>
-						Mon - Fri: 10.00am to 05.00pm
-						Sat: 12.00pm to 03.00 pm
-						Sunday Closed
-					</p>
-					<div class="overlay">
-						<div class="text">
-							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
-							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</section>
-<!-- End service Area -->
-<!-- Start about info Area -->
+
+
+
+<!-- Services -->
+
+<section class="service-area section-gap">
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-4">
+
+                <div class="single-service">
+
+                    <span class="lnr lnr-cart"></span>
+
+                    <h4>Buy Artwork</h4>
+
+                    <p>
+
+                        Browse thousands of beautiful paintings,
+                        digital art, sketches and handmade
+                        masterpieces uploaded by artists.
+
+                    </p>
+
+                    <div class="overlay">
+
+                        <div class="text">
+
+                            <p>
+
+                                Purchase artwork securely using
+                                Cash on Delivery or Card Payment.
+                                Track every order directly from your account.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-lg-4">
+
+                <div class="single-service">
+
+                    <span class="lnr lnr-upload"></span>
+
+                    <h4>Sell Artwork</h4>
+
+                    <p>
+
+                        Artists can upload unlimited artwork,
+                        manage products and receive orders
+                        from customers.
+
+                    </p>
+
+                    <div class="overlay">
+
+                        <div class="text">
+
+                            <p>
+
+                                Grow your audience by showcasing
+                                your artwork in an online gallery
+                                visited by collectors every day.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-lg-4">
+
+                <div class="single-service">
+
+                    <span class="lnr lnr-diamond"></span>
+
+                    <h4>Online Auctions</h4>
+
+                    <p>
+
+                        Participate in exciting auctions
+                        and bid on exclusive artwork.
+
+                    </p>
+
+                    <div class="overlay">
+
+                        <div class="text">
+
+                            <p>
+
+                                Our auction system automatically
+                                selects the highest bidder after
+                                the auction end date.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section><!-- ================= About Information ================= -->
+
 <section class="section-gap info-area" id="about">
-	<div class="container">
-		<div class="row d-flex justify-content-center">
-			<div class="menu-content pb-40 col-lg-8">
-				<div class="title text-center">
-					<h1 class="mb-10">Few words about our Museum</h1>
-					<p>Who are in extremely love with eco friendly system.</p>
-				</div>
-			</div>
-		</div>
-		<div class="single-info row mt-40">
-			<div class="col-lg-6 col-md-12 mt-120 text-center no-padding info-left">
-				<div class="info-thumb">
-					<img src="~/User/img/pages/about-img.jpg" class="img-fluid" alt="">
-				</div>
-			</div>
-			<div class="col-lg-6 col-md-12 no-padding info-rigth">
-				<div class="info-content">
-					<h2 class="pb-30">
-						We Realize that <br>
-						there are reduced <br>
-						Wastege Stand out
-					</h2>
-					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards – especially in the workplace. That’s why it’s crucial that, as women.
-					</p>
-					<br>
-					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards – especially in the workplace. That’s why it’s crucial that, as women. inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards – especially in the workplace. That’s why it’s crucial that, as women.
-					</p>
-					<br>
-					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards – especially in the workplace. That’s why it’s crucial that, as women.
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="menu-content pb-50 col-lg-8">
+
+                <div class="title text-center">
+
+                    <h1 class="mb-10">
+                        About Our Art Gallery
+                    </h1>
+
+                    <p>
+                        A complete platform for artists, collectors, and art enthusiasts.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="single-info row mt-40">
+
+            <div class="col-lg-6 col-md-12 mt-120 text-center no-padding info-left">
+
+                <div class="info-thumb">
+
+                    <img src="~/User/img/pages/about-img.jpg"
+                         class="img-fluid"
+                         alt="About Art Gallery">
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 col-md-12 no-padding info-rigth">
+
+                <div class="info-content">
+
+                    <h2 class="pb-30">
+
+                        Discover<br>
+
+                        Buy, Sell & Auction<br>
+
+                        Amazing Artwork
+
+                    </h2>
+
+                    <p>
+
+                        Our Art Gallery is designed to help artists showcase
+                        their creativity and connect directly with buyers.
+                        Whether you are a professional artist or just starting
+                        your creative journey, our platform provides the tools
+                        needed to display and sell your artwork.
+
+                    </p>
+
+                    <br>
+
+                    <p>
+
+                        Buyers can browse artworks from multiple categories,
+                        view detailed information, save favorite items to
+                        their wishlist, purchase securely, and monitor all
+                        orders from their personal dashboard.
+
+                    </p>
+
+                    <br>
+
+                    <p>
+
+                        Our auction system creates a fair and exciting
+                        environment where collectors compete for exclusive
+                        artwork. When the bidding period ends, the highest
+                        bidder becomes the winner automatically.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
-<!-- End about info Area -->
-<!-- Start blog Area -->
-<section class="blog-area section-gap" id="blog">
-	<div class="container">
-		<div class="row d-flex justify-content-center">
-			<div class="menu-content pb-70 col-lg-8">
-				<div class="title text-center">
-					<h1 class="mb-10">Latest From Our Blog</h1>
-					<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua.</p>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b1.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b2.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b3.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b4.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-		</div>
-	</div>
+
+
+
+<!-- ================= Mission & Vision ================= -->
+
+<section class="section-gap">
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-6">
+
+                <div class="single-service">
+
+                    <span class="lnr lnr-flag"></span>
+
+                    <h3>Our Mission</h3>
+
+                    <p>
+
+                        To provide artists with an easy-to-use online
+                        marketplace where they can showcase their talent,
+                        connect with collectors, and sell their artwork
+                        securely.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="single-service">
+
+                    <span class="lnr lnr-eye"></span>
+
+                    <h3>Our Vision</h3>
+
+                    <p>
+
+                        To become one of the world's leading online art
+                        platforms by supporting creativity, encouraging
+                        artists, and making artwork accessible to everyone.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
-<!-- End blog Area -->
+
+
+
+<!-- ================= Why Choose Us ================= -->
+
+<section class="service-area section-gap">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="menu-content pb-50 col-lg-8">
+
+                <div class="title text-center">
+
+                    <h1>Why Choose Our Art Gallery?</h1>
+
+                    <p>
+
+                        We provide everything needed to buy, sell, and
+                        auction artwork in one place.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <div class="single-service text-center">
+
+                    <span class="lnr lnr-lock"></span>
+
+                    <h4>Secure Payments</h4>
+
+                    <p>
+
+                        Cash on Delivery and Card Payment options
+                        with secure order processing.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <div class="single-service text-center">
+
+                    <span class="lnr lnr-heart"></span>
+
+                    <h4>Wishlist</h4>
+
+                    <p>
+
+                        Save your favorite artwork and purchase it
+                        whenever you want.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <div class="single-service text-center">
+
+                    <span class="lnr lnr-users"></span>
+
+                    <h4>Verified Artists</h4>
+
+                    <p>
+
+                        Buy directly from talented artists who
+                        showcase original creations.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <div class="single-service text-center">
+
+                    <span class="lnr lnr-star"></span>
+
+                    <h4>Quality Artwork</h4>
+
+                    <p>
+
+                        Every artwork is carefully managed to
+                        provide a great buying experience.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= Statistics ================= -->
+
+<section class="section-gap">
+
+    <div class="container">
+
+        <div class="row text-center">
+
+            <div class="col-lg-3 col-md-6">
+
+                <h1>500+</h1>
+
+                <h4>Artworks</h4>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <h1>250+</h1>
+
+                <h4>Artists</h4>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <h1>1000+</h1>
+
+                <h4>Happy Customers</h4>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <h1>300+</h1>
+
+                <h4>Successful Auctions</h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section><!-- ================= Featured Services ================= -->
+
+<section class="blog-area section-gap">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="menu-content pb-60 col-lg-8">
+
+                <div class="title text-center">
+
+                    <h1 class="mb-10">
+                        What We Offer
+                    </h1>
+
+                    <p>
+                        Our platform provides everything an artist and buyer needs in one place.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-3 col-md-6 single-blog">
+
+                <div class="thumb">
+                    <img class="img-fluid" src="~/User/img/b1.jpg" alt="">
+                </div>
+
+                <h4 class="mt-3">
+                    Buy Original Art
+                </h4>
+
+                <p>
+                    Browse paintings, sketches, digital art, sculptures, and handcrafted artwork uploaded by talented artists.
+                </p>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6 single-blog">
+
+                <div class="thumb">
+                    <img class="img-fluid" src="~/User/img/b2.jpg" alt="">
+                </div>
+
+                <h4 class="mt-3">
+                    Sell Your Artwork
+                </h4>
+
+                <p>
+                    Artists can upload multiple artwork images, manage products, receive orders, and grow their audience.
+                </p>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6 single-blog">
+
+                <div class="thumb">
+                    <img class="img-fluid" src="~/User/img/b3.jpg" alt="">
+                </div>
+
+                <h4 class="mt-3">
+                    Online Auctions
+                </h4>
+
+                <p>
+                    Participate in exciting online auctions where the highest bidder wins after the auction ends.
+                </p>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6 single-blog">
+
+                <div class="thumb">
+                    <img class="img-fluid" src="~/User/img/b4.jpg" alt="">
+                </div>
+
+                <h4 class="mt-3">
+                    Secure Payments
+                </h4>
+
+                <p>
+                    Safe payment methods including Cash on Delivery and Card Payment for a smooth shopping experience.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= Meet Our Community ================= -->
+
+<section class="section-gap">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="menu-content pb-50 col-lg-8">
+
+                <div class="title text-center">
+
+                    <h1>Our Community</h1>
+
+                    <p>
+                        Bringing together artists, collectors, and art lovers from around the world.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-4 text-center">
+
+                <span class="lnr lnr-users" style="font-size:70px;"></span>
+
+                <h3 class="mt-3">Artists</h3>
+
+                <p>
+                    Showcase your creativity, upload artwork, receive orders, and build your online presence.
+                </p>
+
+            </div>
+
+            <div class="col-lg-4 text-center">
+
+                <span class="lnr lnr-cart" style="font-size:70px;"></span>
+
+                <h3 class="mt-3">Buyers</h3>
+
+                <p>
+                    Discover unique artwork, save your favorites, purchase securely, and participate in auctions.
+                </p>
+
+            </div>
+
+            <div class="col-lg-4 text-center">
+
+                <span class="lnr lnr-diamond" style="font-size:70px;"></span>
+
+                <h3 class="mt-3">Collectors</h3>
+
+                <p>
+                    Bid on exclusive artwork and expand your collection through transparent online auctions.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= Testimonials ================= -->
+
+<section class="quote-area pt-100 pb-100">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="col-lg-8 text-center">
+
+                <h2>
+                    What Our Users Say
+                </h2>
+
+                <br>
+
+                <p>
+                    "This platform helped me sell my artwork to collectors from different cities. The auction feature is easy to use and the payment process is secure."
+                </p>
+
+                <h5 class="mt-4">
+                    — Professional Artist
+                </h5>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= Call To Action ================= -->
+
+<section class="service-area section-gap">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-center">
+
+            <div class="col-lg-10 text-center">
+
+                <h1>
+                    Join Our Art Gallery Today
+                </h1>
+
+                <br>
+
+                <p>
+
+                    Whether you're an artist looking to showcase your creativity
+                    or an art enthusiast searching for unique masterpieces,
+                    our platform offers the perfect place to connect, buy,
+                    sell, and participate in exciting online auctions.
+
+                </p>
+
+                <br>
+
+                <a href="/User/Allproducts" class="primary-btn text-uppercase">
+
+                    Explore Artworks
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= Footer Information ================= -->
+
+<section class="section-gap">
+
+    <div class="container">
+
+        <div class="row text-center">
+
+            <div class="col-lg-4">
+
+                <h4>Our Mission</h4>
+
+                <p>
+                    Empower artists by providing an easy-to-use digital marketplace for showcasing and selling artwork.
+                </p>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <h4>Our Vision</h4>
+
+                <p>
+                    Build one of the world's most trusted online art communities for creators and collectors.
+                </p>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <h4>Contact Us</h4>
+
+                <p>Email : support@artgallery.com</p>
+
+                <p>Phone : +92 300 1234567</p>
+
+                <p>Karachi, Pakistan</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

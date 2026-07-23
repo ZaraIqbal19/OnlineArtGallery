@@ -1,0 +1,2029 @@
+@model Art_Gallery.Models.Order
+@{
+    ViewData["Title"] = "Track My Order";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+    var statusClass = (Model.Status ?? "").ToLower().Replace(" ", "-");
+    var daysSincePlaced = (DateTime.Now - Model.OrderDate).Days;
+    var daysAgoLabel = daysSincePlaced <= 0 ? "Today" : daysSincePlaced == 1 ? "1 day ago" : daysSincePlaced + " days ago";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    .my-order-details-page {
+        --od-bg: #ffffff;
+        --od-bg-soft: #f8fbf2;
+        --od-bg-soft-2: #f0fae6;
+        --od-border: rgba(136, 210, 0, 0.14);
+        --od-text: #1a1a1a;
+        --od-text-muted: #6c757d;
+        --od-text-faint: #8a9a6e;
+        --od-green: #88d200;
+        --od-green-dark: #6fa800;
+        --od-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
+        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+        padding: 1.5rem 0;
+    }
+
+        .my-order-details-page *,
+        .my-order-details-page *::before,
+        .my-order-details-page *::after {
+            box-sizing: border-box;
+        }
+
+        .my-order-details-page .container-od {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .my-order-details-page a:focus-visible,
+        .my-order-details-page button:focus-visible,
+        .my-order-details-page [tabindex]:focus-visible {
+            outline: 2px solid var(--od-green);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        /* ===== sticky summary bar ===== */
+        .my-order-details-page .sticky-summary-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: var(--od-bg);
+            border-bottom: 1px solid var(--od-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+            .my-order-details-page .sticky-summary-bar.show {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+        .my-order-details-page .stk-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .my-order-details-page .stk-order {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--od-text);
+            white-space: nowrap;
+        }
+
+        .my-order-details-page .stk-badge {
+            padding: 5px 14px;
+            font-size: 0.72rem;
+        }
+
+        .my-order-details-page .stk-price {
+            margin-left: auto;
+            font-weight: 800;
+            color: #4c7800;
+            font-size: 0.98rem;
+            white-space: nowrap;
+        }
+
+        /* ===== breadcrumb ===== */
+        .my-order-details-page .top-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+            animation: fadeUpOD 0.4s ease both;
+        }
+
+        .my-order-details-page .breadcrumb-od {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--od-text-faint);
+        }
+
+            .my-order-details-page .breadcrumb-od a {
+                color: var(--od-green-dark);
+                text-decoration: none;
+            }
+
+                .my-order-details-page .breadcrumb-od a:hover {
+                    color: var(--od-green);
+                }
+
+        /* ===== main card ===== */
+        .my-order-details-page .admin-card {
+            background: var(--od-bg);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem 1.8rem;
+            box-shadow: var(--od-shadow);
+            border: 1px solid var(--od-border);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            animation: fadeUpOD 0.5s ease both;
+        }
+
+            .my-order-details-page .admin-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
+                background-size: 200% 100%;
+                animation: gradientSlideOD 6s ease-in-out infinite;
+                z-index: 51;
+            }
+
+    @@keyframes gradientSlideOD {
+        0%, 100% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+    }
+
+    @@keyframes fadeUpOD {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .my-order-details-page .card-skeleton-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        background: var(--od-bg);
+        padding: 2rem 1.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        transition: opacity 0.4s ease;
+    }
+
+        .my-order-details-page .card-skeleton-overlay.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    .my-order-details-page .sk-line, .my-order-details-page .sk-block {
+        border-radius: 10px;
+        background: linear-gradient(90deg, var(--od-bg-soft) 25%, var(--od-bg-soft-2) 50%, var(--od-bg-soft) 75%);
+        background-size: 200% 100%;
+        animation: skeletonMove 1.3s infinite;
+    }
+
+    .my-order-details-page .sk-line {
+        height: 16px;
+    }
+
+    .my-order-details-page .sk-w40 {
+        width: 40%;
+    }
+
+    .my-order-details-page .sk-w60 {
+        width: 60%;
+        height: 30px;
+    }
+
+    .my-order-details-page .sk-w70 {
+        width: 70%;
+    }
+
+    .my-order-details-page .sk-w80 {
+        width: 80%;
+    }
+
+    .my-order-details-page .sk-block {
+        height: 130px;
+        width: 100%;
+    }
+
+    @@keyframes skeletonMove {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* ===== header ===== */
+    .my-order-details-page .header-section {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.6rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 2px solid var(--od-border);
+    }
+
+    .my-order-details-page .brand-head {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .my-order-details-page .brand-icon {
+        background: var(--od-green);
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
+        flex-shrink: 0;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+        .my-order-details-page .brand-icon:hover {
+            transform: rotate(-10deg) scale(1.12);
+            background: var(--od-green-dark);
+        }
+
+    .my-order-details-page .heading-green {
+        font-weight: 700;
+        font-size: 1.7rem;
+        letter-spacing: -0.5px;
+        color: var(--od-text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .my-order-details-page .copy-id-btn {
+        border: none;
+        background: var(--od-bg-soft-2);
+        color: var(--od-green-dark);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+        .my-order-details-page .copy-id-btn:hover {
+            background: var(--od-green);
+            color: white;
+            transform: scale(1.18) rotate(8deg);
+        }
+
+        .my-order-details-page .copy-id-btn.copied {
+            background: #4c9e00;
+            color: white;
+        }
+
+    .my-order-details-page .heading-sub {
+        font-size: 0.85rem;
+        color: var(--od-text-muted);
+        font-weight: 500;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .my-order-details-page .days-ago-chip {
+        margin-left: 6px;
+        padding: 2px 10px;
+        background: var(--od-bg-soft-2);
+        color: var(--od-green-dark);
+        border-radius: 60px;
+        font-size: 0.64rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .my-order-details-page .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .my-order-details-page .status-badge-row {
+        font-weight: 700;
+        padding: 8px 20px;
+        border-radius: 60px;
+        font-size: 0.8rem;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        border: 1.5px solid transparent;
+        animation: pulseBadgeOD 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulseBadgeOD {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(136, 210, 0, 0.35);
+        }
+
+        50% {
+            box-shadow: 0 0 0 8px rgba(136, 210, 0, 0);
+        }
+    }
+
+    .my-order-details-page .status-badge-row.status-pending {
+        background: #fff6e0;
+        color: #a66a00;
+        border-color: #ffe08a;
+    }
+
+    .my-order-details-page .status-badge-row.status-processing,
+    .my-order-details-page .status-badge-row.status-shipped,
+    .my-order-details-page .status-badge-row.status-dispatched {
+        background: #e6f1fc;
+        color: #1a5fa5;
+        border-color: #bcd9f2;
+    }
+
+    .my-order-details-page .status-badge-row.status-completed,
+    .my-order-details-page .status-badge-row.status-delivered {
+        background: #eaf7d6;
+        color: #4c7800;
+        border-color: #d4f09b;
+    }
+
+    .my-order-details-page .status-badge-row.status-cancelled,
+    .my-order-details-page .status-badge-row.status-rejected {
+        background: #fdeaea;
+        color: #a51b1b;
+        border-color: #f0c8c8;
+        animation: none;
+    }
+
+    /* ===== delivery countdown ===== */
+    .my-order-details-page .countdown-card {
+        background: linear-gradient(135deg, var(--od-bg-soft-2), var(--od-bg-soft));
+        border: 1px solid var(--od-border);
+        border-radius: 1.25rem;
+        padding: 1.6rem 1.8rem;
+        margin-bottom: 1.6rem;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.35s ease, transform 0.35s ease;
+    }
+
+        .my-order-details-page .countdown-card:hover {
+            box-shadow: 0 16px 34px rgba(136, 210, 0, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .my-order-details-page .countdown-card.overdue {
+            background: linear-gradient(135deg, #fdeaea, #fbdada);
+            border-color: #f3b8b8;
+        }
+
+        .my-order-details-page .countdown-card.urgent {
+            background: linear-gradient(135deg, #fff6e0, #ffedbf);
+            border-color: #ffe08a;
+        }
+
+        .my-order-details-page .countdown-card.rejected {
+            background: linear-gradient(135deg, #fdeaea, #fbdada);
+            border-color: #f3b8b8;
+        }
+
+    .my-order-details-page .countdown-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 1.1rem;
+    }
+
+    .my-order-details-page .countdown-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #3d5a12;
+    }
+
+        .my-order-details-page .countdown-label i {
+            color: #88d200;
+            font-size: 1.2rem;
+        }
+
+    .my-order-details-page .countdown-card.overdue .countdown-label {
+        color: #a51b1b;
+    }
+
+        .my-order-details-page .countdown-card.overdue .countdown-label i {
+            color: #dc3545;
+        }
+
+    .my-order-details-page .countdown-card.urgent .countdown-label {
+        color: #8a5a00;
+    }
+
+        .my-order-details-page .countdown-card.urgent .countdown-label i {
+            color: #e0a300;
+        }
+
+    .my-order-details-page .countdown-card.rejected .countdown-label {
+        color: #a51b1b;
+    }
+
+        .my-order-details-page .countdown-card.rejected .countdown-label i {
+            color: #dc3545;
+        }
+
+    .my-order-details-page .countdown-eta {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #5c7a2e;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 5px 14px;
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .my-order-details-page .countdown-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .my-order-details-page .countdown-timer {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .my-order-details-page .timer-unit {
+        background: var(--od-bg);
+        border-radius: 12px;
+        padding: 10px 18px;
+        min-width: 78px;
+        text-align: center;
+        box-shadow: 0 6px 16px rgba(111, 168, 0, 0.12);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .my-order-details-page .timer-unit:hover {
+            transform: translateY(-5px) scale(1.06);
+            box-shadow: 0 12px 22px rgba(111, 168, 0, 0.22);
+        }
+
+    .my-order-details-page .timer-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #3d5a12;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .my-order-details-page .countdown-card.overdue .timer-value {
+        color: #a51b1b;
+    }
+
+    .my-order-details-page .countdown-card.urgent .timer-value {
+        color: #8a5a00;
+    }
+
+    .my-order-details-page .countdown-card.rejected .timer-value {
+        color: #a51b1b;
+    }
+
+    .my-order-details-page .timer-caption {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #8a9a6e;
+        margin-top: 4px;
+    }
+
+    .my-order-details-page .progress-ring-wrap {
+        position: relative;
+        width: 84px;
+        height: 84px;
+        flex-shrink: 0;
+    }
+
+    .my-order-details-page .progress-ring {
+        width: 84px;
+        height: 84px;
+        transform: rotate(-90deg);
+    }
+
+    .my-order-details-page .progress-ring-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.75);
+        stroke-width: 8;
+    }
+
+    .my-order-details-page .progress-ring-fill {
+        fill: none;
+        stroke: #88d200;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+
+    .my-order-details-page .countdown-card.overdue .progress-ring-fill {
+        stroke: #dc3545;
+    }
+
+    .my-order-details-page .countdown-card.urgent .progress-ring-fill {
+        stroke: #e0a300;
+    }
+
+    .my-order-details-page .countdown-card.rejected .progress-ring-fill {
+        stroke: #dc3545;
+    }
+
+    .my-order-details-page .progress-ring-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .my-order-details-page .progress-ring-label span:first-child {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: #3d5a12;
+            font-variant-numeric: tabular-nums;
+        }
+
+    .my-order-details-page .countdown-card.overdue .progress-ring-label span:first-child {
+        color: #a51b1b;
+    }
+
+    .my-order-details-page .countdown-card.urgent .progress-ring-label span:first-child {
+        color: #8a5a00;
+    }
+
+    .my-order-details-page .progress-ring-caption {
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #8a9a6e;
+    }
+
+    /* ===== status timeline (core tracking element) ===== */
+    .my-order-details-page .timeline {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.4rem 0 0.6rem 0;
+        position: relative;
+    }
+
+        .my-order-details-page .timeline::before {
+            content: "";
+            position: absolute;
+            top: 19px;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: var(--od-bg-soft-2);
+            border-radius: 4px;
+            z-index: 0;
+        }
+
+    .my-order-details-page .timeline-fill {
+        position: absolute;
+        top: 19px;
+        left: 5%;
+        height: 4px;
+        background: linear-gradient(90deg, #88d200, #6fa800);
+        border-radius: 4px;
+        z-index: 1;
+        transition: width 0.8s ease;
+    }
+
+    .my-order-details-page .timeline-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .my-order-details-page .timeline-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--od-bg);
+        border: 3px solid var(--od-bg-soft-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b7c99a;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .my-order-details-page .timeline-step:hover .timeline-dot {
+        transform: scale(1.15);
+        box-shadow: 0 6px 16px rgba(136, 210, 0, 0.25);
+    }
+
+    .my-order-details-page .timeline-step.active .timeline-dot {
+        background: #88d200;
+        border-color: #88d200;
+        color: white;
+        box-shadow: 0 6px 16px rgba(136, 210, 0, 0.35);
+        transform: scale(1.1);
+    }
+
+    .my-order-details-page .timeline-step.current .timeline-dot {
+        animation: pulseDotOD 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulseDotOD {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(136, 210, 0, 0.45);
+        }
+
+        50% {
+            box-shadow: 0 0 0 10px rgba(136, 210, 0, 0);
+        }
+    }
+
+    .my-order-details-page .timeline-text {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--od-text-faint);
+        text-align: center;
+    }
+
+    .my-order-details-page .timeline-step.active .timeline-text {
+        color: #4c7800;
+    }
+
+    .my-order-details-page .timeline-sub {
+        font-size: 0.62rem;
+        font-weight: 600;
+        color: #b7c99a;
+        text-align: center;
+    }
+
+    .my-order-details-page .timeline-step.active .timeline-sub {
+        color: #6fa800;
+    }
+
+    .my-order-details-page .tracking-note {
+        font-size: 0.78rem;
+        color: var(--od-text-faint);
+        text-align: center;
+        margin-top: 1rem;
+        margin-bottom: 1.6rem;
+    }
+
+    /* ===== collapsible sections ===== */
+    .my-order-details-page .section-card {
+        border: 1px solid var(--od-border);
+        border-radius: 1.25rem;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        opacity: 0;
+        animation: fadeUpOD 0.5s ease forwards;
+    }
+
+        .my-order-details-page .section-card:nth-of-type(1) {
+            animation-delay: 0.05s;
+        }
+
+        .my-order-details-page .section-card:nth-of-type(2) {
+            animation-delay: 0.12s;
+        }
+
+        .my-order-details-page .section-card:nth-of-type(3) {
+            animation-delay: 0.19s;
+        }
+
+        .my-order-details-page .section-card:hover {
+            box-shadow: 0 12px 28px rgba(136, 210, 0, 0.14);
+            border-color: rgba(136, 210, 0, 0.3);
+        }
+
+    .my-order-details-page .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.3rem;
+        cursor: pointer;
+        background: var(--od-bg-soft);
+        user-select: none;
+        transition: background 0.25s ease;
+    }
+
+        .my-order-details-page .section-header:hover {
+            background: var(--od-bg-soft-2);
+        }
+
+    .my-order-details-page .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--od-text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+        .my-order-details-page .section-title i {
+            color: var(--od-green);
+        }
+
+    .my-order-details-page .section-chevron {
+        transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+        color: var(--od-text-faint);
+    }
+
+    .my-order-details-page .section-card.collapsed .section-chevron {
+        transform: rotate(-90deg);
+    }
+
+    .my-order-details-page .section-body {
+        padding: 1.3rem;
+        max-height: 2000px;
+        overflow: hidden;
+        transition: max-height 0.45s ease, padding 0.45s ease, opacity 0.35s ease;
+        opacity: 1;
+    }
+
+    .my-order-details-page .section-card.collapsed .section-body {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+    }
+
+    /* ===== info grid ===== */
+    .my-order-details-page .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 14px;
+    }
+
+    .my-order-details-page .info-cell {
+        background: var(--od-bg-soft);
+        border: 1px solid var(--od-border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.28s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+        .my-order-details-page .info-cell:hover {
+            background: var(--od-bg-soft-2);
+            border-color: var(--od-green);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 26px rgba(136, 210, 0, 0.18);
+        }
+
+    .my-order-details-page .info-cell-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--od-text-faint);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 4px;
+    }
+
+        .my-order-details-page .info-cell-label .label-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .my-order-details-page .info-cell-label i {
+            color: var(--od-green);
+            width: 14px;
+        }
+
+    .my-order-details-page .info-cell-value {
+        font-weight: 600;
+        color: var(--od-text);
+        font-size: 0.94rem;
+        word-break: break-word;
+    }
+
+        .my-order-details-page .info-cell-value.price {
+            color: #4c7800;
+            font-weight: 800;
+        }
+
+    .my-order-details-page .mini-copy-btn {
+        border: none;
+        background: transparent;
+        color: var(--od-text-faint);
+        cursor: pointer;
+        font-size: 0.72rem;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        transition: color 0.25s ease, transform 0.25s ease;
+    }
+
+        .my-order-details-page .mini-copy-btn:hover {
+            color: var(--od-green-dark);
+            transform: scale(1.25) rotate(6deg);
+        }
+
+        .my-order-details-page .mini-copy-btn.copied {
+            color: #4c9e00;
+        }
+
+    /* ===== receipt breakdown ===== */
+    .my-order-details-page .receipt-box {
+        margin-top: 14px;
+        background: linear-gradient(135deg, var(--od-bg-soft-2), var(--od-bg-soft));
+        border: 1px dashed var(--od-border);
+        border-radius: 12px;
+        padding: 14px 18px;
+    }
+
+    .my-order-details-page .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--od-text-muted);
+        padding: 4px 0;
+    }
+
+    .my-order-details-page .receipt-divider {
+        height: 1px;
+        background: var(--od-border);
+        margin: 8px 0;
+    }
+
+    .my-order-details-page .receipt-row.receipt-total {
+        color: var(--od-text);
+    }
+
+    .my-order-details-page .receipt-row.receipt-actual {
+        font-weight: 800;
+        color: #4c7800;
+        font-size: 1.02rem;
+    }
+
+    /* ===== gallery (no captions / no alt text shown) ===== */
+    .my-order-details-page .gallery-main {
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--od-bg-soft);
+        border: 1px solid var(--od-border);
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 12px;
+        cursor: zoom-in;
+        transition: box-shadow 0.3s ease;
+    }
+
+        .my-order-details-page .gallery-main:hover {
+            box-shadow: 0 16px 34px rgba(136, 210, 0, 0.22);
+        }
+
+        .my-order-details-page .gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.45s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+            .my-order-details-page .gallery-main img.loaded {
+                opacity: 1;
+            }
+
+        .my-order-details-page .gallery-main:hover img {
+            transform: scale(1.1);
+        }
+
+    .my-order-details-page .skeleton-shimmer {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, var(--od-bg-soft) 25%, var(--od-bg-soft-2) 50%, var(--od-bg-soft) 75%);
+        background-size: 200% 100%;
+        animation: skeletonMove 1.3s infinite;
+    }
+
+    .my-order-details-page .thumb-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .my-order-details-page .thumb-box {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid transparent;
+        background: var(--od-bg-soft);
+        cursor: pointer;
+        transition: all 0.28s cubic-bezier(0.2, 0, 0, 1);
+        flex-shrink: 0;
+    }
+
+        .my-order-details-page .thumb-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.35s ease;
+        }
+
+        .my-order-details-page .thumb-box:hover img {
+            transform: scale(1.12);
+        }
+
+        .my-order-details-page .thumb-box:hover, .my-order-details-page .thumb-box.active {
+            border-color: #88d200;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(136, 210, 0, 0.3);
+        }
+
+    .my-order-details-page .category-strip {
+        display: flex;
+        gap: 12px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .my-order-details-page .category-chip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--od-bg-soft-2);
+        border: 1px solid #d4f09b;
+        border-radius: 60px;
+        padding: 6px 16px 6px 6px;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+        .my-order-details-page .category-chip:hover {
+            background: #88d200;
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 10px 22px rgba(136, 210, 0, 0.3);
+        }
+
+            .my-order-details-page .category-chip:hover .category-chip-text {
+                color: white;
+            }
+
+    .my-order-details-page .category-chip-img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        flex-shrink: 0;
+        background: white;
+        transition: transform 0.3s ease;
+    }
+
+    .my-order-details-page .category-chip:hover .category-chip-img {
+        transform: rotate(8deg) scale(1.08);
+    }
+
+    .my-order-details-page .category-chip-text {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #4c7800;
+        transition: color 0.25s;
+    }
+
+    /* ===== activity log ===== */
+    .my-order-details-page .activity-log {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: relative;
+    }
+
+        .my-order-details-page .activity-log::before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: var(--od-bg-soft-2);
+        }
+
+    .my-order-details-page .activity-item {
+        display: flex;
+        gap: 16px;
+        position: relative;
+        padding-bottom: 20px;
+        opacity: 0;
+        animation: fadeUpOD 0.4s ease forwards;
+    }
+
+        .my-order-details-page .activity-item:last-child {
+            padding-bottom: 0;
+        }
+
+    .my-order-details-page .activity-dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--od-green);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        z-index: 1;
+        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
+        transition: transform 0.25s ease;
+    }
+
+    .my-order-details-page .activity-item:hover .activity-dot {
+        transform: scale(1.2) rotate(-8deg);
+    }
+
+    .my-order-details-page .activity-content {
+        background: var(--od-bg-soft);
+        border-radius: 12px;
+        padding: 10px 14px;
+        flex: 1;
+        transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    .my-order-details-page .activity-item:hover .activity-content {
+        background: var(--od-bg-soft-2);
+        transform: translateX(4px);
+    }
+
+    .my-order-details-page .activity-title {
+        font-weight: 700;
+        font-size: 0.86rem;
+        color: var(--od-text);
+    }
+
+    .my-order-details-page .activity-time {
+        font-size: 0.72rem;
+        color: var(--od-text-faint);
+        margin-top: 2px;
+    }
+
+    /* ===== help / support card ===== */
+    .my-order-details-page .help-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        background: linear-gradient(135deg, var(--od-bg-soft-2), var(--od-bg-soft));
+        border: 1px solid var(--od-border);
+        border-radius: 1.25rem;
+        padding: 1.2rem 1.6rem;
+    }
+
+    .my-order-details-page .help-card-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .my-order-details-page .help-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--od-green);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .my-order-details-page .help-title {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: var(--od-text);
+    }
+
+    .my-order-details-page .help-sub {
+        font-size: 0.78rem;
+        color: var(--od-text-muted);
+        margin-top: 2px;
+    }
+
+    .my-order-details-page .help-btn {
+        background: white;
+        color: #6fa800;
+        border: 1.5px solid #88d200;
+        border-radius: 60px;
+        padding: 0.55rem 1.4rem;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+        .my-order-details-page .help-btn:hover {
+            background: #88d200;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* ===== ripple ===== */
+    .my-order-details-page .od-ripple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        background: rgba(136, 210, 0, 0.5);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        pointer-events: none;
+        animation: rippleOD 0.6s ease-out forwards;
+    }
+
+    @@keyframes rippleOD {
+        to {
+            transform: translate(-50%, -50%) scale(14);
+            opacity: 0;
+        }
+    }
+
+    /* ===== lightbox ===== */
+    .my-order-details-page .lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInOverlayOD 0.25s ease;
+    }
+
+    @@keyframes fadeInOverlayOD {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .my-order-details-page .lightbox-overlay img {
+        max-width: 88vw;
+        max-height: 85vh;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: zoomInOD 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes zoomInOD {
+        from {
+            transform: scale(0.85);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .my-order-details-page .lightbox-close {
+        position: absolute;
+        top: 26px;
+        right: 34px;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+        opacity: 0.85;
+        transition: all 0.25s ease;
+    }
+
+        .my-order-details-page .lightbox-close:hover {
+            opacity: 1;
+            transform: rotate(90deg) scale(1.15);
+        }
+
+    /* ===== toast ===== */
+    .my-order-details-page .toast-container-od {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 10001;
+        min-width: 300px;
+        max-width: 420px;
+        pointer-events: none;
+    }
+
+    .my-order-details-page .toast-od {
+        background: var(--od-bg);
+        border-left: 6px solid var(--od-green);
+        border-radius: 16px;
+        box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.25);
+        padding: 14px 20px;
+        color: var(--od-text);
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRightOD 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 10px;
+    }
+
+        .my-order-details-page .toast-od i {
+            color: var(--od-green);
+            font-size: 1.3rem;
+        }
+
+        .my-order-details-page .toast-od.hide {
+            animation: slideOutRightOD 0.4s ease forwards;
+        }
+
+    @@keyframes slideInRightOD {
+        from {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideOutRightOD {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+    }
+
+    /* ===== bottom action bar ===== */
+    .my-order-details-page .bottom-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 0.4rem;
+    }
+
+    .my-order-details-page .btn-back-od {
+        background: white;
+        color: #6fa800;
+        border: 1.5px solid #88d200;
+        border-radius: 60px;
+        padding: 0.65rem 1.6rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+        .my-order-details-page .btn-back-od:hover {
+            background: #88d200;
+            color: white;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(111, 168, 0, 0.35);
+        }
+
+    .my-order-details-page .btn-print-od {
+        background: #88d200;
+        color: white;
+        border: 1.5px solid #88d200;
+        border-radius: 60px;
+        padding: 0.65rem 1.6rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+
+        .my-order-details-page .btn-print-od:hover {
+            background: #6fa800;
+            border-color: #6fa800;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(111, 168, 0, 0.35);
+        }
+
+    /* responsive */
+    @@media (max-width: 768px) {
+        .my-order-details-page .admin-card {
+            padding: 1.2rem;
+        }
+
+        .my-order-details-page .heading-green {
+            font-size: 1.35rem;
+        }
+
+        .my-order-details-page .countdown-timer {
+            gap: 8px;
+        }
+
+        .my-order-details-page .timer-unit {
+            min-width: 62px;
+            padding: 8px 10px;
+        }
+
+        .my-order-details-page .timer-value {
+            font-size: 1.25rem;
+        }
+
+        .my-order-details-page .timeline-text {
+            font-size: 0.6rem;
+        }
+
+        .my-order-details-page .timeline-sub {
+            display: none;
+        }
+
+        .my-order-details-page .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .my-order-details-page .countdown-bottom {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .my-order-details-page .progress-ring-wrap {
+            width: 64px;
+            height: 64px;
+            align-self: center;
+        }
+
+        .my-order-details-page .progress-ring {
+            width: 64px;
+            height: 64px;
+        }
+
+        .my-order-details-page .stk-order {
+            display: none;
+        }
+
+        .my-order-details-page .help-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    /* ===== print ===== */
+    @@media print {
+        .my-order-details-page .sticky-summary-bar, .my-order-details-page .top-toolbar,
+        .my-order-details-page .bottom-actions, .my-order-details-page .toast-container-od,
+        .my-order-details-page .lightbox-overlay, .my-order-details-page .section-chevron,
+        .my-order-details-page .help-card {
+            display: none !important;
+        }
+
+        .my-order-details-page .section-card.collapsed .section-body {
+            max-height: none !important;
+            opacity: 1 !important;
+            padding: 1.3rem !important;
+        }
+    }
+</style>
+
+<div class="my-order-details-page">
+    <div class="sticky-summary-bar" id="stickySummaryBar">
+        <div class="stk-inner">
+            <span class="stk-order">Order #@Model.Id</span>
+            <span class="status-badge-row stk-badge status-@statusClass" id="stickyStatusBadge">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> <span id="stickyStatusText">@Model.Status</span>
+            </span>
+            <span class="stk-price">Rs. @Model.PricePaid.ToString("N0")</span>
+        </div>
+    </div>
+
+    <div class="container-od">
+
+        <div class="top-toolbar">
+            <div class="breadcrumb-od">
+                <a asp-action="Myorders"><i class="fas fa-receipt"></i> My Orders</a>
+                <i class="fas fa-chevron-right" style="font-size:0.6rem;"></i>
+                <span>Track Order #@Model.Id</span>
+            </div>
+        </div>
+
+        <div class="admin-card">
+
+            <div class="card-skeleton-overlay" id="cardSkeletonOverlay" aria-hidden="true">
+                <div class="sk-line sk-w40"></div>
+                <div class="sk-line sk-w60"></div>
+                <div class="sk-block"></div>
+                <div class="sk-line sk-w80"></div>
+                <div class="sk-line sk-w70"></div>
+                <div class="sk-line sk-w50"></div>
+            </div>
+
+            <div class="header-section">
+                <div class="brand-head">
+                    <div class="brand-icon"><i class="fas fa-location-crosshairs"></i></div>
+                    <div>
+                        <h1 class="heading-green">
+                            Order #@Model.Id
+                            <button type="button" class="copy-id-btn" title="Copy order ID" aria-label="Copy order ID" onclick="copyText('@Model.Id', this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </h1>
+                        <div class="heading-sub">
+                            Placed on @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                            <span class="days-ago-chip">@daysAgoLabel</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="status-badge-row status-@statusClass" id="mainStatusBadge">
+                        <i class="fas fa-circle" style="font-size:0.5rem;"></i> <span id="mainStatusText">@Model.Status</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- ===== delivery countdown ===== -->
+            <div class="countdown-card" id="countdownCard">
+                <div class="countdown-top">
+                    <div class="countdown-label">
+                        <i class="fas fa-truck-fast"></i>
+                        <span id="countdownHeadline">Estimated delivery</span>
+                    </div>
+                    <div class="countdown-eta">
+                        5-day estimate · ETA <span id="countdownEta">—</span>
+                    </div>
+                </div>
+                <div class="countdown-bottom">
+                    <div class="countdown-timer" id="countdownTimer">
+                        <div class="timer-unit"><div class="timer-value" id="cdDays">00</div><div class="timer-caption">Days</div></div>
+                        <div class="timer-unit"><div class="timer-value" id="cdHours">00</div><div class="timer-caption">Hours</div></div>
+                        <div class="timer-unit"><div class="timer-value" id="cdMins">00</div><div class="timer-caption">Mins</div></div>
+                        <div class="timer-unit"><div class="timer-value" id="cdSecs">00</div><div class="timer-caption">Secs</div></div>
+                    </div>
+                    <div class="progress-ring-wrap" title="Delivery progress">
+                        <svg class="progress-ring" viewBox="0 0 84 84">
+                            <circle class="progress-ring-bg" cx="42" cy="42" r="36"></circle>
+                            <circle class="progress-ring-fill" id="progressRingFill" cx="42" cy="42" r="36"></circle>
+                        </svg>
+                        <div class="progress-ring-label">
+                            <span id="progressRingPercent">0%</span>
+                            <span class="progress-ring-caption">elapsed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== status timeline (main tracking view) ===== -->
+            @{
+                var steps = new[] { "Pending", "Processing", "Dispatched", "Delivered" };
+                var currentIndex = Array.IndexOf(steps, steps.FirstOrDefault(s => string.Equals(s, Model.Status, StringComparison.OrdinalIgnoreCase)));
+                var isRejectedStatus = string.Equals(Model.Status, "Rejected", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Model.Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+                if (currentIndex < 0) { currentIndex = 0; }
+                var fillPercent = currentIndex <= 0 ? 0 : (currentIndex * 100.0 / (steps.Length - 1));
+            }
+
+            @if (isRejectedStatus)
+            {
+                <div class="tracking-note" style="color:#a51b1b; font-weight:700;">
+                    <i class="fas fa-circle-exclamation"></i> This order was @Model.Status.ToLower(). Please contact support if you have questions.
+                </div>
+            }
+            else
+            {
+                <div class="timeline">
+                    <div class="timeline-fill" style="width:calc(@fillPercent.ToString("0") % - 10%);"></div>
+                    @for (int i = 0; i < steps.Length; i++)
+                    {
+                        var icon = steps[i] == "Pending" ? "fa-clock" : steps[i] == "Processing" ? "fa-gears" : steps[i] == "Dispatched" ? "fa-truck" : "fa-box-open";
+                        var subLabel = i == 0
+                        ? Model.OrderDate.ToString("dd MMM")
+                        : (i <= currentIndex ? "Completed" : "Pending");
+                        <div class="timeline-step @(i <= currentIndex ? "active" : "") @(i == currentIndex ? "current" : "")">
+                            <div class="timeline-dot">
+                                <i class="fas @icon"></i>
+                            </div>
+                            <div class="timeline-text">@steps[i]</div>
+                            <div class="timeline-sub">@subLabel</div>
+                        </div>
+                    }
+                </div>
+                <div class="tracking-note">
+                    @if (currentIndex >= steps.Length - 1)
+                    {
+                        <span>Your order has been delivered. We hope you love it!</span>
+                    }
+                    else
+                    {
+                        <span>We'll update this page as your order moves through each stage.</span>
+                    }
+                </div>
+            }
+
+            <!-- success/error message from TempData -->
+            <div id="tempDataMessage" style="display:none">@TempData["Message"]</div>
+
+            <!-- ===== ORDER INFORMATION ===== -->
+            <div class="section-card" data-section>
+                <div class="section-header" role="button" tabindex="0" onclick="toggleSection(this)">
+                    <h3 class="section-title"><i class="fas fa-circle-info"></i> Order Information</h3>
+                    <i class="fas fa-chevron-down section-chevron"></i>
+                </div>
+                <div class="section-body">
+                    <div class="info-grid">
+                        <div class="info-cell">
+                            <div class="info-cell-label"><span class="label-left"><i class="fas fa-user"></i> Your Name</span></div>
+                            <div class="info-cell-value">@(Model.User?.UserName ?? "—")</div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-cell-label">
+                                <span class="label-left"><i class="fas fa-envelope"></i> Email</span>
+                                <button class="mini-copy-btn" aria-label="Copy email address" onclick="copyText('@Model.User?.Email', this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="info-cell-value">@(Model.User?.Email ?? "—")</div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-cell-label">
+                                <span class="label-left"><i class="fas fa-phone"></i> Contact Phone</span>
+                                <button class="mini-copy-btn" aria-label="Copy phone number" onclick="copyText('@Model.ContactPhone', this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="info-cell-value">@(Model.ContactPhone ?? "—")</div>
+                        </div>
+                        <div class="info-cell" style="grid-column: span 2;">
+                            <div class="info-cell-label">
+                                <span class="label-left"><i class="fas fa-location-dot"></i> Shipping Address</span>
+                                <button class="mini-copy-btn" aria-label="Copy shipping address" onclick="copyText('@Model.ShippingAddress', this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="info-cell-value">@(Model.ShippingAddress ?? "—")</div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-cell-label"><span class="label-left"><i class="fas fa-credit-card"></i> Payment Method</span></div>
+                            <div class="info-cell-value">@(Model.Payment?.ModeofPayment ?? "—")</div>
+                        </div>
+                    </div>
+
+                    @{
+                        var unitPriceNullable = Model.Product?.price;
+                    }
+                    @if (unitPriceNullable.HasValue)
+                    {
+                        var unitPrice = unitPriceNullable.Value;
+                        var lineTotal = unitPrice * Model.Quantity;
+                        <div class="receipt-box">
+                            <div class="receipt-row"><span>Unit Price</span><span>Rs. @unitPrice.ToString("N0")</span></div>
+                            <div class="receipt-row"><span>Quantity</span><span>× @Model.Quantity</span></div>
+                            <div class="receipt-divider"></div>
+                            <div class="receipt-row receipt-total"><span>Calculated Total</span><span>Rs. @lineTotal.ToString("N0")</span></div>
+                            <div class="receipt-row receipt-actual"><span>Amount Paid</span><span>Rs. @Model.PricePaid.ToString("N0")</span></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="receipt-box">
+                            <div class="receipt-row"><span>Quantity</span><span>× @Model.Quantity</span></div>
+                            <div class="receipt-divider"></div>
+                            <div class="receipt-row receipt-actual"><span>Amount Paid</span><span>Rs. @Model.PricePaid.ToString("N0")</span></div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- ===== PRODUCT DETAILS ===== -->
+            <div class="section-card" data-section>
+                <div class="section-header" role="button" tabindex="0" onclick="toggleSection(this)">
+                    <h3 class="section-title"><i class="fas fa-box"></i> Product Details</h3>
+                    <i class="fas fa-chevron-down section-chevron"></i>
+                </div>
+                <div class="section-body">
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="gallery-main" id="galleryMain" onclick="openLightbox()">
+                                <div class="skeleton-shimmer" id="mainSkeleton"></div>
+                                <img id="mainImg" loading="lazy"
+                                     src="~/images/products/@System.IO.Path.GetFileName(Model.Product?.Image1)"
+                                     onload="this.classList.add('loaded'); document.getElementById('mainSkeleton').style.display='none';"
+                                     onerror="handleImgError(this)" />
+                            </div>
+                            <div class="thumb-row">
+                                @{
+                                    var images = new[] { Model.Product?.Image1, Model.Product?.Image2, Model.Product?.Image3 };
+                                }
+                                @for (int i = 0; i < images.Length; i++)
+                                {
+                                    if (!string.IsNullOrEmpty(images[i]))
+                                    {
+                                        <div class="thumb-box @(i == 0 ? "active" : "")" onclick="switchImage(this, '@Url.Content("~/images/products/" + System.IO.Path.GetFileName(images[i]))')">
+                                            <img loading="lazy"
+                                                 src="~/images/products/@System.IO.Path.GetFileName(images[i])"
+                                                 onerror="handleThumbError(this)" />
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="category-strip">
+                                @if (Model.Product?.SubCategory?.category != null)
+                                {
+                                    <div class="category-chip">
+                                        <img class="category-chip-img" loading="lazy" src="~/images/categories/@System.IO.Path.GetFileName(Model.Product.SubCategory.category.Categoryimage)"
+                                             onerror="this.style.visibility='hidden';" />
+                                        <span class="category-chip-text">@Model.Product.SubCategory.category.Name</span>
+                                    </div>
+                                }
+                                @if (Model.Product?.SubCategory != null)
+                                {
+                                    <div class="category-chip">
+                                        <img class="category-chip-img" loading="lazy" src="~/images/subcategories/@System.IO.Path.GetFileName(Model.Product.SubCategory.SubCategoryimage)"
+                                             onerror="this.style.visibility='hidden';" />
+                                        <span class="category-chip-text">@Model.Product.SubCategory.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <div class="info-grid" style="margin-bottom:0;">
+                                <div class="info-cell" style="grid-column: 1 / -1;">
+                                    <div class="info-cell-label"><span class="label-left"><i class="fas fa-tag"></i> Product Name</span></div>
+                                    <div class="info-cell-value">@(Model.Product?.Name ?? "—")</div>
+                                </div>
+                                <div class="info-cell" style="grid-column: 1 / -1;">
+                                    <div class="info-cell-label"><span class="label-left"><i class="fas fa-align-left"></i> Description</span></div>
+                                    <div class="info-cell-value">@(Model.Product?.Description ?? "—")</div>
+                                </div>
+                                <div class="info-cell">
+                                    <div class="info-cell-label"><span class="label-left"><i class="fas fa-rupee-sign"></i> Unit Price</span></div>
+                                    <div class="info-cell-value price">Rs. @(Model.Product != null ? Model.Product.price.ToString("N0") : "—")</div>
+                                </div>
+                                <div class="info-cell">
+                                    <div class="info-cell-label"><span class="label-left"><i class="fas fa-cubes-stacked"></i> Quantity Ordered</span></div>
+                                    <div class="info-cell-value">@Model.Quantity</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ACTIVITY LOG ===== -->
+            <div class="section-card" data-section>
+                <div class="section-header" role="button" tabindex="0" onclick="toggleSection(this)">
+                    <h3 class="section-title"><i class="fas fa-clock-rotate-left"></i> Activity Log</h3>
+                    <i class="fas fa-chevron-down section-chevron"></i>
+                </div>
+                <div class="section-body">
+                    <ul class="activity-log" id="activityLog">
+                        <li class="activity-item" style="animation-delay:0.05s;">
+                            <div class="activity-dot"><i class="fas fa-cart-shopping"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">Order placed</div>
+                                <div class="activity-time">@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</div>
+                            </div>
+                        </li>
+                        <li class="activity-item" style="animation-delay:0.15s;">
+                            <div class="activity-dot"><i class="fas fa-circle-check"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title" id="currentStatusActivityTitle">Current status: @Model.Status</div>
+                                <div class="activity-time">Last known state</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ===== help / support ===== -->
+            <div class="help-card">
+                <div class="help-card-left">
+                    <div class="help-icon"><i class="fas fa-headset"></i></div>
+                    <div>
+                        <div class="help-title">Need help with this order?</div>
+                        <div class="help-sub">Reach out to support and reference Order #@Model.Id</div>
+                    </div>
+                </div>
+                <a asp-action="Contact" class="help-btn">Contact Support</a>
+            </div>
+
+            <!-- ===== bottom actions ===== -->
+            <div class="bottom-actions" style="margin-top:1rem;">
+                <a asp-action="Myorders" class="btn-back-od">
+                    <i class="fas fa-arrow-left"></i> Back to My Orders
+                </a>
+                <button type="button" class="btn-print-od" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Order
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- lightbox -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+    <span class="lightbox-close" onclick="closeLightbox(event)" role="button" tabindex="0" aria-label="Close image preview">&times;</span>
+    <img id="lightboxImg" src="" />
+</div>
+
+<!-- toast container -->
+<div class="toast-container-od" id="toastContainerOD"></div>
+
+<script>
+    /* ---------- collapsible sections ---------- */
+    function toggleSection(headerEl) {
+        const card = headerEl.closest('.section-card');
+        card.classList.toggle('collapsed');
+        headerEl.setAttribute('aria-expanded', String(!card.classList.contains('collapsed')));
+    }
+
+    document.querySelectorAll('.my-order-details-page .section-header').forEach(function (header) {
+        header.setAttribute('aria-expanded', String(!header.closest('.section-card').classList.contains('collapsed')));
+        header.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSection(header);
+            }
+        });
+    });
+
+    /* ---------- ripple ---------- */
+    function spawnRipple(btn) {
+        const ripple = document.createElement('span');
+        ripple.className = 'od-ripple';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 650);
+    }
+
+    /* ---------- copy to clipboard ---------- */
+    function copyText(text, btn) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            spawnRipple(btn);
+            const icon = btn.querySelector('i');
+            const original = icon.className;
+            icon.className = 'fas fa-check';
+            btn.classList.add('copied');
+            showToast('Copied!', text.length > 40 ? text.substring(0, 40) + '…' : text, 'fa-copy');
+            setTimeout(() => { icon.className = original; btn.classList.remove('copied'); }, 1400);
+        }).catch(() => {});
+    }
+
+    /* ---------- gallery ---------- */
+    function switchImage(thumbEl, src) {
+        const mainImg = document.getElementById('mainImg');
+        const skeleton = document.getElementById('mainSkeleton');
+        skeleton.style.display = 'block';
+        mainImg.classList.remove('loaded');
+        mainImg.style.display = '';
+        mainImg.src = src;
+        document.querySelectorAll('.my-order-details-page .thumb-box').forEach(t => t.classList.remove('active'));
+        thumbEl.classList.add('active');
+    }
+
+    function openLightbox() {
+        const mainImg = document.getElementById('mainImg');
+        if (mainImg.style.display === 'none') return;
+        document.getElementById('lightboxImg').src = mainImg.src;
+        document.getElementById('lightboxOverlay').style.display = 'flex';
+    }
+    function closeLightbox(e) {
+        document.getElementById('lightboxOverlay').style.display = 'none';
+    }
+
+    /* ---------- toast ---------- */
+    function showToast(title, message, icon) {
+        const container = document.getElementById('toastContainerOD');
+        const toast = document.createElement('div');
+        toast.className = 'toast-od';
+        toast.innerHTML = '<i class="fas ' + (icon || 'fa-check-circle') + '"></i>' +
+            '<div><div style="font-weight:700;">' + title + '</div>' +
+            '<div style="font-weight:500; color:var(--od-text-muted); font-size:0.78rem; margin-top:2px;">' + message + '</div></div>';
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 400);
+        }, 3200);
+    }
+
+    /* ---------- keyboard shortcuts ---------- */
+    document.addEventListener('keydown', function (e) {
+        const tag = (e.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            const thumbs = Array.from(document.querySelectorAll('.my-order-details-page .thumb-box'));
+            if (!thumbs.length) return;
+            let idx = thumbs.findIndex(t => t.classList.contains('active'));
+            idx = e.key === 'ArrowRight' ? (idx + 1) % thumbs.length : (idx - 1 + thumbs.length) % thumbs.length;
+            thumbs[idx].click();
+        }
+    });
+
+    /* ---------- whole-card skeleton loader ---------- */
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            const overlay = document.getElementById('cardSkeletonOverlay');
+            if (!overlay) return;
+            overlay.classList.add('hide');
+            setTimeout(() => overlay.remove(), 450);
+        }, 300);
+    });
+
+    /* ---------- sticky summary bar ---------- */
+    (function () {
+        const headerSection = document.querySelector('.my-order-details-page .header-section');
+        const stickyBar = document.getElementById('stickySummaryBar');
+        if (!headerSection || !stickyBar || !('IntersectionObserver' in window)) return;
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                stickyBar.classList.toggle('show', !entry.isIntersecting);
+            });
+        }, { threshold: 0 });
+        observer.observe(headerSection);
+    })();
+
+    /* ---------- 5-day delivery countdown ---------- */
+    (function () {
+        const orderDate = new Date('@Model.OrderDate.ToString("yyyy-MM-ddTHH:mm:ss")');
+        const isDelivered = @Html.Raw((Model.Status ?? "").ToLower() == "delivered" ? "true" : "false");
+        const isRejected = @Html.Raw(((Model.Status ?? "").ToLower() == "rejected" || (Model.Status ?? "").ToLower() == "cancelled") ? "true" : "false");
+        const card = document.getElementById('countdownCard');
+        const headline = document.getElementById('countdownHeadline');
+        const etaEl = document.getElementById('countdownEta');
+        const ringFill = document.getElementById('progressRingFill');
+        const ringPercentEl = document.getElementById('progressRingPercent');
+
+        const RING_RADIUS = 36;
+        const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+        ringFill.style.strokeDasharray = RING_CIRCUMFERENCE.toFixed(2);
+        ringFill.style.strokeDashoffset = RING_CIRCUMFERENCE.toFixed(2);
+
+        const deliveryDays = 5;
+        const deliveryDate = new Date(orderDate.getTime() + deliveryDays * 24 * 60 * 60 * 1000);
+        const totalMs = deliveryDate.getTime() - orderDate.getTime();
+        etaEl.textContent = deliveryDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+
+        function pad(n) { return n.toString().padStart(2, '0'); }
+
+        function setRingPercent(percent) {
+            const offset = RING_CIRCUMFERENCE * (1 - Math.min(100, Math.max(0, percent)) / 100);
+            ringFill.style.strokeDashoffset = offset.toFixed(2);
+            ringPercentEl.textContent = Math.round(percent) + '%';
+        }
+
+        function tick() {
+            const now = new Date();
+            const remaining = deliveryDate.getTime() - now.getTime();
+            const elapsed = now.getTime() - orderDate.getTime();
+            let percent = Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
+
+            if (isDelivered) {
+                card.classList.remove('overdue', 'urgent', 'rejected');
+                headline.textContent = 'Delivered';
+                ['cdDays','cdHours','cdMins','cdSecs'].forEach(id => document.getElementById(id).textContent = '00');
+                setRingPercent(100);
+                return;
+            }
+
+            if (isRejected) {
+                card.classList.add('rejected');
+                card.classList.remove('overdue', 'urgent');
+                headline.textContent = 'Order Rejected';
+                ['cdDays','cdHours','cdMins','cdSecs'].forEach(id => document.getElementById(id).textContent = '00');
+                setRingPercent(0);
+                return;
+            }
+
+            if (remaining <= 0) {
+                card.classList.add('overdue');
+                card.classList.remove('urgent');
+                headline.textContent = 'Delivery overdue';
+                const overdueMs = Math.abs(remaining);
+                document.getElementById('cdDays').textContent = pad(Math.floor(overdueMs / 86400000));
+                document.getElementById('cdHours').textContent = pad(Math.floor((overdueMs / 3600000) % 24));
+                document.getElementById('cdMins').textContent = pad(Math.floor((overdueMs / 60000) % 60));
+                document.getElementById('cdSecs').textContent = pad(Math.floor((overdueMs / 1000) % 60));
+                percent = 100;
+            } else {
+                const d = Math.floor(remaining / 86400000);
+                const h = Math.floor((remaining / 3600000) % 24);
+                const m = Math.floor((remaining / 60000) % 60);
+                const s = Math.floor((remaining / 1000) % 60);
+
+                if (remaining < 86400000) {
+                    card.classList.add('urgent');
+                    card.classList.remove('overdue');
+                    headline.textContent = 'Delivery due soon';
+                } else {
+                    card.classList.remove('urgent', 'overdue');
+                    headline.textContent = 'Estimated delivery in ' + deliveryDays + ' days';
+                }
+
+                document.getElementById('cdDays').textContent = pad(d);
+                document.getElementById('cdHours').textContent = pad(h);
+                document.getElementById('cdMins').textContent = pad(m);
+                document.getElementById('cdSecs').textContent = pad(s);
+            }
+
+            setRingPercent(percent);
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    })();
+
+    /* ---------- image fallback: plain icon only, no text ---------- */
+    var NO_IMAGE_SVG = 'data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
+        '<rect width="100%" height="100%" fill="#f0fae6"/>' +
+        '<circle cx="200" cy="190" r="46" fill="none" stroke="#c7dba0" stroke-width="8"/>' +
+        '<path d="M175 205 L200 175 L225 205 Z" fill="#c7dba0"/>' +
+        '</svg>'
+    );
+
+    function handleImgError(imgEl) {
+        imgEl.onerror = null;
+        imgEl.src = NO_IMAGE_SVG;
+        imgEl.classList.add('loaded');
+        var skeleton = document.getElementById('mainSkeleton');
+        if (skeleton) skeleton.style.display = 'none';
+    }
+
+    function handleThumbError(imgEl) {
+        imgEl.onerror = null;
+        imgEl.src = NO_IMAGE_SVG;
+    }
+
+    /* ---------- show TempData message as toast ---------- */
+    (function () {
+        var msgEl = document.getElementById('tempDataMessage');
+        if (msgEl && msgEl.textContent.trim()) {
+            showToast('Update', msgEl.textContent.trim(), 'fa-circle-check');
+        }
+    })();
+</script>
