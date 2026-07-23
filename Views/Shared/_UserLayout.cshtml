@@ -2,166 +2,848 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+
+
 }
 
 <!DOCTYPE html>
 <html lang="zxx" class="no-js">
 <head>
+    <header id="header" id="home" class="site-header">
+        <!-- Scrolling announcement bar -->
+        <div class="marquee-bar">
+            <div class="marquee-track">
+                <span><i class="fa fa-picture-o"></i> New Exhibition Now Open — Explore Modern Masterpieces</span>
+                <span><i class="fa fa-ticket"></i> Free Entry Every First Sunday of the Month</span>
+                <span><i class="fa fa-gavel"></i> Live Auctions Happening This Weekend — Place Your Bid</span>
+                <span><i class="fa fa-truck"></i> Fast, Insured Shipping on All Purchased Artwork</span>
+                <span><i class="fa fa-picture-o"></i> New Exhibition Now Open — Explore Modern Masterpieces</span>
+                <span><i class="fa fa-ticket"></i> Free Entry Every First Sunday of the Month</span>
+                <span><i class="fa fa-gavel"></i> Live Auctions Happening This Weekend — Place Your Bid</span>
+                <span><i class="fa fa-truck"></i> Fast, Insured Shipping on All Purchased Artwork</span>
+            </div>
+            <div class="marquee-social">
+                <a href="#"><i class="fa fa-facebook"></i></a>
+                <a href="#"><i class="fa fa-twitter"></i></a>
+                <a href="#"><i class="fa fa-dribbble"></i></a>
+                <a href="#"><i class="fa fa-behance"></i></a>
+            </div>
+        </div>
 
-	<!-- Mobile Specific Meta -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Favicon-->
-	<link rel="shortcut icon" href="~/User/img/fav.png">
-	<!-- Author Meta -->
-	<meta name="author" content="codepixer">
-	<!-- Meta Description -->
-	<meta name="description" content="">
-	<!-- Meta Keyword -->
-	<meta name="keywords" content="">
-	<!-- meta character set -->
-	<meta charset="UTF-8">
-	<!-- Site Title -->
-	<title>Art Museum</title>
+        <div class="container">
+            <div class="row align-items-center justify-content-between d-flex main-nav-row">
+                <div id="logo">
+                    <a href="index.html"><img src="~/User/img/logo.png" alt="" title="" /></a>
+                </div>
 
-	<link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
-	<!--
-	CSS
-	============================================= -->
-	<link rel="stylesheet" href="~/User/css/linearicons.css">
-	<link rel="stylesheet" href="~/User/css/font-awesome.min.css">
-	<link rel="stylesheet" href="~/User/css/bootstrap.css">
-	<link rel="stylesheet" href="~/User/css/magnific-popup.css">
-	<link rel="stylesheet" href="~/User/css/nice-select.css">
-	<link rel="stylesheet" href="~/User/css/animate.min.css">
-	<link rel="stylesheet" href="~/User/css/owl.carousel.css">
-	<link rel="stylesheet" href="~/User/css/main.css">
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span></span><span></span><span></span>
+                </button>
+
+                <nav id="nav-menu-container">
+                    <ul class="nav-menu">
+                        <li class="menu-active">
+                            <a asp-controller="User" asp-action="Index"><i class="fa fa-home"></i> Home</a>
+                        </li>
+
+                        <li>
+                            <a href="#"><i class="fa fa-shopping-basket"></i> Shop <i class="fa fa-angle-down caret"></i></a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Allproducts"><i class="fa fa-th-large"></i> All Products</a></li>
+                                <li><a asp-controller="User" asp-action="Allcategories"><i class="fa fa-list"></i> Categories</a></li>
+                                <li><a asp-controller="User" asp-action="Addproduct"><i class="fa fa-plus-circle"></i> Add Product</a></li>
+                                <li><a asp-controller="User" asp-action="Mywishlist"><i class="fa fa-heart-o"></i> Wishlist</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#"><i class="fa fa-user-circle-o"></i> My Account <i class="fa fa-angle-down caret"></i></a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Myprofile"><i class="fa fa-user-o"></i> My Profile</a></li>
+                                <li><a asp-controller="User" asp-action="Myproducts"><i class="fa fa-cube"></i> My Products</a></li>
+                                <li><a asp-controller="User" asp-action="Myorders"><i class="fa fa-shopping-bag"></i> My Orders</a></li>
+                                <li><a asp-controller="User" asp-action="Userallbids"><i class="fa fa-gavel"></i> My Bids</a></li>
+                                <li><a asp-controller="User" asp-action="Addpaymentdetails"><i class="fa fa-credit-card"></i> Payment Details</a></li>
+                                <li><a asp-controller="User" asp-action="ChangePassword"><i class="fa fa-lock"></i> Change Password</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#"><i class="fa fa-line-chart"></i> Selling <i class="fa fa-angle-down caret"></i></a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Usersellerprofile"><i class="fa fa-dashboard"></i> Seller Dashboard</a></li>
+                                <li><a asp-controller="User" asp-action="Myproductsorders"><i class="fa fa-inbox"></i> Orders on My Products</a></li>
+                                <li><a asp-controller="User" asp-action="Myauctionproductsbids"><i class="fa fa-gavel"></i> Bids on My Auctions</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#"><i class="fa fa-ellipsis-h"></i> More <i class="fa fa-angle-down caret"></i></a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Addcontact"><i class="fa fa-envelope-o"></i> Contact</a></li>
+                                <li><a asp-controller="User" asp-action="Adduserfeedback"><i class="fa fa-comment-o"></i> Give Feedback</a></li>
+                                <li><a asp-controller="User" asp-action="Allusersfeedbacks"><i class="fa fa-comments-o"></i> All Feedbacks</a></li>
+                            </ul>
+                        </li>
+
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </nav><!-- #nav-menu-container -->
+            </div>
+        </div>
+    </header>
+
+    <style>
+        /* ===================================================================
+               1. BASE / GLOBAL
+            =================================================================== */
+        body {
+            padding-top: 118px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ===================================================================
+               2. HEADER SHELL (fixed, glass overlay)
+            =================================================================== */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(18, 28, 8, 0.45);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+        }
+
+            .site-header.scrolled {
+                background: rgba(10, 18, 4, 0.96);
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+            }
+
+                .site-header.scrolled .main-nav-row {
+                    padding: 8px 0;
+                }
+
+            .site-header .container {
+                max-width: 100%;
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+
+        /* ===================================================================
+               3. MARQUEE ANNOUNCEMENT BAR
+            =================================================================== */
+        .marquee-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, #365400, #567f00);
+            color: #fff;
+            height: 36px;
+            overflow: hidden;
+            font-size: 12.5px;
+            letter-spacing: 0.3px;
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 70px;
+            white-space: nowrap;
+            animation: marquee-scroll 70s linear infinite;
+            padding-left: 100%;
+            will-change: transform;
+        }
+
+        .marquee-bar:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
+        .marquee-track span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+            .marquee-track span i {
+                color: #d4f09b;
+            }
+
+        @@keyframes marquee-scroll {
+            0%
+
+        {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+
+        }
+
+        .marquee-social {
+            display: flex;
+            gap: 16px;
+            padding: 0 22px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            height: 100%;
+            align-items: center;
+        }
+
+            .marquee-social a {
+                color: #fff;
+                opacity: 0.85;
+                font-size: 13px;
+                transition: opacity 0.2s, transform 0.2s;
+            }
+
+                .marquee-social a:hover {
+                    opacity: 1;
+                    transform: translateY(-1px);
+                }
+
+        /* ===================================================================
+               4. MAIN NAV ROW (locked to one straight line on desktop)
+            =================================================================== */
+        .main-nav-row {
+            padding: 16px 0;
+            transition: padding 0.3s ease;
+            flex-wrap: nowrap !important;
+        }
+
+        #logo {
+            flex-shrink: 0;
+        }
+
+            #logo img {
+                height: 40px;
+                width: auto;
+            }
+
+        #nav-menu-container {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+            overflow: visible;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            white-space: nowrap;
+        }
+
+            .nav-menu li {
+                position: relative;
+                margin-right: 2px;
+            }
+
+            /* ===================================================================
+               5. TOP-LEVEL NAV LINKS
+            =================================================================== */
+            .nav-menu > li > a {
+                color: #fff !important;
+                font-size: 14px;
+                font-weight: 500;
+                padding: 8px 14px;
+                border-radius: 6px;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                white-space: nowrap;
+                transition: background 0.2s ease, color 0.2s ease;
+            }
+
+                .nav-menu > li > a i:first-child {
+                    font-size: 13px;
+                    color: #d4f09b;
+                }
+
+                .nav-menu > li > a .caret {
+                    font-size: 10px;
+                    margin-left: 4px;
+                    color: rgba(255, 255, 255, 0.6);
+                    transition: transform 0.25s ease;
+                }
+
+            .nav-menu > li:hover > a .caret {
+                transform: rotate(180deg);
+            }
+
+            .nav-menu > li:not(.user-menu):not(.auth-buttons) > a:hover,
+            .nav-menu > li.menu-active > a {
+                background: rgba(136, 210, 0, 0.22);
+                color: #d4f09b !important;
+            }
+
+                .nav-menu > li.menu-active > a i:first-child {
+                    color: #d4f09b;
+                }
+
+            /* ===================================================================
+               6. DROPDOWN MENUS (Shop / My Account / Selling / More)
+            =================================================================== */
+            .nav-menu .sub-menu {
+                position: absolute;
+                top: calc(100% + 12px);
+                left: 0;
+                min-width: 230px;
+                background: #fff;
+                box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+                border-radius: 12px;
+                border-top: 3px solid #88d200;
+                padding: 10px 0;
+                margin: 0;
+                list-style: none;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(10px);
+                transition: all 0.25s cubic-bezier(.4, 0, .2, 1);
+                z-index: 1001;
+                white-space: normal;
+            }
+
+            .nav-menu li:hover .sub-menu {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .nav-menu .sub-menu li a {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+                padding: 9px 20px;
+                color: #333 !important;
+                font-size: 13.5px;
+                font-weight: 400;
+                white-space: nowrap;
+                transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+            }
+
+                .nav-menu .sub-menu li a i {
+                    width: 15px;
+                    color: #6fa800;
+                    font-size: 13px;
+                }
+
+                .nav-menu .sub-menu li a:hover {
+                    background: #f0fae6;
+                    color: #4d7a00 !important;
+                    padding-left: 24px;
+                }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #eee;
+            margin: 6px 0;
+        }
+
+        /* ===================================================================
+               7. AUTH BUTTONS (logged out state)
+            =================================================================== */
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-nav {
+            padding: 9px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+        }
+
+        .btn-nav-outline {
+            color: #fff !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+        }
+
+            .btn-nav-outline:hover {
+                border-color: #d4f09b;
+                background: rgba(255, 255, 255, 0.1);
+                color: #d4f09b !important;
+            }
+
+        .btn-nav-solid {
+            background: linear-gradient(90deg, #6fa800, #88d200);
+            color: #fff !important;
+            box-shadow: 0 4px 14px rgba(136, 210, 0, 0.4);
+        }
+
+            .btn-nav-solid:hover {
+                box-shadow: 0 6px 20px rgba(136, 210, 0, 0.55);
+                transform: translateY(-1px);
+            }
+
+        /* ===================================================================
+               8. USER AVATAR + ACCOUNT DROPDOWN (logged in state)
+            =================================================================== */
+        .nav-menu > li.user-menu {
+            margin-left: 10px;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .user-menu-trigger {
+            display: flex !important;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px 6px 6px !important;
+            border-radius: 30px !important;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 220px;
+        }
+
+            .user-menu-trigger:hover {
+                background: rgba(255, 255, 255, 0.2) !important;
+            }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4f09b, #6fa800);
+            color: #1c2e00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .user-caret {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .user-menu:hover .user-caret {
+            transform: rotate(180deg);
+        }
+
+        /* --- Dropdown card --- */
+        .user-dropdown {
+            right: -50px !important;
+            left: auto;
+            width: 270px;
+            min-width: 270px;
+            max-width: 270px;
+            box-sizing: border-box;
+            border-top: 3px solid #6fa800;
+        }
+
+        .user-dropdown-header {
+            display: flex !important;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 18px 14px 18px !important;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .user-avatar-lg {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .user-dropdown-header > div {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .user-dropdown-header strong {
+            display: block;
+            font-size: 14px;
+            color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-dropdown-header small {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            line-height: 1.4;
+            word-break: break-all;
+            overflow-wrap: break-word;
+            white-space: normal;
+            margin-top: 2px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 9px 20px;
+            font-size: 13.5px;
+            color: #b9394f;
+            cursor: pointer;
+        }
+
+            .logout-btn:hover {
+                background: #fdf0f2;
+            }
+
+            .logout-btn i {
+                width: 15px;
+            }
+
+        /* ===================================================================
+               9. MOBILE HAMBURGER TOGGLE
+            =================================================================== */
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+            .nav-toggle span {
+                width: 18px;
+                height: 2px;
+                background: #fff;
+                margin: 0 auto;
+                transition: all 0.3s ease;
+            }
+
+            .nav-toggle.active span:nth-child(1) {
+                transform: translateY(7px) rotate(45deg);
+            }
+
+            .nav-toggle.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .nav-toggle.active span:nth-child(3) {
+                transform: translateY(-7px) rotate(-45deg);
+            }
+
+        /* ===================================================================
+               10. RESPONSIVE (≤991px)
+            =================================================================== */
+        @@media (max-width: 991px) {
+            .marquee-social
+
+        {
+            display: none;
+        }
+
+        body {
+            padding-top: 90px;
+        }
+
+        .nav-toggle {
+            display: flex;
+        }
+
+        #nav-menu-container {
+            position: fixed;
+            top: 90px;
+            left: 0;
+            width: 100%;
+            max-height: calc(100vh - 90px);
+            overflow-y: auto;
+            background: rgba(10, 18, 4, 0.98);
+            justify-content: flex-start;
+            transform: translateY(-12px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            #nav-menu-container.open {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .nav-menu {
+            flex-direction: column;
+            align-items: stretch;
+            white-space: normal;
+            padding: 10px 20px 24px;
+            gap: 4px;
+        }
+
+            .nav-menu > li > a {
+                padding: 12px 10px;
+            }
+
+            .nav-menu .sub-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                box-shadow: none;
+                border-radius: 8px;
+                border-top: none;
+                background: rgba(255, 255, 255, 0.06);
+                margin-top: 4px;
+                display: none;
+            }
+
+                .nav-menu .sub-menu li a {
+                    color: #eee !important;
+                }
+
+                    .nav-menu .sub-menu li a:hover {
+                        background: rgba(136, 210, 0, 0.15);
+                        color: #d4f09b !important;
+                        padding-left: 20px;
+                    }
+
+            .nav-menu li.mobile-open > .sub-menu {
+                display: block;
+            }
+
+        .user-dropdown {
+            right: 0 !important;
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+            position: static;
+            box-shadow: none;
+            margin-top: 6px;
+        }
+
+        .auth-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-nav {
+            text-align: center;
+        }
+
+        }
+    </style>
+    <!-- Mobile Specific Meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="~/User/img/fav.png">
+    <!-- Author Meta -->
+    <meta name="author" content="codepixer">
+    <!-- Meta Description -->
+    <meta name="description" content="">
+    <!-- Meta Keyword -->
+    <meta name="keywords" content="">
+    <!-- meta character set -->
+    <meta charset="UTF-8">
+    <!-- Site Title -->
+    <title>Art Museum</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
+    <!--
+    CSS
+    ============================================= -->
+    <link rel="stylesheet" href="~/User/css/linearicons.css">
+    <link rel="stylesheet" href="~/User/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/User/css/bootstrap.css">
+    <link rel="stylesheet" href="~/User/css/magnific-popup.css">
+    <link rel="stylesheet" href="~/User/css/nice-select.css">
+    <link rel="stylesheet" href="~/User/css/animate.min.css">
+    <link rel="stylesheet" href="~/User/css/owl.carousel.css">
+    <link rel="stylesheet" href="~/User/css/main.css">
 </head>
 <body>
-	<header id="header" id="home">
-		<div class="container header-top">
-			<div class="row">
-				<div class="col-6 top-head-left">
-					<ul>
-						<li><a href="#">Visit Us</a></li>
-						<li><a href="#">Buy Ticket</a></li>
-					</ul>
-				</div>
-				<div class="col-6 top-head-right">
-					<ul>
-						<li><a href="#"><i class="fa fa-facebook"></i></a></li>
-						<li><a href="#"><i class="fa fa-twitter"></i></a></li>
-						<li><a href="#"><i class="fa fa-dribbble"></i></a></li>
-						<li><a href="#"><i class="fa fa-behance"></i></a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<hr>
-		<div class="container">
-			<div class="row align-items-center justify-content-between d-flex">
-				<div id="logo">
-					<a href="index.html"><img src="~/User/img/logo.png" alt="" title="" /></a>
-				</div>
-				<nav id="nav-menu-container">
-					<ul class="nav-menu">
-						<li class="menu-active">
-							<a asp-controller="User" asp-action="Index">Home</a>
-						</li>
-					
-						<li>
-							<a asp-controller="User" asp-action="Myproducts">My Products</a>
-						</li>
-						<li>
-							<a asp-controller="User" asp-action="Addcontact">Contact</a>
-						</li>
-						<li>
-							<a asp-controller="User" asp-action="Allcategories">categories</a>
-						</li>
+    <header id="header" id="home" class="site-header">
+        <!-- Scrolling announcement bar (replaces Visit Us / Buy Ticket) -->
+        <div class="marquee-bar">
+            <div class="marquee-track">
+                <span>🎨 New Exhibition Now Open — Explore Modern Masterpieces</span>
+                <span>🖼️ Free Entry Every First Sunday of the Month</span>
+                <span>🔨 Live Auctions Happening This Weekend — Place Your Bid</span>
+                <span>📦 Fast, Insured Shipping on All Purchased Artwork</span>
+                <!-- duplicate the set once so the loop is seamless -->
+                <span>🎨 New Exhibition Now Open — Explore Modern Masterpieces</span>
+                <span>🖼️ Free Entry Every First Sunday of the Month</span>
+                <span>🔨 Live Auctions Happening This Weekend — Place Your Bid</span>
+                <span>📦 Fast, Insured Shipping on All Purchased Artwork</span>
+            </div>
+            <div class="marquee-social">
+                <a href="#"><i class="fa fa-facebook"></i></a>
+                <a href="#"><i class="fa fa-twitter"></i></a>
+                <a href="#"><i class="fa fa-dribbble"></i></a>
+                <a href="#"><i class="fa fa-behance"></i></a>
+            </div>
+        </div>
 
-						<li>
-							<a asp-controller="User" asp-action="Addproduct">Add Products</a>
-						</li>
-							<partial name="_LoginPartial" />
+        <div class="container">
+            <div class="row align-items-center justify-content-between d-flex main-nav-row">
+                <div id="logo">
+                    <a href="index.html"><img src="~/User/img/logo.png" alt="" title="" /></a>
+                </div>
+                <nav id="nav-menu-container">
+                    <ul class="nav-menu">
+                        <li class="menu-active">
+                            <a asp-controller="User" asp-action="Index">Home</a>
+                        </li>
+
+                        <li>
+                            <a href="#">Shop</a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Allproducts">All Products</a></li>
+                                <li><a asp-controller="User" asp-action="Allcategories">Categories</a></li>
+                                <li><a asp-controller="User" asp-action="Addproduct">Add Product</a></li>
+                                <li><a asp-controller="User" asp-action="Mywishlist">Wishlist</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#">My Account</a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Myprofile">My Profile</a></li>
+                                <li><a asp-controller="User" asp-action="Myproducts">My Products</a></li>
+                                <li><a asp-controller="User" asp-action="Myorders">My Orders</a></li>
+                                <li><a asp-controller="User" asp-action="Userallbids">My Bids</a></li>
+                                <li><a asp-controller="User" asp-action="Addpaymentdetails">Payment Details</a></li>
+                                <li><a asp-controller="User" asp-action="ChangePassword">Change Password</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#">Selling</a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Usersellerprofile">Seller Dashboard</a></li>
+                                <li><a asp-controller="User" asp-action="Myproductsorders">Orders on My Products</a></li>
+                                <li><a asp-controller="User" asp-action="Myauctionproductsbids">Bids on My Auctions</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#">More</a>
+                            <ul class="sub-menu">
+                                <li><a asp-controller="User" asp-action="Addcontact">Contact</a></li>
+                                <li><a asp-controller="User" asp-action="Adduserfeedback">Give Feedback</a></li>
+                                <li><a asp-controller="User" asp-action="Allusersfeedbacks">All Feedbacks</a></li>
+                            </ul>
+                        </li>
+
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </nav><!-- #nav-menu-container -->
+            </div>
+        </div>
+    </header>
+
+    @RenderBody()
+
+    <footer class="footer-area section-gap">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-md-6 col-sm-6">
+                    <div class="single-footer-widget">
+                        <h6>About Us</h6>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore dolore magna aliqua.
+                        </p>
+                        <p class="footer-text">
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                            Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> and distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-5  col-md-6 col-sm-6">
+                    <div class="single-footer-widget">
+                        <h6>Newsletter</h6>
+                        <p>Stay update with our latest</p>
+                        <div class="" id="mc_embed_signup">
+                            <form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
+                                <input class="form-control" name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email '" required="" type="email">
+                                <button class="click-btn btn btn-default"><span class="lnr lnr-arrow-right"></span></button>
+                                <div style="position: absolute; left: -5000px;">
+                                    <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
+                                </div>
+
+                                <div class="info"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 col-sm-6 social-widget">
+                    <div class="single-footer-widget">
+                        <h6>Follow Us</h6>
+                        <p>Let us be social</p>
+                        <div class="footer-social d-flex align-items-center">
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                            <a href="#"><i class="fa fa-dribbble"></i></a>
+                            <a href="#"><i class="fa fa-behance"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 
-
-
-					</ul>
-				</nav><!-- #nav-menu-container -->
-			</div>
-		</div>
-	</header>
-
-	@RenderBody()
-
-	<footer class="footer-area section-gap">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-5 col-md-6 col-sm-6">
-					<div class="single-footer-widget">
-						<h6>About Us</h6>
-						<p>
-							Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore dolore magna aliqua.
-						</p>
-						<p class="footer-text">
-							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-							Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> and distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
-							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-						</p>
-					</div>
-				</div>
-				<div class="col-lg-5  col-md-6 col-sm-6">
-					<div class="single-footer-widget">
-						<h6>Newsletter</h6>
-						<p>Stay update with our latest</p>
-						<div class="" id="mc_embed_signup">
-							<form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
-								<input class="form-control" name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email '" required="" type="email">
-								<button class="click-btn btn btn-default"><span class="lnr lnr-arrow-right"></span></button>
-								<div style="position: absolute; left: -5000px;">
-									<input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-								</div>
-
-								<div class="info"></div>
-							</form>
-						</div>
-					</div>
-				</div>
-				<div class="col-lg-2 col-md-6 col-sm-6 social-widget">
-					<div class="single-footer-widget">
-						<h6>Follow Us</h6>
-						<p>Let us be social</p>
-						<div class="footer-social d-flex align-items-center">
-							<a href="#"><i class="fa fa-facebook"></i></a>
-							<a href="#"><i class="fa fa-twitter"></i></a>
-							<a href="#"><i class="fa fa-dribbble"></i></a>
-							<a href="#"><i class="fa fa-behance"></i></a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</footer>
-
-
-	<script src="~/User/js/vendor/jquery-2.2.4.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.~/User/js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="~/User/js/vendor/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
-	<script src="~/User/js/easing.min.js"></script>
-	<script src="~/User/js/hoverIntent.js"></script>
-	<script src="~/User/js/superfish.min.js"></script>
-	<script src="~/User/js/jquery.ajaxchimp.min.js"></script>
-	<script src="~/User/js/jquery.magnific-popup.min.js"></script>
-	<script src="~/User/js/owl.carousel.min.js"></script>
-	<script src="~/User/js/imagesloaded.pkgd.min.js"></script>
-	<script src="~/User/js/justified.min.js"></script>
-	<script src="~/User/js/jquery.sticky.js"></script>
-	<script src="~/User/js/jquery.nice-select.min.js"></script>
-	<script src="~/User/js/parallax.min.js"></script>
-	<script src="~/User/js/mail-script.js"></script>
-	<script src="~/User/js/main.js"></script>
-	@await RenderSectionAsync("Scripts", required: false)
+    <script src="~/User/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.~/User/js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="~/User/js/vendor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
+    <script src="~/User/js/easing.min.js"></script>
+    <script src="~/User/js/hoverIntent.js"></script>
+    <script src="~/User/js/superfish.min.js"></script>
+    <script src="~/User/js/jquery.ajaxchimp.min.js"></script>
+    <script src="~/User/js/jquery.magnific-popup.min.js"></script>
+    <script src="~/User/js/owl.carousel.min.js"></script>
+    <script src="~/User/js/imagesloaded.pkgd.min.js"></script>
+    <script src="~/User/js/justified.min.js"></script>
+    <script src="~/User/js/jquery.sticky.js"></script>
+    <script src="~/User/js/jquery.nice-select.min.js"></script>
+    <script src="~/User/js/parallax.min.js"></script>
+    <script src="~/User/js/mail-script.js"></script>
+    <script src="~/User/js/main.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>
