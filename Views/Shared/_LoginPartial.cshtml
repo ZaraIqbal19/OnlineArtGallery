@@ -18,7 +18,14 @@
             <span class="user-name">@displayName</span>
             <i class="fa fa-angle-down user-caret"></i>
         </a>
-        <ul class="sub-menu user-dropdown">
+
+        <!-- IMPORTANT: only "user-dropdown" here — NOT "sub-menu".
+             That extra class was the entire bug: it made the shared
+             ".nav-menu .sub-menu { position:absolute; left:0 }" rule
+             beat the JS-driven ".user-dropdown { position:fixed }" rule
+             due to higher CSS specificity, silently overriding the JS
+             positioning every time. -->
+        <ul class="user-dropdown">
             <li class="user-dropdown-header">
                 <span class="user-avatar user-avatar-lg">@initial</span>
                 <div>
@@ -26,14 +33,26 @@
                     <small>@currentUser?.Email</small>
                 </div>
             </li>
+
+            <li class="user-dropdown-section-label">My Account</li>
             <li class="user-dropdown-links">
                 <ul style="list-style:none; margin:0; padding:0;">
                     <li><a asp-controller="User" asp-action="Myprofile"><i class="fa fa-user-o"></i> My Profile</a></li>
+                    <li><a asp-controller="User" asp-action="ChangePassword"><i class="fa fa-lock"></i> Change Password</a></li>
+                    <li><a asp-controller="User" asp-action="Addpaymentdetails"><i class="fa fa-credit-card"></i> Payment Details</a></li>
+                </ul>
+            </li>
+
+            <li class="user-dropdown-section-label">My Activity</li>
+            <li class="user-dropdown-links">
+                <ul style="list-style:none; margin:0; padding:0;">
+                    <li><a asp-controller="User" asp-action="Myproducts"><i class="fa fa-cube"></i> My Products</a></li>
                     <li><a asp-controller="User" asp-action="Myorders"><i class="fa fa-shopping-bag"></i> My Orders</a></li>
                     <li><a asp-controller="User" asp-action="Mywishlist"><i class="fa fa-heart-o"></i> Wishlist</a></li>
                     <li><a asp-controller="User" asp-action="Userallbids"><i class="fa fa-gavel"></i> My Bids</a></li>
                 </ul>
             </li>
+
             <li class="logout-footer">
                 <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "User")" method="post">
                     <button type="submit" class="logout-btn">
@@ -51,10 +70,4 @@ else
         <a asp-area="Identity" asp-page="/Account/Login" class="btn-nav btn-nav-outline">Login</a>
         <a asp-area="Identity" asp-page="/Account/Register" class="btn-nav btn-nav-solid">Register</a>
     </li>
-<<<<<<< HEAD
-=======
-    <li class="nav-item">
-        <a class="nav-link" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
->>>>>>> 70ee1a8785d7133e4d244625e5e3f5c31d55e868
 }

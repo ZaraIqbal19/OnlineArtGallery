@@ -29,6 +29,11 @@
             box-sizing: border-box;
         }
 
+            *:focus-visible {
+                outline: 3px solid var(--primary-dark, #6fa800);
+                outline-offset: 2px;
+            }
+
         :root {
             --primary: #88d200;
             --primary-dark: #6fa800;
@@ -413,6 +418,41 @@
                 animation: shimmer 2s linear infinite;
             }
 
+        /* ===== FIELD GROUPS ===== */
+        .field-group {
+            border: 1.5px solid var(--neutral-2);
+            border-radius: 20px;
+            padding: 1.3rem 1.3rem 0.4rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.4);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .field-group:hover {
+                border-color: rgba(136, 210, 0, 0.25);
+            }
+
+            .field-group:focus-within {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 4px var(--primary-glow);
+            }
+
+        .field-group-caption {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+
+            .field-group-caption i {
+                font-size: 0.9rem;
+            }
+
         /* ===== ENHANCED FORM FLOATING ===== */
         .register-page .form-floating {
             position: relative;
@@ -525,6 +565,35 @@
             font-weight: 500;
             color: var(--primary-dark);
             animation: slideDown 0.25s ease;
+        }
+
+        /* Grey helper hint shown under a field before/without errors */
+        .field-hint {
+            font-size: 0.74rem;
+            margin-top: 0.3rem;
+            display: block;
+            color: var(--text-muted);
+        }
+
+        /* "Checking availability…" indicator */
+        .field-checking {
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .mini-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--neutral-3);
+            border-radius: 50%;
+            border-top-color: var(--primary-dark);
+            display: inline-block;
+            animation: spin 0.7s linear infinite;
         }
 
         .register-page .app-error-banner {
@@ -883,576 +952,677 @@
                 display: none;
             }
 
-        @@-webkit-keyframes spin {
-            to {
-                transform: rotate(360deg);
+            /* Brief glow pulse the moment the button becomes enabled */
+            .btn-register.armed {
+                animation: armPulse 1s cubic-bezier(0.34, 1.56, 0.64, 1) 1;
             }
-        }
 
-        @@keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Ripple effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-            animation: rippleEffect 0.7s ease forwards;
-        }
-
-        @@-webkit-keyframes rippleEffect {
+        @@-webkit-keyframes armPulse {
             0% {
-                transform: scale(0);
-                opacity: 1;
+                box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
+            }
+
+            35% {
+                box-shadow: 0 0 0 10px rgba(136, 210, 0, 0.22), 0 12px 32px rgba(136, 210, 0, 0.3);
+                transform: scale(1.015);
             }
 
             100% {
-                transform: scale(3);
-                opacity: 0;
+                box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
             }
         }
 
-        @@keyframes rippleEffect {
+        @@keyframes armPulse {
             0% {
-                transform: scale(0);
-                opacity: 1;
+                box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
+            }
+
+            35% {
+                box-shadow: 0 0 0 10px rgba(136, 210, 0, 0.22), 0 12px 32px rgba(136, 210, 0, 0.3);
+                transform: scale(1.015);
             }
 
             100% {
-                transform: scale(3);
-                opacity: 0;
+                box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
             }
         }
 
-        /* ===== SIGN-IN FOOTER LINK ===== */
-        .signin-link {
-            margin-top: 1.6rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
+        /* ===== TRUST BAR ===== */
+        .trust-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
         }
 
-            .signin-link a {
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: var(--primary-ultra-light);
+            border: 1px solid rgba(136, 210, 0, 0.2);
+            padding: 0.3rem 0.75rem;
+            border-radius: 30px;
+        }
+
+            .trust-pill i {
+                font-size: 0.78rem;
+            }
+
+        /* ===== STICKY MOBILE SUBMIT ===== */
+        .mobile-sticky-submit {
+            display: none;
+        }
+
+        @@media (max-width: 576px) {
+            .mobile-sticky-submit {
+                display: block;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+                background: rgba(248, 250, 252, 0.92);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-top: 1px solid var(--neutral-2);
+                box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
+                z-index: 500;
+                transform: translateY(110%);
+                transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+                .mobile-sticky-submit.visible {
+                    transform: translateY(0);
+                }
+
+                .mobile-sticky-submit .btn-register {
+                    margin-top: 0;
+                }
+
+            @@-webkit-keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @@keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            /* Ripple effect */
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                pointer-events: none;
+                animation: rippleEffect 0.7s ease forwards;
+            }
+
+            @@-webkit-keyframes rippleEffect {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+
+                100% {
+                    transform: scale(3);
+                    opacity: 0;
+                }
+            }
+
+            @@keyframes rippleEffect {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+
+                100% {
+                    transform: scale(3);
+                    opacity: 0;
+                }
+            }
+            /* ===== SIGN-IN FOOTER LINK ===== */
+            .signin-link {
+                margin-top: 1.6rem;
+                text-align: center;
+                font-size: 0.9rem;
+                color: var(--text-muted);
+            }
+
+                .signin-link a {
+                    color: var(--primary-dark);
+                    font-weight: 700;
+                    text-decoration: none;
+                    border-bottom: 2px solid transparent;
+                    transition: var(--transition);
+                }
+
+                    .signin-link a:hover {
+                        border-bottom-color: var(--primary);
+                    }
+            /* ===== TERMS CHECKBOX ===== */
+            .terms-checkbox {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.6rem;
+                margin: 0.8rem 0 1.2rem 0;
+                font-size: 0.85rem;
+                color: var(--text-muted);
+            }
+
+            .custom-checkbox {
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+                border: 2px solid var(--neutral-3);
+                border-radius: 6px;
+                transition: all 0.25s ease;
+                cursor: pointer;
+                position: relative;
+                margin-top: 1px;
+                background: white;
+            }
+
+                .custom-checkbox:checked {
+                    background: var(--primary);
+                    border-color: var(--primary);
+                }
+
+                    .custom-checkbox:checked::after {
+                        content: '✓';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        color: white;
+                        font-weight: 700;
+                        font-size: 13px;
+                    }
+
+                .custom-checkbox:hover {
+                    border-color: var(--primary);
+                    transform: scale(1.08);
+                }
+
+                .custom-checkbox.is-invalid {
+                    border-color: var(--accent-1);
+                }
+
+                .custom-checkbox.pulse-check {
+                    animation: checkPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+
+            @@-webkit-keyframes checkPulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                40% {
+                    transform: scale(1.35);
+                    box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
+                }
+
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
+                }
+            }
+
+            @@keyframes checkPulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                40% {
+                    transform: scale(1.35);
+                    box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
+                }
+
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
+                }
+            }
+
+            .terms-checkbox label a {
                 color: var(--primary-dark);
-                font-weight: 700;
+                font-weight: 600;
                 text-decoration: none;
                 border-bottom: 2px solid transparent;
                 transition: var(--transition);
             }
 
-                .signin-link a:hover {
+                .terms-checkbox label a:hover {
                     border-bottom-color: var(--primary);
                 }
-
-        /* ===== TERMS CHECKBOX ===== */
-        .terms-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
-            margin: 0.8rem 0 1.2rem 0;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .custom-checkbox {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            border: 2px solid var(--neutral-3);
-            border-radius: 6px;
-            transition: all 0.25s ease;
-            cursor: pointer;
-            position: relative;
-            margin-top: 1px;
-            background: white;
-        }
-
-            .custom-checkbox:checked {
-                background: var(--primary);
-                border-color: var(--primary);
-            }
-
-                .custom-checkbox:checked::after {
-                    content: '✓';
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    color: white;
-                    font-weight: 700;
-                    font-size: 13px;
-                }
-
-            .custom-checkbox:hover {
-                border-color: var(--primary);
-                transform: scale(1.08);
-            }
-
-            .custom-checkbox.is-invalid {
-                border-color: var(--accent-1);
-            }
-
-            .custom-checkbox.pulse-check {
-                animation: checkPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-        @@-webkit-keyframes checkPulse {
-            0% {
-                transform: scale(1);
-            }
-
-            40% {
-                transform: scale(1.35);
-                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
-            }
-        }
-
-        @@keyframes checkPulse {
-            0% {
-                transform: scale(1);
-            }
-
-            40% {
-                transform: scale(1.35);
-                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
-            }
-        }
-
-        .terms-checkbox label a {
-            color: var(--primary-dark);
-            font-weight: 600;
-            text-decoration: none;
-            border-bottom: 2px solid transparent;
-            transition: var(--transition);
-        }
-
-            .terms-checkbox label a:hover {
-                border-bottom-color: var(--primary);
-            }
-
-        /* ===== SUCCESS OVERLAY ===== */
-        .success-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 20, 30, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-            .success-overlay.active {
-                display: flex;
-                animation: fadeUp 0.5s ease;
-            }
-
-        .success-modal {
-            background: white;
-            border-radius: var(--radius);
-            padding: 3.5rem 3rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
-            animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .success-modal::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 5px;
-                background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
-                background-size: 200% 100%;
-                animation: shimmer 2s linear infinite;
-            }
-
-        @@-webkit-keyframes popIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) rotate(-4deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0);
-            }
-        }
-
-        @@keyframes popIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) rotate(-4deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0);
-            }
-        }
-
-        .confetti-container {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            top: -20px;
-            animation: confettiDrop linear forwards;
-            border-radius: 2px;
-        }
-
-            .confetti:nth-child(1) {
-                left: 5%;
-                background: #88d200;
-                animation-duration: 2.6s;
-                animation-delay: 0.1s;
-            }
-
-            .confetti:nth-child(2) {
-                left: 12%;
-                background: #ff6b6b;
-                animation-duration: 3s;
-                animation-delay: 0.3s;
-            }
-
-            .confetti:nth-child(3) {
-                left: 19%;
-                background: #f5a623;
-                animation-duration: 2.9s;
-                animation-delay: 0.2s;
-            }
-
-            .confetti:nth-child(4) {
-                left: 26%;
-                background: #4ecdc4;
-                animation-duration: 3.2s;
-                animation-delay: 0.5s;
-            }
-
-            .confetti:nth-child(5) {
-                left: 33%;
-                background: #4a90d9;
-                animation-duration: 2.7s;
-                animation-delay: 0.4s;
-            }
-
-            .confetti:nth-child(6) {
-                left: 40%;
-                background: #9b59b6;
-                animation-duration: 2.8s;
-                animation-delay: 0.6s;
-            }
-
-            .confetti:nth-child(7) {
-                left: 47%;
-                background: #88d200;
-                animation-duration: 3.1s;
-                animation-delay: 0.2s;
-            }
-
-            .confetti:nth-child(8) {
-                left: 54%;
-                background: #e67e22;
-                animation-duration: 2.5s;
-                animation-delay: 0.7s;
-            }
-
-            .confetti:nth-child(9) {
-                left: 61%;
-                background: #1abc9c;
-                animation-duration: 2.9s;
-                animation-delay: 0.3s;
-            }
-
-            .confetti:nth-child(10) {
-                left: 68%;
-                background: #ff6b6b;
-                animation-duration: 3.3s;
-                animation-delay: 0.5s;
-            }
-
-            .confetti:nth-child(11) {
-                left: 75%;
-                background: #f1c40f;
-                animation-duration: 2.4s;
-                animation-delay: 0.8s;
-            }
-
-            .confetti:nth-child(12) {
-                left: 82%;
-                background: #4ecdc4;
-                animation-duration: 2.6s;
-                animation-delay: 0.4s;
-            }
-
-            .confetti:nth-child(13) {
-                left: 89%;
-                background: #4a90d9;
-                animation-duration: 3s;
-                animation-delay: 0.6s;
-            }
-
-            .confetti:nth-child(14) {
-                left: 96%;
-                background: #9b59b6;
-                animation-duration: 2.7s;
-                animation-delay: 0.9s;
-            }
-
-            .confetti:nth-child(15) {
-                left: 50%;
-                background: #88d200;
-                animation-duration: 2.8s;
-                animation-delay: 0.1s;
-            }
-
-        @@-webkit-keyframes confettiDrop {
-            0% {
-                opacity: 1;
-                transform: translateY(-60px) rotate(0deg) scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(480px) rotate(720deg) scale(0.3);
-            }
-        }
-
-        @@keyframes confettiDrop {
-            0% {
-                opacity: 1;
-                transform: translateY(-60px) rotate(0deg) scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(480px) rotate(720deg) scale(0.3);
-            }
-        }
-
-        .success-icon {
-            font-size: 5rem;
-            color: var(--primary);
-            animation: floatIcon 2.6s ease-in-out infinite;
-            display: inline-block;
-            margin-bottom: 0.8rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        @@-webkit-keyframes floatIcon {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-14px) rotate(6deg);
-            }
-        }
-
-        @@keyframes floatIcon {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-14px) rotate(6deg);
-            }
-        }
-
-        .success-title {
-            color: var(--text-primary);
-            font-weight: 800;
-            font-size: 2rem;
-            margin-bottom: 0.2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-subtitle {
-            color: var(--primary-dark);
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-message {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 1.2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-loading {
-            display: flex;
-            justify-content: center;
-            gap: 0.6rem;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-            .success-loading .dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: var(--primary);
-                animation: pulse 1.2s ease infinite;
-            }
-
-                .success-loading .dot:nth-child(2) {
-                    animation-delay: 0.2s;
-                }
-
-                .success-loading .dot:nth-child(3) {
-                    animation-delay: 0.4s;
-                }
-
-        .redirect-text {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            position: relative;
-            z-index: 1;
-            animation: pulse 1.8s infinite;
-        }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        .toast-container {
-            z-index: 99999;
-        }
-
-        .toast-custom {
-            border: none;
-            border-radius: 14px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-            padding: 0.75rem 1rem;
-        }
-
-            .toast-custom .toast-body {
-                display: flex;
+            /* ===== SUCCESS OVERLAY ===== */
+            .success-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(10, 20, 30, 0.65);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                z-index: 9999;
+                display: none;
                 align-items: center;
-                gap: 0.75rem;
-                font-weight: 500;
+                justify-content: center;
+                padding: 2rem;
             }
 
-        /* ===== RESPONSIVE ===== */
-        @@media (max-width: 992px) {
-            .register-card {
-                padding: 2.5rem 2rem;
-            }
-        }
-
-        @@media (max-width: 768px) {
-            .register-card {
-                padding: 1.8rem 1.2rem;
-                border-radius: 20px;
-            }
-
-            .page-title {
-                font-size: 1.9rem;
-            }
+                .success-overlay.active {
+                    display: flex;
+                    animation: fadeUp 0.5s ease;
+                }
 
             .success-modal {
-                padding: 2.5rem 1.5rem;
-                margin: 1rem;
-            }
-        }
-
-        @@media (max-width: 576px) {
-            .register-wrapper {
-                padding: 0.2rem;
-            }
-
-            .register-card {
-                padding: 1.2rem 0.9rem;
-                border-radius: 16px;
+                background: white;
+                border-radius: var(--radius);
+                padding: 3.5rem 3rem;
+                max-width: 500px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+                animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                position: relative;
+                overflow: hidden;
             }
 
-            .register-page .form-floating .form-control,
-            .register-page .form-floating select.form-control {
-                height: 54px;
-                font-size: 0.85rem;
-                padding: 0.75rem 2.5rem 0.2rem 1rem;
+                .success-modal::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 5px;
+                    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+                    background-size: 200% 100%;
+                    animation: shimmer 2s linear infinite;
+                }
+
+            @@-webkit-keyframes popIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.8) rotate(-4deg);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: scale(1) rotate(0);
+                }
             }
 
-            .btn-register {
-                font-size: 0.95rem;
-                padding: 0.75rem 1.2rem;
+            @@keyframes popIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.8) rotate(-4deg);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: scale(1) rotate(0);
+                }
             }
 
-            .success-icon {
-                font-size: 3.5rem;
-            }
-
-            .success-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* ===== REDUCED MOTION ===== */
-        @@media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-
-            body.register-page {
-                animation: none;
-            }
-
-            .register-card::before {
-                animation: none;
-            }
-
-            .register-card:hover {
-                transform: none !important;
-            }
-
-            .btn-register:hover:not(:disabled) {
-                transform: none !important;
-            }
-
-            .success-modal {
-                animation: none;
+            .confetti-container {
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                overflow: hidden;
             }
 
             .confetti {
-                animation: none !important;
-                opacity: 0.3;
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                top: -20px;
+                animation: confettiDrop linear forwards;
+                border-radius: 2px;
             }
-        }
+
+                .confetti:nth-child(1) {
+                    left: 5%;
+                    background: #88d200;
+                    animation-duration: 2.6s;
+                    animation-delay: 0.1s;
+                }
+
+                .confetti:nth-child(2) {
+                    left: 12%;
+                    background: #ff6b6b;
+                    animation-duration: 3s;
+                    animation-delay: 0.3s;
+                }
+
+                .confetti:nth-child(3) {
+                    left: 19%;
+                    background: #f5a623;
+                    animation-duration: 2.9s;
+                    animation-delay: 0.2s;
+                }
+
+                .confetti:nth-child(4) {
+                    left: 26%;
+                    background: #4ecdc4;
+                    animation-duration: 3.2s;
+                    animation-delay: 0.5s;
+                }
+
+                .confetti:nth-child(5) {
+                    left: 33%;
+                    background: #4a90d9;
+                    animation-duration: 2.7s;
+                    animation-delay: 0.4s;
+                }
+
+                .confetti:nth-child(6) {
+                    left: 40%;
+                    background: #9b59b6;
+                    animation-duration: 2.8s;
+                    animation-delay: 0.6s;
+                }
+
+                .confetti:nth-child(7) {
+                    left: 47%;
+                    background: #88d200;
+                    animation-duration: 3.1s;
+                    animation-delay: 0.2s;
+                }
+
+                .confetti:nth-child(8) {
+                    left: 54%;
+                    background: #e67e22;
+                    animation-duration: 2.5s;
+                    animation-delay: 0.7s;
+                }
+
+                .confetti:nth-child(9) {
+                    left: 61%;
+                    background: #1abc9c;
+                    animation-duration: 2.9s;
+                    animation-delay: 0.3s;
+                }
+
+                .confetti:nth-child(10) {
+                    left: 68%;
+                    background: #ff6b6b;
+                    animation-duration: 3.3s;
+                    animation-delay: 0.5s;
+                }
+
+                .confetti:nth-child(11) {
+                    left: 75%;
+                    background: #f1c40f;
+                    animation-duration: 2.4s;
+                    animation-delay: 0.8s;
+                }
+
+                .confetti:nth-child(12) {
+                    left: 82%;
+                    background: #4ecdc4;
+                    animation-duration: 2.6s;
+                    animation-delay: 0.4s;
+                }
+
+                .confetti:nth-child(13) {
+                    left: 89%;
+                    background: #4a90d9;
+                    animation-duration: 3s;
+                    animation-delay: 0.6s;
+                }
+
+                .confetti:nth-child(14) {
+                    left: 96%;
+                    background: #9b59b6;
+                    animation-duration: 2.7s;
+                    animation-delay: 0.9s;
+                }
+
+                .confetti:nth-child(15) {
+                    left: 50%;
+                    background: #88d200;
+                    animation-duration: 2.8s;
+                    animation-delay: 0.1s;
+                }
+
+            @@-webkit-keyframes confettiDrop {
+                0% {
+                    opacity: 1;
+                    transform: translateY(-60px) rotate(0deg) scale(1);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: translateY(480px) rotate(720deg) scale(0.3);
+                }
+            }
+
+            @@keyframes confettiDrop {
+                0% {
+                    opacity: 1;
+                    transform: translateY(-60px) rotate(0deg) scale(1);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: translateY(480px) rotate(720deg) scale(0.3);
+                }
+            }
+
+            .success-icon {
+                font-size: 5rem;
+                color: var(--primary);
+                animation: floatIcon 2.6s ease-in-out infinite;
+                display: inline-block;
+                margin-bottom: 0.8rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            @@-webkit-keyframes floatIcon {
+                0%, 100% {
+                    transform: translateY(0) rotate(0deg);
+                }
+
+                50% {
+                    transform: translateY(-14px) rotate(6deg);
+                }
+            }
+
+            @@keyframes floatIcon {
+                0%, 100% {
+                    transform: translateY(0) rotate(0deg);
+                }
+
+                50% {
+                    transform: translateY(-14px) rotate(6deg);
+                }
+            }
+
+            .success-title {
+                color: var(--text-primary);
+                font-weight: 800;
+                font-size: 2rem;
+                margin-bottom: 0.2rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .success-subtitle {
+                color: var(--primary-dark);
+                font-weight: 600;
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .success-message {
+                color: var(--text-muted);
+                font-size: 0.95rem;
+                margin-bottom: 1.2rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .success-loading {
+                display: flex;
+                justify-content: center;
+                gap: 0.6rem;
+                margin-bottom: 1rem;
+                position: relative;
+                z-index: 1;
+            }
+
+                .success-loading .dot {
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background: var(--primary);
+                    animation: pulse 1.2s ease infinite;
+                }
+
+                    .success-loading .dot:nth-child(2) {
+                        animation-delay: 0.2s;
+                    }
+
+                    .success-loading .dot:nth-child(3) {
+                        animation-delay: 0.4s;
+                    }
+
+            .redirect-text {
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                position: relative;
+                z-index: 1;
+                animation: pulse 1.8s infinite;
+            }
+            /* ===== TOAST NOTIFICATIONS ===== */
+            .toast-container {
+                z-index: 99999;
+            }
+
+            .toast-custom {
+                border: none;
+                border-radius: 14px;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+                padding: 0.75rem 1rem;
+            }
+
+                .toast-custom .toast-body {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    font-weight: 500;
+                }
+            /* ===== RESPONSIVE ===== */
+            @@media (max-width: 992px) {
+                .register-card {
+                    padding: 2.5rem 2rem;
+                }
+            }
+
+            @@media (max-width: 768px) {
+                .register-card {
+                    padding: 1.8rem 1.2rem;
+                    border-radius: 20px;
+                }
+
+                .page-title {
+                    font-size: 1.9rem;
+                }
+
+                .success-modal {
+                    padding: 2.5rem 1.5rem;
+                    margin: 1rem;
+                }
+            }
+
+            @@media (max-width: 576px) {
+                .register-wrapper {
+                    padding: 0.2rem;
+                }
+
+                .register-card {
+                    padding: 1.2rem 0.9rem;
+                    border-radius: 16px;
+                }
+
+                .register-page .form-floating .form-control,
+                .register-page .form-floating select.form-control {
+                    height: 54px;
+                    font-size: 0.85rem;
+                    padding: 0.75rem 2.5rem 0.2rem 1rem;
+                }
+
+                .btn-register {
+                    font-size: 0.95rem;
+                    padding: 0.75rem 1.2rem;
+                }
+
+                .success-icon {
+                    font-size: 3.5rem;
+                }
+
+                .success-title {
+                    font-size: 1.5rem;
+                }
+                /* Larger tap targets for thumb accuracy */
+                .custom-checkbox {
+                    width: 24px;
+                    height: 24px;
+                    min-width: 24px;
+                }
+
+                .field-input-wrap .password-toggle {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 1.3rem;
+                }
+                /* Room above the sticky submit bar so it never covers content */
+                body.register-page {
+                    padding-bottom: 5.5rem;
+                }
+            }
+            /* ===== REDUCED MOTION ===== */
+            @@media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+
+                body.register-page {
+                    animation: none;
+                }
+
+                .register-card::before {
+                    animation: none;
+                }
+
+                .register-card:hover {
+                    transform: none !important;
+                }
+
+                .btn-register:hover:not(:disabled) {
+                    transform: none !important;
+                }
+
+                .success-modal {
+                    animation: none;
+                }
+
+                .confetti {
+                    animation: none !important;
+                    opacity: 0.3;
+                }
+            }
     </style>
 </head>
 
@@ -1541,100 +1711,121 @@
                     </div>
                     <div asp-validation-summary="ModelOnly" style="display:none;"></div>
 
-                    <!-- Username -->
-                    <div class="form-floating">
-                        <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" id="Input_Username" maxlength="30" aria-describedby="usernameError usernameSuccess" />
-                        <label asp-for="Input.Username"><i class="bi bi-person me-1"></i> Username</label>
-                        <span asp-validation-for="Input.Username" class="text-danger" id="usernameError"></span>
-                        <span class="text-success username-success" id="usernameSuccess" style="display:none;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Username available
-                        </span>
-                    </div>
+                    <!-- ===== GROUP: ACCOUNT ===== -->
+                    <div class="field-group">
+                        <div class="field-group-caption"><i class="bi bi-person-badge"></i> Account</div>
 
-                    <!-- Email -->
-                    <div class="form-floating">
-                        <input asp-for="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="name@@example.com" id="Input_Email" aria-describedby="emailError emailSuccess" />
-                        <label asp-for="Input.Email"><i class="bi bi-envelope me-1"></i> Email</label>
-                        <span asp-validation-for="Input.Email" class="text-danger" id="emailError"></span>
-                        <span class="text-success email-success" id="emailSuccess" style="display:none;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Valid email
-                        </span>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="form-floating">
-                        <input asp-for="Input.PhoneNumber" type="tel" inputmode="numeric" class="form-control" autocomplete="tel" aria-required="true" placeholder="03xxxxxxxxx" id="Input_PhoneNumber" maxlength="11" aria-describedby="phoneError phoneSuccess" />
-                        <label asp-for="Input.PhoneNumber"><i class="bi bi-telephone me-1"></i> Phone (03xxxxxxxxx)</label>
-                        <span asp-validation-for="Input.PhoneNumber" class="text-danger" id="phoneError"></span>
-                        <span class="text-success phone-success" id="phoneSuccess" style="display:none;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Valid phone number
-                        </span>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="form-floating">
-                        <div class="field-input-wrap">
-                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_Password" aria-describedby="passwordError passwordStrengthText" />
-                            <label asp-for="Input.Password"><i class="bi bi-lock me-1"></i> Password</label>
-                            <button type="button" class="password-toggle" onclick="togglePassword('Input_Password', this)" aria-label="Toggle password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
+                        <!-- Username -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" id="Input_Username" maxlength="30" aria-describedby="usernameError usernameSuccess usernameChecking" />
+                            <label asp-for="Input.Username"><i class="bi bi-person me-1"></i> Username</label>
+                            <span asp-validation-for="Input.Username" class="text-danger" id="usernameError"></span>
+                            <div aria-live="polite">
+                                <span class="field-checking" id="usernameChecking" style="display:none;">
+                                    <span class="mini-spinner" aria-hidden="true"></span> Checking availability…
+                                </span>
+                                <span class="text-success username-success" id="usernameSuccess" style="display:none;">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Username available
+                                </span>
+                            </div>
                         </div>
-                        <span asp-validation-for="Input.Password" class="text-danger" id="passwordError"></span>
 
-                        <div class="password-strength" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                            <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                        <!-- Email -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="name@@example.com" id="Input_Email" aria-describedby="emailError emailSuccess" />
+                            <label asp-for="Input.Email"><i class="bi bi-envelope me-1"></i> Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger" id="emailError"></span>
+                            <span class="text-success email-success" id="emailSuccess" style="display:none;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Valid email
+                            </span>
                         </div>
-                        <span class="password-strength-text" id="passwordStrengthText"></span>
 
-                        <div class="password-requirements" id="passwordRequirements" role="list">
-                            <span class="password-requirement" id="req-length" role="listitem"><i class="bi bi-circle"></i> 8+ chars</span>
-                            <span class="password-requirement" id="req-uppercase" role="listitem"><i class="bi bi-circle"></i> Uppercase</span>
-                            <span class="password-requirement" id="req-lowercase" role="listitem"><i class="bi bi-circle"></i> Lowercase</span>
-                            <span class="password-requirement" id="req-number" role="listitem"><i class="bi bi-circle"></i> Number</span>
-                            <span class="password-requirement" id="req-special" role="listitem"><i class="bi bi-circle"></i> Special</span>
+                        <!-- Phone -->
+                        <div class="form-floating">
+                            <input asp-for="Input.PhoneNumber" type="tel" inputmode="numeric" class="form-control" autocomplete="tel" aria-required="true" placeholder="03xxxxxxxxx" id="Input_PhoneNumber" maxlength="11" aria-describedby="phoneError phoneSuccess phoneHint" />
+                            <label asp-for="Input.PhoneNumber"><i class="bi bi-telephone me-1"></i> Phone (03xxxxxxxxx)</label>
+                            <span asp-validation-for="Input.PhoneNumber" class="text-danger" id="phoneError"></span>
+                            <span class="text-success phone-success" id="phoneSuccess" style="display:none;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Valid phone number
+                            </span>
+                            <span class="field-hint" id="phoneHint">We'll only use this to help secure your account.</span>
                         </div>
                     </div>
 
-                    <!-- Confirm Password -->
-                    <div class="form-floating">
-                        <div class="field-input-wrap">
-                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_ConfirmPassword" aria-describedby="confirmError confirmSuccess" />
-                            <label asp-for="Input.ConfirmPassword"><i class="bi bi-shield-lock me-1"></i> Confirm Password</label>
-                            <button type="button" class="password-toggle" onclick="togglePassword('Input_ConfirmPassword', this)" aria-label="Toggle confirm password visibility">
-                                <i class="bi bi-eye"></i>
-                            </button>
+                    <!-- ===== GROUP: SECURITY ===== -->
+                    <div class="field-group">
+                        <div class="field-group-caption"><i class="bi bi-shield-lock"></i> Security</div>
+
+                        <!-- Password -->
+                        <div class="form-floating">
+                            <div class="field-input-wrap">
+                                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_Password" aria-describedby="passwordError passwordStrengthText" />
+                                <label asp-for="Input.Password"><i class="bi bi-lock me-1"></i> Password</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('Input_Password', this)" aria-label="Toggle password visibility">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.Password" class="text-danger" id="passwordError"></span>
+
+                            <div class="password-strength" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                            </div>
+                            <span class="password-strength-text" id="passwordStrengthText"></span>
+
+                            <div class="password-requirements" id="passwordRequirements" role="list">
+                                <span class="password-requirement" id="req-length" role="listitem"><i class="bi bi-circle"></i> 8+ chars</span>
+                                <span class="password-requirement" id="req-uppercase" role="listitem"><i class="bi bi-circle"></i> Uppercase</span>
+                                <span class="password-requirement" id="req-lowercase" role="listitem"><i class="bi bi-circle"></i> Lowercase</span>
+                                <span class="password-requirement" id="req-number" role="listitem"><i class="bi bi-circle"></i> Number</span>
+                                <span class="password-requirement" id="req-special" role="listitem"><i class="bi bi-circle"></i> Special</span>
+                            </div>
                         </div>
-                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger" id="confirmError"></span>
-                        <span class="text-success confirm-success" id="confirmSuccess" style="display:none;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Passwords match
-                        </span>
+
+                        <!-- Confirm Password -->
+                        <div class="form-floating">
+                            <div class="field-input-wrap">
+                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_ConfirmPassword" aria-describedby="confirmError confirmSuccess" />
+                                <label asp-for="Input.ConfirmPassword"><i class="bi bi-shield-lock me-1"></i> Confirm Password</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('Input_ConfirmPassword', this)" aria-label="Toggle confirm password visibility">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger" id="confirmError"></span>
+                            <span class="text-success confirm-success" id="confirmSuccess" style="display:none;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Passwords match
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- Gender -->
-                    <div class="form-floating">
-                        <select asp-for="Input.Gender" class="form-control" id="Input_Gender" aria-required="true" aria-describedby="genderError">
-                            <option value="">Select Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <label asp-for="Input.Gender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
-                        <span asp-validation-for="Input.Gender" class="text-danger" id="genderError"></span>
-                    </div>
+                    <!-- ===== GROUP: PROFILE ===== -->
+                    <div class="field-group">
+                        <div class="field-group-caption"><i class="bi bi-person-vcard"></i> Profile</div>
 
-                    <!-- Address -->
-                    <div class="form-floating">
-                        <input asp-for="Input.Address" class="form-control" placeholder="Street, city, country" id="Input_Address" aria-describedby="addressError" />
-                        <label asp-for="Input.Address"><i class="bi bi-house-door me-1"></i> Address (min 15 characters)</label>
-                        <span asp-validation-for="Input.Address" class="text-danger" id="addressError"></span>
-                    </div>
+                        <!-- Gender -->
+                        <div class="form-floating">
+                            <select asp-for="Input.Gender" class="form-control" id="Input_Gender" aria-required="true" aria-describedby="genderError">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <label asp-for="Input.Gender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
+                            <span asp-validation-for="Input.Gender" class="text-danger" id="genderError"></span>
+                        </div>
 
-                    <!-- Age -->
-                    <div class="form-floating">
-                        <input asp-for="Input.Age" type="number" class="form-control" placeholder="18" min="1" max="120" id="Input_Age" aria-describedby="ageError" />
-                        <label asp-for="Input.Age"><i class="bi bi-calendar2 me-1"></i> Age</label>
-                        <span asp-validation-for="Input.Age" class="text-danger" id="ageError"></span>
+                        <!-- Address -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Address" class="form-control" placeholder="Street, city, country" id="Input_Address" aria-describedby="addressError" />
+                            <label asp-for="Input.Address"><i class="bi bi-house-door me-1"></i> Address (min 15 characters)</label>
+                            <span asp-validation-for="Input.Address" class="text-danger" id="addressError"></span>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="form-floating">
+                            <input asp-for="Input.Age" type="number" class="form-control" placeholder="18" min="1" max="120" id="Input_Age" aria-describedby="ageError" />
+                            <label asp-for="Input.Age"><i class="bi bi-calendar2 me-1"></i> Age</label>
+                            <span asp-validation-for="Input.Age" class="text-danger" id="ageError"></span>
+                        </div>
                     </div>
 
                     <!-- Terms Checkbox -->
@@ -1651,8 +1842,10 @@
                         <span class="spinner"></span>
                     </button>
 
-                    <div class="mt-3 text-center" style="font-size:0.8rem; color: var(--text-muted);">
-                        <i class="bi bi-shield-check me-1" style="color: var(--primary);"></i> Secure & encrypted
+                    <div class="trust-bar">
+                        <span class="trust-pill"><i class="bi bi-lock-fill"></i> Encrypted</span>
+                        <span class="trust-pill"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                        <span class="trust-pill"><i class="bi bi-eye-slash-fill"></i> Private</span>
                     </div>
 
                     <div class="signin-link">
@@ -1661,6 +1854,15 @@
                 </form>
             </div>
         </div>
+    </div>
+
+    <!-- Sticky mobile submit bar (mirrors the real submit button on small screens) -->
+    <div class="mobile-sticky-submit" id="mobileStickySubmit">
+        <button type="button" class="btn-register" id="mobileStickyBtn" disabled>
+            <i class="bi bi-person-plus"></i>
+            <span class="btn-text">Create Account</span>
+            <span class="spinner"></span>
+        </button>
     </div>
 
     <!-- ===== SCRIPTS ===== -->
@@ -1742,15 +1944,20 @@
 
         function checkUsernameAvailability(username) {
             const usernameField = document.getElementById('Input_Username');
+            const checkingEl = document.getElementById('usernameChecking');
+            const successEl = document.getElementById('usernameSuccess');
 
             if (usernameCheckTimer) clearTimeout(usernameCheckTimer);
 
             if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
                 usernameAvailable = null;
+                checkingEl.style.display = 'none';
                 return;
             }
 
             usernameAvailable = null;
+            successEl.style.display = 'none';
+            checkingEl.style.display = 'inline-flex';
 
             usernameCheckTimer = setTimeout(() => {
                 const url = new URL(window.location.href);
@@ -1762,9 +1969,13 @@
                     .then(data => {
                         if (usernameField.value !== username) return;
                         usernameAvailable = !!data.available;
+                        checkingEl.style.display = 'none';
                         validateForm();
                     })
-                    .catch(() => { usernameAvailable = null; });
+                    .catch(() => {
+                        usernameAvailable = null;
+                        checkingEl.style.display = 'none';
+                    });
             }, 450);
         }
 
@@ -1937,12 +2148,28 @@
                 terms.classList.remove('is-valid', 'is-invalid');
             }
 
+            const wasDisabled = submitBtn.disabled;
             submitBtn.disabled = !valid;
+
+            // Fire the "armed" glow pulse only on the moment it becomes enabled
+            if (wasDisabled && !submitBtn.disabled) {
+                submitBtn.classList.remove('armed');
+                void submitBtn.offsetWidth;
+                submitBtn.classList.add('armed');
+            }
+
+            // Keep the mobile sticky submit button in sync
+            const mobileBtn = document.getElementById('mobileStickyBtn');
+            if (mobileBtn) mobileBtn.disabled = submitBtn.disabled;
+
             updateProgress();
             return valid;
         }
 
-        // ===== PROGRESS INDICATOR =====
+        // ===== PROGRESS INDICATOR (animated count-up) =====
+        let progressAnimFrame = null;
+        let progressDisplayedDone = 0;
+
         function updateProgress() {
             const fields = [
                 document.getElementById('Input_Username').classList.contains('is-valid'),
@@ -1965,8 +2192,31 @@
 
             fill.style.width = pct + '%';
             fill.classList.toggle('complete', done === total);
-            count.textContent = `${done} / ${total}`;
             track.setAttribute('aria-valuenow', pct);
+
+            // Animate the "x / total" counter ticking up or down to the new value
+            if (progressAnimFrame) cancelAnimationFrame(progressAnimFrame);
+            const start = progressDisplayedDone;
+            const end = done;
+            if (start === end) {
+                count.textContent = `${end} / ${total}`;
+                return;
+            }
+            const duration = 300;
+            const startTime = performance.now();
+
+            function tick(now) {
+                const t = Math.min(1, (now - startTime) / duration);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const current = Math.round(start + (end - start) * eased);
+                count.textContent = `${current} / ${total}`;
+                if (t < 1) {
+                    progressAnimFrame = requestAnimationFrame(tick);
+                } else {
+                    progressDisplayedDone = end;
+                }
+            }
+            progressAnimFrame = requestAnimationFrame(tick);
         }
 
         // ===== SHAKE A FIELD WRAPPER =====
@@ -2093,6 +2343,7 @@
                     checkUsernameAvailability(this.value);
                 } else {
                     usernameAvailable = null;
+                    document.getElementById('usernameChecking').style.display = 'none';
                     validateForm();
                 }
             });
@@ -2122,6 +2373,33 @@
             const form = document.getElementById('registerForm');
             const submitBtn = document.getElementById('registerSubmit');
             let submitting = false;
+
+            // ===== MOBILE STICKY SUBMIT BAR =====
+            // Shows a duplicate submit button pinned to the bottom on small
+            // screens once the real submit button scrolls out of view.
+            const mobileStickyBar = document.getElementById('mobileStickySubmit');
+            const mobileStickyBtn = document.getElementById('mobileStickyBtn');
+
+            if (mobileStickyBar && mobileStickyBtn && 'IntersectionObserver' in window) {
+                const stickyObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        const isMobile = window.matchMedia('(max-width: 576px)').matches;
+                        mobileStickyBar.classList.toggle('visible', isMobile && !entry.isIntersecting);
+                    });
+                }, { threshold: 0 });
+                stickyObserver.observe(submitBtn);
+
+                window.addEventListener('resize', () => {
+                    if (!window.matchMedia('(max-width: 576px)').matches) {
+                        mobileStickyBar.classList.remove('visible');
+                    }
+                });
+
+                mobileStickyBtn.addEventListener('click', function(e) {
+                    createRipple(e, mobileStickyBtn);
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                });
+            }
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2156,9 +2434,18 @@
                 // Ripple
                 createRipple(e, submitBtn);
 
+                function setSubmitLoading(isLoading) {
+                    submitBtn.classList.toggle('loading', isLoading);
+                    submitBtn.disabled = isLoading;
+                    const mobileBtn = document.getElementById('mobileStickyBtn');
+                    if (mobileBtn) {
+                        mobileBtn.classList.toggle('loading', isLoading);
+                        mobileBtn.disabled = isLoading;
+                    }
+                }
+
                 // Loading state
-                submitBtn.classList.add('loading');
-                submitBtn.disabled = true;
+                setSubmitLoading(true);
                 submitting = true;
 
                 const formData = new FormData(form);
@@ -2187,12 +2474,12 @@
                         hideErrorSummary();
                         document.getElementById('successOverlay').classList.add('active');
                         form.style.display = 'none';
+                        if (mobileStickyBar) mobileStickyBar.classList.remove('visible');
                         setTimeout(() => {
                             window.location.href = '/';
                         }, 2200);
                     } else {
-                        submitBtn.classList.remove('loading');
-                        submitBtn.disabled = false;
+                        setSubmitLoading(false);
                         submitting = false;
 
                         if (looksLikeDuplicate) {
@@ -2221,8 +2508,7 @@
                     }
                 })
                 .catch(() => {
-                    submitBtn.classList.remove('loading');
-                    submitBtn.disabled = false;
+                    setSubmitLoading(false);
                     submitting = false;
                     showErrorSummary('We couldn\'t reach the server. Please check your connection and try again.', null);
                     showToast('Network error. Please check your connection.', 'danger');
