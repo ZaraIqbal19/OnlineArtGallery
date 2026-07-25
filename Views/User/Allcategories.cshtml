@@ -8,66 +8,21 @@
     var subCategories = ViewBag.SubCategories as List<Art_Gallery.Models.SubCategory>;
     var maxSubCount = Model?.Max(c => subCategories?.Count(s => s.CategoryId == c.Id) ?? 0) ?? 0;
 
-    // ---------------------------------------------------------------
-    // Normalizes whatever is stored in Categoryimage into a correct,
-    // root-relative URL the browser can actually resolve.
-    // Handles: bare filenames, paths without a leading slash,
-    // paths already containing "images/categories", and full URLs.
-    // ---------------------------------------------------------------
-    string GetCategoryImageUrl(string? raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw))
-            return "";
-
-        var value = raw.Trim().Replace("\\", "/");
-
-        // Already a full/external URL - leave it alone
-        if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            return value;
-        }
-
-        // Strip any leading tilde/slash so we can rebuild cleanly
-        value = value.TrimStart('~', '/');
-
-        // If it accidentally contains a full Windows path, just take the filename
-        if (value.Contains(":/"))
-        {
-            value = value.Split('/').Last();
-        }
-
-        // If the stored value already includes the images/categories folder, keep it
-        if (value.StartsWith("images/categories/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "/" + value;
-        }
-
-        // If it includes "images/" but not the categories subfolder, respect it as-is
-        if (value.StartsWith("images/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "/" + value;
-        }
-
-        // Otherwise assume it's a bare filename and point it at the categories folder
-        var fileName = value.Contains("/") ? value.Split('/').Last() : value;
-        return "/images/categories/" + fileName;
-    }
 }
 
 <style>
     /* Color Theme Variables */
     :root {
-        --primary-green: #88d200;
-        --dark-green: #6fa800;
-        --light-green: #d4f09b;
-        --ultra-light-green: #f0fae6;
+        --primary-red: #88d200;
+        --dark-red: #6fa800;
+        --light-red: #d4f09b;
+        --ultra-light-red: #f0fae6;
     }
 
     /* Section Styling */
     .artify-categories-section {
         padding: 70px 0;
-        background: linear-gradient(180deg, #f8faf6 0%, #f2f7ec 100%);
+        background: linear-gradient(180deg, #fbfffa 0%, #f6fff5 100%);
     }
 
     .section-title {
@@ -77,20 +32,20 @@
 
     .artify-eyebrow {
         display: inline-block;
-        background: var(--ultra-light-green);
-        color: var(--dark-green);
+        background: var(--ultra-light-red);
+        color: var(--dark-red);
         padding: 6px 20px;
         border-radius: 50px;
         font-size: 14px;
         font-weight: 600;
         letter-spacing: 1px;
         margin-bottom: 14px;
-        border: 1px solid var(--light-green);
+        border: 1px solid var(--light-red);
     }
 
         .artify-eyebrow i {
             margin-right: 8px;
-            color: var(--primary-green);
+            color: var(--primary-red);
         }
 
     .section-title .title {
@@ -102,7 +57,7 @@
     }
 
         .section-title .title span {
-            color: var(--primary-green);
+            color: var(--primary-red);
         }
 
     .section-title .subtitle {
@@ -113,19 +68,18 @@
         margin: 0 auto;
     }
 
-    /* Shop Card */
+    /* Shop Card - diagonal green panel always visible, text always visible */
     .shop {
         position: relative;
         overflow: hidden;
         margin: 15px 0px;
         border-radius: 20px;
-        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.5s ease;
+        height: 230px;
         cursor: pointer;
-        box-shadow: 0 6px 24px rgba(20, 40, 10, 0.06);
-        background: #fff;
-        height: 100%;
+        box-shadow: 0 8px 24px rgba(0, 20, 4, 0.1);
         opacity: 0;
         animation: shopFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
     }
 
     @@keyframes shopFadeIn {
@@ -141,300 +95,151 @@
     }
 
     .shop:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 40px rgba(20, 40, 10, 0.14);
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(0, 20, 4, 0.18);
     }
 
-        /* Green Gradient Overlay */
-        .shop:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0px;
-            width: 65%;
-            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-            opacity: 0.92;
-            transform: skewX(-45deg) scaleX(1.1);
-            transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform-origin: left;
-            z-index: 4;
-        }
+    /* Full-bleed background image */
+    .shop-media {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: var(--ultra-light-red);
+        overflow: hidden;
+    }
 
-        .shop:after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 1px;
+        .shop-media img {
             width: 100%;
-            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-            opacity: 0.92;
-            transform: skewX(-45deg) translateX(-100%) scaleX(1.1);
-            transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            z-index: 4;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        .shop:hover:before {
-            transform: skewX(-30deg) scaleX(1.1);
-            opacity: 1;
+    .shop:hover .shop-media img {
+        transform: scale(1.08);
+    }
+
+    /* Diagonal green panel - always on, not hover-triggered */
+    .shop-panel {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 55%, #3d6600 100%);
+        clip-path: polygon(0 0, 62% 0, 46% 100%, 0 100%);
+        pointer-events: none;
+    }
+
+    /* Text + CTA, always visible, sitting on the green panel */
+    .shop-content {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 58%;
+        padding: 24px 16px 24px 26px;
+        pointer-events: none;
+    }
+
+        .shop-content h3 {
+            color: #fff;
+            font-weight: 800;
+            font-size: 21px;
+            line-height: 1.28;
+            margin: 0 0 18px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.15);
         }
 
-        .shop:hover:after {
-            transform: skewX(-30deg) translateX(-100%) scaleX(1.1);
-            opacity: 1;
+        .shop-content .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border: 1.5px solid rgba(255,255,255,0.7);
+            border-radius: 30px;
+            padding: 9px 18px;
+            width: fit-content;
+            max-width: none;
+            text-decoration: none;
+            transition: background 0.25s ease, transform 0.2s ease;
+            pointer-events: auto;
         }
 
-        /* Shop Image */
-        .shop .shop-img {
-            position: relative;
-            background-color: var(--ultra-light-green);
-            z-index: -1;
-            overflow: hidden;
-            height: 280px;
-        }
-
-            .shop .shop-img > img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
-                opacity: 0;
-                background: var(--ultra-light-green);
+            .shop-content .cta-btn:hover {
+                background: rgba(255,255,255,0.18);
+                transform: translateY(-2px);
+                color: #fff;
+                text-decoration: none;
             }
 
-                .shop .shop-img > img.loaded {
-                    opacity: 1;
-                }
-
-        .shop:hover .shop-img > img {
-            transform: scale(1.2);
-        }
+            .shop-content .cta-btn i {
+                font-size: 13px;
+            }
 
     /* Badges */
     .shop-icon-badge {
         position: absolute;
-        top: 18px;
-        left: 18px;
-        z-index: 5;
-        background: rgba(255,255,255,0.95);
-        color: var(--dark-green);
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
+        top: 14px;
+        left: 14px;
+        z-index: 4;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--dark-red);
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255,255,255,0.3);
+        font-size: 13px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-
-    .shop-popular-badge {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        z-index: 5;
-        background: linear-gradient(135deg, #FF6B6B, #ee5a24);
-        color: #fff;
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(238, 90, 36, 0.3);
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-        .shop-popular-badge i {
-            margin-right: 6px;
-        }
 
     .shop-count-badge {
         position: absolute;
-        bottom: 18px;
-        left: 18px;
-        z-index: 5;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(10px);
-        color: #fff;
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        border: 1px solid rgba(255,255,255,0.1);
+        top: 14px;
+        right: 14px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,0.95);
+        color: var(--dark-red);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 13px;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
     }
 
         .shop-count-badge i {
-            margin-right: 6px;
+            font-size: 9px;
         }
 
-    .shop-explore-tag {
+    .shop-popular-badge {
         position: absolute;
-        bottom: 18px;
-        right: 18px;
-        z-index: 5;
-        background: rgba(255,255,255,0.95);
-        color: var(--dark-green);
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border: 1px solid var(--light-green);
-        opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.4s ease;
-    }
-
-    .shop:hover .shop-explore-tag {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .shop-explore-tag i {
-        margin-right: 6px;
-    }
-
-    /* Shop Body */
-    .shop .shop-body {
-        position: absolute;
-        top: 0;
-        width: 75%;
-        padding: 40px 35px;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        height: 100%;
-        opacity: 0;
-        transform: translateX(-40px) scale(0.95);
-        transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    .shop:hover .shop-body {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-
-    .shop .shop-body h3 {
-        color: #FFF;
-        font-weight: 800;
-        font-size: 28px;
-        transform: translateY(20px);
-        transition: all 0.6s ease 0.1s;
-        text-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        letter-spacing: -0.5px;
-        margin-bottom: 8px;
-    }
-
-        .shop .shop-body h3 small {
-            display: block;
-            font-size: 14px;
-            font-weight: 400;
-            opacity: 0.9;
-            margin-top: 6px;
-            letter-spacing: 1px;
-        }
-
-    .shop:hover .shop-body h3 {
-        transform: translateY(0);
-    }
-
-    .shop .shop-body .cta-btn {
-        color: #FFF;
-        text-transform: uppercase;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        padding: 10px 0;
-        width: fit-content;
-        font-size: 14px;
-        letter-spacing: 1.5px;
-        opacity: 0;
-        transform: translateY(15px);
-        transition: all 0.6s ease 0.2s;
-        text-decoration: none;
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid rgba(255,255,255,0.25);
-    }
-
-    .shop:hover .shop-body .cta-btn {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .shop .shop-body .cta-btn:hover {
-        transform: translateX(12px);
-        border-bottom-color: #fff;
+        bottom: 14px;
+        right: 14px;
+        z-index: 4;
+        background: linear-gradient(135deg, #a8e063, #6fa800);
         color: #fff;
-        text-decoration: none;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        box-shadow: 0 4px 12px rgba(111, 168, 0, 0.35);
     }
 
-    .shop .shop-body .cta-btn i {
-        transition: all 0.4s ease;
-        font-size: 18px;
-    }
-
-    .shop .shop-body .cta-btn:hover i {
-        transform: translateX(8px) scale(1.15);
-    }
-
-    /* Fallback when no image / image fails to load */
-    .no-image-fallback {
-        width: 100%;
-        height: 280px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 80px;
-        color: white;
-        font-weight: bold;
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-    }
-
-        .no-image-fallback .category-initial {
-            font-size: 120px;
-            font-weight: 800;
-            opacity: 0.3;
-            position: absolute;
-            right: -20px;
-            bottom: -40px;
-            color: rgba(255,255,255,0.2);
+        .shop-popular-badge i {
+            margin-right: 5px;
         }
-
-        .no-image-fallback .category-icon {
-            font-size: 64px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .no-image-fallback .category-label {
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-
-    /* Different background colors for fallback */
-    .fallback-1 { background: linear-gradient(135deg, #88d200, #6fa800); }
-    .fallback-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .fallback-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-    .fallback-4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-    .fallback-5 { background: linear-gradient(135deg, #fa709a, #fee140); }
-    .fallback-6 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
-    .fallback-7 { background: linear-gradient(135deg, #fccb90, #d57eeb); }
-    .fallback-8 { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
-    .fallback-9 { background: linear-gradient(135deg, #f6d365, #fda085); }
-    .fallback-10 { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
 
     /* Empty state */
     .categories-empty-state {
@@ -445,7 +250,7 @@
 
         .categories-empty-state i {
             font-size: 48px;
-            color: var(--light-green);
+            color: var(--light-red);
             margin-bottom: 16px;
             display: block;
         }
@@ -456,60 +261,46 @@
             font-size: 28px;
         }
 
-        .shop .shop-body {
-            padding: 30px 25px;
-            width: 85%;
+        .shop {
+            height: 200px;
         }
 
-            .shop .shop-body h3 {
-                font-size: 22px;
+        .shop-content {
+            max-width: 64%;
+            padding: 18px 14px 18px 20px;
+        }
+
+            .shop-content h3 {
+                font-size: 17px;
+                margin-bottom: 14px;
             }
 
-        .shop .shop-img,
-        .no-image-fallback {
-            height: 220px;
-        }
+            .shop-content .cta-btn {
+                font-size: 11px;
+                padding: 7px 14px;
+            }
 
-        .shop-count-badge,
-        .shop-explore-tag {
-            font-size: 10px;
-            padding: 4px 12px;
-        }
-
-        .no-image-fallback .category-icon {
-            font-size: 48px;
-        }
-
-        .no-image-fallback .category-initial {
-            font-size: 80px;
+        .shop-panel {
+            clip-path: polygon(0 0, 68% 0, 50% 100%, 0 100%);
         }
     }
 
     @@media (max-width: 576px) {
-        .shop .shop-body h3 {
-            font-size: 18px;
-        }
-
-        .shop .shop-body .cta-btn {
-            font-size: 12px;
-        }
-
-        .shop .shop-img,
-        .no-image-fallback {
+        .shop {
             height: 180px;
         }
 
-            .no-image-fallback .category-icon {
-                font-size: 36px;
-            }
+        .shop-content h3 {
+            font-size: 15px;
+        }
 
-            .no-image-fallback .category-label {
-                font-size: 12px;
-            }
+        .shop-panel {
+            clip-path: polygon(0 0, 78% 0, 55% 100%, 0 100%);
+        }
 
-            .no-image-fallback .category-initial {
-                font-size: 60px;
-            }
+        .shop-content {
+            max-width: 74%;
+        }
     }
 </style>
 
@@ -526,8 +317,6 @@
 
             @{
                 int index = 0;
-                string[] fallbackColors = { "fallback-1", "fallback-2", "fallback-3", "fallback-4", "fallback-5", "fallback-6", "fallback-7", "fallback-8", "fallback-9", "fallback-10" };
-                string[] icons = { "fa-paint-brush", "fa-camera", "fa-music", "fa-sculpture", "fa-pencil", "fa-palette", "fa-artstation", "fa-image", "fa-cubes", "fa-gem" };
             }
 
             @if (Model == null || !Model.Any())
@@ -545,65 +334,31 @@
                 {
                     var subCount = subCategories?.Count(s => s.CategoryId == category.Id) ?? 0;
                     var isMostPopular = maxSubCount > 0 && subCount == maxSubCount;
-                    var colorClass = fallbackColors[index % fallbackColors.Length];
-                    var icon = icons[index % icons.Length];
-                    var firstLetter = category.Name?.FirstOrDefault().ToString().ToUpper() ?? "A";
-                    var imageUrl = GetCategoryImageUrl(category.Categoryimage);
+                    var imageUrl = category.Categoryimage;
                     var delay = (index % 6) * 0.08;
                     index++;
 
                     <div class="col-md-4 col-6 mb-4">
                         <div class="shop" style="animation-delay:@delay.ToString("0.00")s">
-                            <div class="shop-img">
-                                <span class="shop-icon-badge"><i class="fa fa-tag"></i></span>
-
-                                @if (isMostPopular)
-                                {
-                                    <span class="shop-popular-badge"><i class="fa fa-fire"></i> Most Popular</span>
-                                }
-
-                                <span class="shop-count-badge"><i class="fa fa-cube"></i> @subCount items</span>
-                                <span class="shop-explore-tag"><i class="fa fa-arrow-circle-right"></i> Tap to explore</span>
-
-                                @if (!string.IsNullOrEmpty(imageUrl))
-                                {
-                                    <!-- Real image with a JS fallback: if the file 404s, swap to the styled icon card -->
-                                    <img src="@imageUrl"
-                                         alt="@category.Name"
-                                         loading="lazy"
-                                         onload="this.classList.add('loaded')"
-                                         onerror="this.onerror=null; this.replaceWith(Object.assign(document.createElement('div'), { innerHTML: document.getElementById('fallback-@category.Id').innerHTML, className: 'no-image-fallback @colorClass' }));" />
-                                    <template id="fallback-@category.Id">
-                                        <div style="text-align: center; z-index: 2; position: relative;">
-                                            <span class="category-icon"><i class="fa @icon"></i></span>
-                                            <div class="category-label">@category.Name</div>
-                                        </div>
-                                        <span class="category-initial">@firstLetter</span>
-                                    </template>
-                                }
-                                else
-                                {
-                                    <!-- No image on record - styled fallback -->
-                                    <div class="no-image-fallback @colorClass">
-                                        <div style="text-align: center; z-index: 2; position: relative;">
-                                            <span class="category-icon">
-                                                <i class="fa @icon"></i>
-                                            </span>
-                                            <div class="category-label">@category.Name</div>
-                                        </div>
-                                        <span class="category-initial">@firstLetter</span>
-                                    </div>
-                                }
+                            <div class="shop-media">
+                                <img src="@imageUrl" alt="@category.Name" loading="lazy" />
                             </div>
-                            <div class="shop-body">
-                                <h3>
-                                    @category.Name
-                                    <small>@subCount subcategories</small>
-                                </h3>
+                            <div class="shop-panel"></div>
+
+                            <span class="shop-icon-badge"><i class="fa fa-tag"></i></span>
+                            <span class="shop-count-badge"><i class="fa fa-cube"></i> @subCount items</span>
+
+                            <div class="shop-content">
+                                <h3>@category.Name<br>Collection</h3>
                                 <a href="#" class="cta-btn">
-                                    Explore <i class="fa fa-arrow-circle-right"></i>
+                                    Shop Now <i class="fa fa-arrow-circle-right"></i>
                                 </a>
                             </div>
+
+                            @if (isMostPopular)
+                            {
+                                <span class="shop-popular-badge"><i class="fa fa-fire"></i> Most Popular</span>
+                            }
                         </div>
                     </div>
                 }

@@ -30,9 +30,25 @@ namespace Art_Gallery.Controllers
 
         public IActionResult Index()
         {
+            var featured = bridge.products
+                .Include(p => p.SubCategory)
+                    .ThenInclude(sc => sc.category)
+                .Where(p => p.Status == "Available")
+                .OrderByDescending(p => p.Id)
+                .Take(9)
+                .ToList();
+
+            ViewBag.FeaturedExhibits = featured;
+            ViewBag.GalleryImages = featured;
+
+            ViewBag.Feedbacks = bridge.feedbacks
+                .Include(f => f.User)
+                .OrderByDescending(f => f.Id)
+                .Take(6)
+                .ToList();
+
             return View();
         }
-
         public IActionResult About()
         {
             return View();

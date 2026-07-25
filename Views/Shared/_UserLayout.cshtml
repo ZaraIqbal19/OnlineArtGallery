@@ -7,46 +7,46 @@
 <html lang="zxx" class="no-js">
 <head>
 
-	<!-- Mobile Specific Meta -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Favicon-->
-	<link rel="shortcut icon" href="~/User/img/fav.png">
-	<!-- Author Meta -->
-	<meta name="author" content="codepixer">
-	<!-- Meta Description -->
-	<meta name="description" content="">
-	<!-- Meta Keyword -->
-	<meta name="keywords" content="">
-	<!-- meta character set -->
-	<meta charset="UTF-8">
-	<!-- Site Title -->
-	<title>Art Museum</title>
+    <!-- Mobile Specific Meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="~/User/img/fav.png">
+    <!-- Author Meta -->
+    <meta name="author" content="codepixer">
+    <!-- Meta Description -->
+    <meta name="description" content="">
+    <!-- Meta Keyword -->
+    <meta name="keywords" content="">
+    <!-- meta character set -->
+    <meta charset="UTF-8">
+    <!-- Site Title -->
+    <title>Art Museum</title>
 
-	<link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
-	<!--
-	CSS
-	============================================= -->
-	<link rel="stylesheet" href="~/User/css/linearicons.css">
-	<link rel="stylesheet" href="~/User/css/font-awesome.min.css">
-	<link rel="stylesheet" href="~/User/css/bootstrap.css">
-	<link rel="stylesheet" href="~/User/css/magnific-popup.css">
-	<link rel="stylesheet" href="~/User/css/nice-select.css">
-	<link rel="stylesheet" href="~/User/css/animate.min.css">
-	<link rel="stylesheet" href="~/User/css/owl.carousel.css">
-	<link rel="stylesheet" href="~/User/css/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
+    <!--
+    CSS
+    ============================================= -->
+    <link rel="stylesheet" href="~/User/css/linearicons.css">
+    <link rel="stylesheet" href="~/User/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/User/css/bootstrap.css">
+    <link rel="stylesheet" href="~/User/css/magnific-popup.css">
+    <link rel="stylesheet" href="~/User/css/nice-select.css">
+    <link rel="stylesheet" href="~/User/css/animate.min.css">
+    <link rel="stylesheet" href="~/User/css/owl.carousel.css">
+    <link rel="stylesheet" href="~/User/css/main.css">
 
     <style>
         /* ===================================================================
-           1. BASE
-        =================================================================== */
+                   1. BASE
+                =================================================================== */
         body {
             padding-top: 118px;
             font-family: 'Poppins', sans-serif;
         }
 
         /* ===================================================================
-           2. HEADER SHELL
-        =================================================================== */
+                   2. HEADER SHELL
+                =================================================================== */
         .site-header {
             position: fixed;
             top: 0;
@@ -61,33 +61,35 @@
             transition: background 0.4s ease, box-shadow 0.4s ease;
         }
 
-        .site-header::after {
-            content: "";
-            position: absolute;
-            left: 0; right: 0; bottom: -1px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #88d200, transparent);
-            opacity: 0.6;
-        }
+            .site-header::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -1px;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, #88d200, transparent);
+                opacity: 0.6;
+            }
 
-        .site-header.scrolled {
-            background: rgba(10, 18, 4, 0.97);
-            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
-        }
+            .site-header.scrolled {
+                background: rgba(10, 18, 4, 0.97);
+                box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
+            }
 
-        .site-header.scrolled .main-nav-row {
-            padding: 8px 0;
-        }
+                .site-header.scrolled .main-nav-row {
+                    padding: 8px 0;
+                }
 
-        .site-header .container {
-            max-width: 100%;
-            padding-left: 24px;
-            padding-right: 24px;
-        }
+            .site-header .container {
+                max-width: 100%;
+                padding-left: 24px;
+                padding-right: 24px;
+            }
 
         /* ===================================================================
-           3. MARQUEE — seamless loop
-        =================================================================== */
+                   3. MARQUEE — seamless loop
+                =================================================================== */
         .marquee-bar {
             display: flex;
             align-items: center;
@@ -123,13 +125,18 @@
             padding-right: 70px;
         }
 
-        .marquee-track span i {
-            color: #d4f09b;
-        }
+            .marquee-track span i {
+                color: #d4f09b;
+            }
 
         @@keyframes marquee-scroll {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         .marquee-social {
@@ -142,22 +149,22 @@
             align-items: center;
         }
 
-        .marquee-social a {
-            color: #fff;
-            opacity: 0.85;
-            font-size: 13px;
-            transition: opacity 0.2s, transform 0.2s;
-        }
+            .marquee-social a {
+                color: #fff;
+                opacity: 0.85;
+                font-size: 13px;
+                transition: opacity 0.2s, transform 0.2s;
+            }
 
-        .marquee-social a:hover {
-            opacity: 1;
-            transform: translateY(-2px);
-            color: #d4f09b;
-        }
+                .marquee-social a:hover {
+                    opacity: 1;
+                    transform: translateY(-2px);
+                    color: #d4f09b;
+                }
 
         /* ===================================================================
-           4. MAIN NAV ROW — always inline, no hamburger
-        =================================================================== */
+                   4. MAIN NAV ROW — always inline, no hamburger
+                =================================================================== */
         .main-nav-row {
             padding: 16px 0;
             transition: padding 0.3s ease;
@@ -169,16 +176,16 @@
             margin-right: 36px;
         }
 
-        #logo img {
-            height: 40px;
-            width: auto;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
-            transition: transform 0.25s ease;
-        }
+            #logo img {
+                height: 40px;
+                width: auto;
+                filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+                transition: transform 0.25s ease;
+            }
 
-        #logo a:hover img {
-            transform: scale(1.05);
-        }
+            #logo a:hover img {
+                transform: scale(1.05);
+            }
 
         #nav-menu-container {
             flex: 1;
@@ -199,128 +206,130 @@
             white-space: nowrap;
         }
 
-        .nav-menu li {
-            position: relative;
-            margin-right: 2px;
-        }
+            .nav-menu li {
+                position: relative;
+                margin-right: 2px;
+            }
 
-        /* ===================================================================
-           5. TOP-LEVEL NAV LINKS — animated underline
-        =================================================================== */
-        .nav-menu > li > a {
-            color: #fff !important;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            white-space: nowrap;
-            position: relative;
-            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-        }
+            /* ===================================================================
+                   5. TOP-LEVEL NAV LINKS — animated underline
+                =================================================================== */
+            .nav-menu > li > a {
+                color: #fff !important;
+                font-size: 14px;
+                font-weight: 500;
+                padding: 8px 14px;
+                border-radius: 6px;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                white-space: nowrap;
+                position: relative;
+                transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            }
 
-        .nav-menu > li:not(.user-menu):not(.auth-buttons) > a::before {
-            content: "";
-            position: absolute;
-            left: 14px;
-            right: 14px;
-            bottom: 3px;
-            height: 2px;
-            background: #88d200;
-            border-radius: 2px;
-            transform: scaleX(0);
-            transform-origin: center;
-            transition: transform 0.25s ease;
-        }
+            .nav-menu > li:not(.user-menu):not(.auth-buttons) > a::before {
+                content: "";
+                position: absolute;
+                left: 14px;
+                right: 14px;
+                bottom: 3px;
+                height: 2px;
+                background: #88d200;
+                border-radius: 2px;
+                transform: scaleX(0);
+                transform-origin: center;
+                transition: transform 0.25s ease;
+            }
 
-        .nav-menu > li:not(.user-menu):not(.auth-buttons):hover > a::before,
-        .nav-menu > li.menu-active:not(.user-menu) > a::before {
-            transform: scaleX(1);
-        }
+            .nav-menu > li:not(.user-menu):not(.auth-buttons):hover > a::before,
+            .nav-menu > li.menu-active:not(.user-menu) > a::before {
+                transform: scaleX(1);
+            }
 
-        .nav-menu > li > a i:first-child {
-            font-size: 13px;
-            color: #d4f09b;
-        }
+            .nav-menu > li > a i:first-child {
+                font-size: 13px;
+                color: #d4f09b;
+            }
 
-        .nav-menu > li > a .caret {
-            font-size: 10px;
-            margin-left: 4px;
-            color: rgba(255, 255, 255, 0.6);
-            transition: transform 0.25s ease;
-        }
+            .nav-menu > li > a .caret {
+                font-size: 10px;
+                margin-left: 4px;
+                color: rgba(255, 255, 255, 0.6);
+                transition: transform 0.25s ease;
+            }
 
-        .nav-menu > li:hover > a .caret {
-            transform: rotate(180deg);
-        }
+            .nav-menu > li:hover > a .caret {
+                transform: rotate(180deg);
+            }
 
-        .nav-menu > li:not(.user-menu):not(.auth-buttons) > a:hover,
-        .nav-menu > li.menu-active > a {
-            background: rgba(136, 210, 0, 0.18);
-            color: #d4f09b !important;
-        }
+            .nav-menu > li:not(.user-menu):not(.auth-buttons) > a:hover,
+            .nav-menu > li.menu-active > a {
+                background: rgba(136, 210, 0, 0.18);
+                color: #d4f09b !important;
+            }
 
-        .nav-menu > li.menu-active > a i:first-child {
-            color: #d4f09b;
-        }
+                .nav-menu > li.menu-active > a i:first-child {
+                    color: #d4f09b;
+                }
 
-        /* ===================================================================
-           6. DROPDOWN MENUS
-        =================================================================== */
-        .nav-menu .sub-menu {
-            position: absolute;
-            top: calc(100% + 14px);
-            left: 0;
-            min-width: 235px;
-            background: #fff;
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
-            border-radius: 14px;
-            border-top: 3px solid #88d200;
-            padding: 10px 0;
-            margin: 0;
-            list-style: none;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(6px) scale(0.98);
-            transform-origin: top left;
-            transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.34,1.56,.64,1), visibility 0.22s;
-            z-index: 1001;
-            white-space: normal;
-        }
+            /* ===================================================================
+                   6. DROPDOWN MENUS (Shop / My Account / Selling / More)
+                =================================================================== */
+            .nav-menu .sub-menu {
+                position: absolute;
+                top: calc(100% + 14px);
+                left: 0;
+                min-width: 235px;
+                background: #fff;
+                box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+                border-radius: 14px;
+                border-top: 3px solid #88d200;
+                padding: 10px 0;
+                margin: 0;
+                list-style: none;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(6px) scale(0.98);
+                transform-origin: top left;
+                transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.34,1.56,.64,1), visibility 0.22s;
+                z-index: 1001;
+                white-space: normal;
+            }
 
-        .nav-menu li:hover .sub-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
+            .nav-menu li:hover .sub-menu {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0) scale(1);
+            }
 
-        .nav-menu .sub-menu li { margin-right: 0; }
+            .nav-menu .sub-menu li {
+                margin-right: 0;
+            }
 
-        .nav-menu .sub-menu li a {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 10px 20px;
-            color: #333 !important;
-            font-size: 13.5px;
-            font-weight: 400;
-            white-space: nowrap;
-            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
-        }
+                .nav-menu .sub-menu li a {
+                    display: flex;
+                    align-items: center;
+                    gap: 11px;
+                    padding: 10px 20px;
+                    color: #333 !important;
+                    font-size: 13.5px;
+                    font-weight: 400;
+                    white-space: nowrap;
+                    transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+                }
 
-        .nav-menu .sub-menu li a i {
-            width: 15px;
-            color: #6fa800;
-            font-size: 13px;
-        }
+                    .nav-menu .sub-menu li a i {
+                        width: 15px;
+                        color: #6fa800;
+                        font-size: 13px;
+                    }
 
-        .nav-menu .sub-menu li a:hover {
-            background: #f0fae6;
-            color: #4d7a00 !important;
-            padding-left: 25px;
-        }
+                    .nav-menu .sub-menu li a:hover {
+                        background: #f0fae6;
+                        color: #4d7a00 !important;
+                        padding-left: 25px;
+                    }
 
         .dropdown-divider {
             height: 1px;
@@ -329,8 +338,8 @@
         }
 
         /* ===================================================================
-           7. AUTH BUTTONS
-        =================================================================== */
+                   7. AUTH BUTTONS
+                =================================================================== */
         .auth-buttons {
             display: flex;
             gap: 10px;
@@ -352,11 +361,11 @@
             border: 1.5px solid rgba(255, 255, 255, 0.5);
         }
 
-        .btn-nav-outline:hover {
-            border-color: #d4f09b;
-            background: rgba(255, 255, 255, 0.1);
-            color: #d4f09b !important;
-        }
+            .btn-nav-outline:hover {
+                border-color: #d4f09b;
+                background: rgba(255, 255, 255, 0.1);
+                color: #d4f09b !important;
+            }
 
         .btn-nav-solid {
             background: linear-gradient(90deg, #6fa800, #88d200);
@@ -364,18 +373,24 @@
             box-shadow: 0 4px 14px rgba(136, 210, 0, 0.4);
         }
 
-        .btn-nav-solid:hover {
-            box-shadow: 0 6px 22px rgba(136, 210, 0, 0.55);
-            transform: translateY(-2px);
-        }
+            .btn-nav-solid:hover {
+                box-shadow: 0 6px 22px rgba(136, 210, 0, 0.55);
+                transform: translateY(-2px);
+            }
 
         /* ===================================================================
-           8. USER AVATAR + ACCOUNT DROPDOWN
-        =================================================================== */
+                   8. USER AVATAR + ACCOUNT DROPDOWN
+                   Fully self-contained CSS hover dropdown — no external JS needed.
+                   This is a DIFFERENT component from ".sub-menu" above (it needs
+                   its own position/opacity/visibility rules, which is exactly
+                   what was missing before and caused it to render inline instead
+                   of floating — that was the source of the cropped/cut-off text).
+                =================================================================== */
         .nav-menu > li.user-menu {
-            margin-left: 10px;
-            margin-right: 4px;
+            margin-left: 10px !important;
+            margin-right: 24px !important;
             flex-shrink: 0;
+            position: relative !important;
         }
 
         .user-menu-trigger {
@@ -390,10 +405,10 @@
             transition: background 0.2s ease, border-color 0.2s ease;
         }
 
-        .user-menu-trigger:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border-color: rgba(212, 240, 155, 0.5);
-        }
+            .user-menu-trigger:hover {
+                background: rgba(255, 255, 255, 0.2) !important;
+                border-color: rgba(212, 240, 155, 0.5);
+            }
 
         .user-avatar-wrap {
             position: relative;
@@ -413,6 +428,7 @@
             font-weight: 700;
             border: 2px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            flex-shrink: 0;
         }
 
         .user-status-dot {
@@ -444,30 +460,58 @@
             flex-shrink: 0;
         }
 
-        .user-menu:hover .user-caret {
+        .user-menu:hover .user-caret,
+        .user-menu:focus-within .user-caret {
             transform: rotate(180deg);
         }
 
+        /* The dropdown box itself. right:0 anchors its RIGHT edge to the
+                   trigger's right edge, so the box grows/opens toward the LEFT —
+                   this is what keeps it fully on-screen and never clipped, even
+                   though the trigger sits near the right end of the header. */
         .user-dropdown {
-            right: -50px !important;
-            left: auto;
-            width: 275px;
-            min-width: 275px;
-            max-width: 275px;
-            box-sizing: border-box;
+            position: absolute !important;
+            top: calc(100% + 14px) !important;
+            right: 0 !important;
+            left: auto !important;
+            bottom: auto !important;
+            width: 250px !important;
+            max-width: calc(100vw - 24px) !important;
+            background: #fff;
+            border-radius: 14px;
             border-top: 3px solid #6fa800;
-            overflow: hidden;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+            box-sizing: border-box !important;
+            list-style: none;
+            margin: 0 !important;
             padding: 0 !important;
+            z-index: 1001;
+            white-space: normal;
+            /* hidden by default — this was the missing piece causing the
+                       dropdown to sit inline in the page flow and look "cropped" */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.34,1.56,.64,1), visibility 0.22s;
+        }
+
+        .user-menu:hover .user-dropdown,
+        .user-menu:focus-within .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
         }
 
         .user-dropdown-header {
-            display: flex !important;
+            display: flex;
             align-items: center;
-            gap: 13px;
-            padding: 18px !important;
+            gap: 11px;
+            padding: 14px;
             box-sizing: border-box;
             width: 100%;
             background: linear-gradient(135deg, #f0fae6, #e3f5c8);
+            border-radius: 14px 14px 0 0;
         }
 
         .user-avatar-lg {
@@ -498,41 +542,55 @@
             color: #5a7a3a;
             font-size: 12px;
             line-height: 1.4;
-            word-break: break-all;
-            overflow-wrap: break-word;
+            overflow-wrap: anywhere;
             white-space: normal;
             margin-top: 2px;
         }
 
+        /* Single unified account list — "My Account" / "My Activity"
+                   sub-headers removed; everything lives in one flat list. */
         .user-dropdown-links {
             padding: 8px 0;
+            max-height: 320px;
+            overflow-y: auto;
         }
 
-        .user-dropdown-links a {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 10px 20px;
-            color: #333 !important;
-            font-size: 13.5px;
-            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
-        }
+            .user-dropdown-links ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
 
-        .user-dropdown-links a i {
-            width: 15px;
-            color: #6fa800;
-            font-size: 13px;
-        }
+            .user-dropdown-links a {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 14px;
+                color: #333 !important;
+                font-size: 13.5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+            }
 
-        .user-dropdown-links a:hover {
-            background: #f0fae6;
-            color: #4d7a00 !important;
-            padding-left: 25px;
-        }
+                .user-dropdown-links a i {
+                    width: 16px;
+                    flex-shrink: 0;
+                    color: #6fa800;
+                    font-size: 13px;
+                    text-align: center;
+                }
+
+                .user-dropdown-links a:hover {
+                    background: #f0fae6;
+                    color: #4d7a00 !important;
+                    padding-left: 19px;
+                }
 
         /* ===================================================================
-           9. LOGOUT FOOTER
-        =================================================================== */
+                   9. LOGOUT FOOTER
+                =================================================================== */
         .logout-footer {
             border-top: 1px solid #f0f0f0;
         }
@@ -540,12 +598,13 @@
         .logout-btn {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
             text-align: left;
             background: #fff;
             border: none;
-            padding: 14px 18px;
+            border-radius: 0 0 14px 14px;
+            padding: 13px 14px;
             font-size: 13.5px;
             font-weight: 500;
             color: #c23a4d;
@@ -553,64 +612,101 @@
             transition: background 0.2s ease, padding-left 0.2s ease;
         }
 
-        .logout-btn:hover {
-            background: #fdecef;
-            padding-left: 23px;
-        }
-
-        .logout-btn .logout-icon {
-            width: 27px;
-            height: 27px;
-            border-radius: 50%;
-            background: #fdecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 12px;
-            color: #c23a4d;
-            transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .logout-btn:hover .logout-icon {
-            background: #c23a4d;
-            color: #fff;
-        }
-
-        /* ===================================================================
-           10. RESPONSIVE — nav stays inline always, just compresses
-        =================================================================== */
-        @@media (max-width: 1200px) {
-            .marquee-social { display: none; }
-
-            #logo { margin-right: 16px; }
-
-            #logo img { height: 32px; }
-
-            .nav-menu { gap: 0; }
-
-            .nav-menu > li > a {
-                padding: 8px 9px;
-                font-size: 12.5px;
-                gap: 4px;
+            .logout-btn:hover {
+                background: #fdecef;
+                padding-left: 18px;
             }
 
-            .nav-menu > li > a i:first-child { font-size: 12px; }
+            .logout-btn .logout-icon {
+                width: 27px;
+                height: 27px;
+                border-radius: 50%;
+                background: #fdecef;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                font-size: 12px;
+                color: #c23a4d;
+                transition: background 0.2s ease, color 0.2s ease;
+            }
 
-            .user-name { display: none; }
+            .logout-btn:hover .logout-icon {
+                background: #c23a4d;
+                color: #fff;
+            }
 
-            .user-menu-trigger { padding: 5px 8px 5px 5px !important; }
+        /* ===================================================================
+                   10. RESPONSIVE — nav stays inline always, just compresses
+                =================================================================== */
+        @@media (max-width: 1200px) {
+            .marquee-social {
+                display: none;
+            }
+
+            #logo {
+                margin-right: 16px;
+            }
+
+                #logo img {
+                    height: 32px;
+                }
+
+            .nav-menu {
+                gap: 0;
+            }
+
+                .nav-menu > li > a {
+                    padding: 8px 9px;
+                    font-size: 12.5px;
+                    gap: 4px;
+                }
+
+                    .nav-menu > li > a i:first-child {
+                        font-size: 12px;
+                    }
+
+            .user-name {
+                max-width: 90px;
+            }
+
+            .user-menu-trigger {
+                padding: 5px 8px 5px 5px !important;
+            }
+
+            .nav-menu > li.user-menu {
+                margin-right: 16px !important;
+            }
         }
 
         @@media (max-width: 900px) {
-            .site-header .container { padding-left: 12px; padding-right: 12px; }
-            .nav-menu > li > a { padding: 8px 6px; font-size: 12px; }
-            .nav-menu > li > a span:not(.caret) { display: none; }
+            .site-header .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .nav-menu > li > a {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+
+                .nav-menu > li > a span:not(.caret) {
+                    display: none;
+                }
+
+            .nav-menu > li.user-menu {
+                margin-right: 8px !important;
+            }
+
+            .user-dropdown {
+                right: -8px !important;
+                width: 220px !important;
+            }
         }
     </style>
 </head>
 <body>
-	<header id="header" id="home" class="site-header">
+    <header id="header" id="home" class="site-header">
         <!-- Scrolling announcement bar -->
         <div class="marquee-bar">
             <div class="marquee-track">
@@ -631,16 +727,16 @@
             </div>
         </div>
 
-		<div class="container">
-			<div class="row align-items-center justify-content-between d-flex main-nav-row">
-				<div id="logo">
-					<a href="index.html"><img src="~/User/img/logo.png" alt="" title="" /></a>
-				</div>
-				<nav id="nav-menu-container">
-					<ul class="nav-menu">
-						<li class="menu-active">
-							<a asp-controller="User" asp-action="Index"><i class="fa fa-home"></i> Home</a>
-						</li>
+        <div class="container">
+            <div class="row align-items-center justify-content-between d-flex main-nav-row">
+                <div id="logo">
+                    <a href="index.html"><img src="~/User/img/logo.png" alt="" title="" /></a>
+                </div>
+                <nav id="nav-menu-container">
+                    <ul class="nav-menu">
+                        <li class="menu-active">
+                            <a asp-controller="User" asp-action="Index"><i class="fa fa-home"></i> Home</a>
+                        </li>
 
                         <li>
                             <a href="#"><i class="fa fa-shopping-basket"></i> Shop <i class="fa fa-angle-down caret"></i></a>
@@ -682,82 +778,82 @@
                             </ul>
                         </li>
 
-						<partial name="_LoginPartial" />
-					</ul>
-				</nav><!-- #nav-menu-container -->
-			</div>
-		</div>
-	</header>
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </nav><!-- #nav-menu-container -->
+            </div>
+        </div>
+    </header>
 
-	@RenderBody()
+    @RenderBody()
 
-	<footer class="footer-area section-gap">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-5 col-md-6 col-sm-6">
-					<div class="single-footer-widget">
-						<h6>About Us</h6>
-						<p>
-							Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore dolore magna aliqua.
-						</p>
-						<p class="footer-text">
-							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-							Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> and distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
-							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-						</p>
-					</div>
-				</div>
-				<div class="col-lg-5  col-md-6 col-sm-6">
-					<div class="single-footer-widget">
-						<h6>Newsletter</h6>
-						<p>Stay update with our latest</p>
-						<div class="" id="mc_embed_signup">
-							<form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
-								<input class="form-control" name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email '" required="" type="email">
-								<button class="click-btn btn btn-default"><span class="lnr lnr-arrow-right"></span></button>
-								<div style="position: absolute; left: -5000px;">
-									<input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-								</div>
+    <footer class="footer-area section-gap">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-md-6 col-sm-6">
+                    <div class="single-footer-widget">
+                        <h6>About Us</h6>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore dolore magna aliqua.
+                        </p>
+                        <p class="footer-text">
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                            Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> and distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-5  col-md-6 col-sm-6">
+                    <div class="single-footer-widget">
+                        <h6>Newsletter</h6>
+                        <p>Stay update with our latest</p>
+                        <div class="" id="mc_embed_signup">
+                            <form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
+                                <input class="form-control" name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email '" required="" type="email">
+                                <button class="click-btn btn btn-default"><span class="lnr lnr-arrow-right"></span></button>
+                                <div style="position: absolute; left: -5000px;">
+                                    <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
+                                </div>
 
-								<div class="info"></div>
-							</form>
-						</div>
-					</div>
-				</div>
-				<div class="col-lg-2 col-md-6 col-sm-6 social-widget">
-					<div class="single-footer-widget">
-						<h6>Follow Us</h6>
-						<p>Let us be social</p>
-						<div class="footer-social d-flex align-items-center">
-							<a href="#"><i class="fa fa-facebook"></i></a>
-							<a href="#"><i class="fa fa-twitter"></i></a>
-							<a href="#"><i class="fa fa-dribbble"></i></a>
-							<a href="#"><i class="fa fa-behance"></i></a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</footer>
+                                <div class="info"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 col-sm-6 social-widget">
+                    <div class="single-footer-widget">
+                        <h6>Follow Us</h6>
+                        <p>Let us be social</p>
+                        <div class="footer-social d-flex align-items-center">
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                            <a href="#"><i class="fa fa-dribbble"></i></a>
+                            <a href="#"><i class="fa fa-behance"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 
-	<script src="~/User/js/vendor/jquery-2.2.4.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.~/User/js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="~/User/js/vendor/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
-	<script src="~/User/js/easing.min.js"></script>
-	<script src="~/User/js/hoverIntent.js"></script>
-	<script src="~/User/js/superfish.min.js"></script>
-	<script src="~/User/js/jquery.ajaxchimp.min.js"></script>
-	<script src="~/User/js/jquery.magnific-popup.min.js"></script>
-	<script src="~/User/js/owl.carousel.min.js"></script>
-	<script src="~/User/js/imagesloaded.pkgd.min.js"></script>
-	<script src="~/User/js/justified.min.js"></script>
-	<script src="~/User/js/jquery.sticky.js"></script>
-	<script src="~/User/js/jquery.nice-select.min.js"></script>
-	<script src="~/User/js/parallax.min.js"></script>
-	<script src="~/User/js/mail-script.js"></script>
-	<script src="~/User/js/main.js"></script>
+    <script src="~/User/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.~/User/js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="~/User/js/vendor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
+    <script src="~/User/js/easing.min.js"></script>
+    <script src="~/User/js/hoverIntent.js"></script>
+    <script src="~/User/js/superfish.min.js"></script>
+    <script src="~/User/js/jquery.ajaxchimp.min.js"></script>
+    <script src="~/User/js/jquery.magnific-popup.min.js"></script>
+    <script src="~/User/js/owl.carousel.min.js"></script>
+    <script src="~/User/js/imagesloaded.pkgd.min.js"></script>
+    <script src="~/User/js/justified.min.js"></script>
+    <script src="~/User/js/jquery.sticky.js"></script>
+    <script src="~/User/js/jquery.nice-select.min.js"></script>
+    <script src="~/User/js/parallax.min.js"></script>
+    <script src="~/User/js/mail-script.js"></script>
+    <script src="~/User/js/main.js"></script>
 
     <script>
         window.addEventListener('scroll', function () {
@@ -765,7 +861,7 @@
         });
     </script>
 
-	@await RenderSectionAsync("Scripts", required: false)
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

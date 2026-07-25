@@ -6,20 +6,370 @@
 @{
 	Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+	/* ============================================================
+		   Museum-placard design system (scoped to this page only)
+		   Palette: deep gallery green + brass + warm paper
+		   ============================================================ */
+	:root {
+		--gal-ink: #1F2A24; /* deep gallery-wall green */
+		--gal-ink-2: #26332C;
+		--gal-brass: #B08D57; /* brass plaque accent */
+		--gal-brass-light: #D3B57E;
+		--gal-paper: #F3EFE6; /* warm paper background */
+		--gal-charcoal: #2B2B28;
+		--gal-muted: #8B8A82;
+		--font-display: 'Playfair Display', Georgia, serif;
+		--font-body: 'Inter', -apple-system, sans-serif;
+	}
+
+	.gal-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: .18em;
+		text-transform: uppercase;
+		color: var(--gal-brass);
+		border: 1px solid rgba(176,141,87,.4);
+		padding: 6px 16px;
+		border-radius: 2px;
+		margin-bottom: 18px;
+	}
+
+		.gal-eyebrow::before {
+			content: "";
+			width: 6px;
+			height: 6px;
+			background: var(--gal-brass);
+			border-radius: 50%;
+			display: inline-block;
+		}
+
+	.gal-heading {
+		font-family: var(--font-display);
+		font-weight: 700;
+		color: var(--gal-charcoal);
+	}
+
+	/* ---- Service cards ---- */
+	.single-service {
+		transition: transform .35s ease, box-shadow .35s ease;
+		border-radius: 12px;
+	}
+
+		.single-service:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 20px 40px -20px rgba(0,0,0,.25);
+		}
+
+		.single-service .lnr {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 64px;
+			height: 64px;
+			border-radius: 50%;
+			background: rgba(31,42,36,.06);
+			font-size: 26px;
+			margin-bottom: 18px;
+			color: var(--gal-ink);
+			transition: background .3s ease, color .3s ease;
+		}
+
+		.single-service:hover .lnr {
+			background: var(--gal-brass);
+			color: #fff;
+		}
+
+	/* ---- Subcategory slider ---- */
+	.subcat-area {
+		background: var(--gal-paper);
+	}
+
+	.subcat-slider-wrap {
+		position: relative;
+	}
+
+	.subcat-track {
+		display: flex;
+		gap: 20px;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		padding: 6px 4px 20px;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+		.subcat-track::-webkit-scrollbar {
+			display: none;
+		}
+
+	.subcat-card {
+		scroll-snap-align: start;
+		flex: 0 0 240px;
+		background: #fff;
+		border: 1px solid rgba(31,42,36,.08);
+		border-radius: 10px;
+		padding: 24px 22px;
+		transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+	}
+
+		.subcat-card:hover {
+			transform: translateY(-6px);
+			box-shadow: 0 18px 36px -22px rgba(0,0,0,.3);
+			border-color: var(--gal-brass);
+		}
+
+		.subcat-card .subcat-parent {
+			font-family: var(--font-body);
+			font-size: 11px;
+			letter-spacing: .12em;
+			text-transform: uppercase;
+			color: var(--gal-brass);
+			font-weight: 600;
+			margin-bottom: 8px;
+			display: block;
+		}
+
+		.subcat-card h5 {
+			font-family: var(--font-display);
+			font-weight: 600;
+			color: var(--gal-charcoal);
+			margin-bottom: 10px;
+		}
+
+		.subcat-card .subcat-count {
+			font-family: var(--font-body);
+			font-size: 13px;
+			color: var(--gal-muted);
+			border-top: 1px solid rgba(0,0,0,.06);
+			padding-top: 10px;
+			margin-top: 6px;
+		}
+
+	.subcat-nav {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+		margin-top: 8px;
+	}
+
+		.subcat-nav button {
+			width: 42px;
+			height: 42px;
+			border-radius: 50%;
+			border: 1px solid var(--gal-ink);
+			background: transparent;
+			color: var(--gal-ink);
+			font-size: 18px;
+			cursor: pointer;
+			transition: background .25s ease, color .25s ease;
+		}
+
+			.subcat-nav button:hover {
+				background: var(--gal-ink);
+				color: #fff;
+			}
+
+	.subcat-empty {
+		color: var(--gal-muted);
+		font-family: var(--font-body);
+	}
+
+	/* ---- Stats band ---- */
+	.stats-area {
+		background: var(--gal-ink);
+		background-image: linear-gradient(180deg, var(--gal-ink) 0%, var(--gal-ink-2) 100%);
+		padding: 70px 0;
+	}
+
+	.stat-item {
+		text-align: center;
+		padding: 10px 12px;
+		border-left: 1px solid rgba(255,255,255,.12);
+	}
+
+		.stat-item:first-child {
+			border-left: none;
+		}
+
+	.stat-number {
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 44px;
+		color: #fff;
+		line-height: 1;
+		margin-bottom: 6px;
+	}
+
+		.stat-number .stat-accent {
+			color: var(--gal-brass-light);
+		}
+
+	.stat-label {
+		font-family: var(--font-body);
+		font-size: 13px;
+		letter-spacing: .1em;
+		text-transform: uppercase;
+		color: rgba(255,255,255,.65);
+	}
+
+	/* ---- Exhibitions ---- */
+	.single-exibition.item {
+		border-radius: 14px;
+		overflow: hidden;
+		box-shadow: 0 10px 30px -18px rgba(0,0,0,.35);
+		transition: transform .35s ease, box-shadow .35s ease;
+	}
+
+		.single-exibition.item:hover {
+			transform: translateY(-6px);
+			box-shadow: 0 24px 48px -20px rgba(0,0,0,.4);
+		}
+
+		.single-exibition.item img {
+			transition: transform .5s ease;
+			width: 100%;
+			height: 220px;
+			object-fit: cover;
+		}
+
+		.single-exibition.item:hover img {
+			transform: scale(1.06);
+		}
+
+		.single-exibition.item .tags a {
+			font-size: 12px;
+			letter-spacing: .04em;
+			text-transform: uppercase;
+			opacity: .75;
+		}
+
+	/* ---- Gallery grid ---- */
+	#grid-container .single-gallery {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		border-radius: 10px;
+	}
+
+	#grid-container .grid-item {
+		transition: transform .5s ease;
+	}
+
+	#grid-container .single-gallery::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0);
+		transition: background .35s ease;
+	}
+
+	#grid-container .single-gallery:hover::after {
+		background: rgba(0,0,0,.25);
+	}
+
+	#grid-container .single-gallery:hover .grid-item {
+		transform: scale(1.08);
+	}
+
+	/* ---- Feedback ---- */
+	.feedback-area {
+		background: var(--gal-paper);
+	}
+
+	.feedback-card {
+		background: #fff;
+		border-radius: 16px;
+		padding: 32px 28px;
+		height: 100%;
+		box-shadow: 0 12px 30px -20px rgba(0,0,0,.25);
+		border: 1px solid rgba(0,0,0,.05);
+		display: flex;
+		flex-direction: column;
+		transition: transform .3s ease, box-shadow .3s ease;
+	}
+
+		.feedback-card:hover {
+			transform: translateY(-6px);
+			box-shadow: 0 22px 44px -20px rgba(0,0,0,.3);
+		}
+
+	.feedback-quote-icon {
+		font-family: var(--font-display);
+		font-size: 32px;
+		line-height: 1;
+		color: var(--gal-brass);
+		margin-bottom: 14px;
+	}
+
+	.feedback-message {
+		flex-grow: 1;
+		font-style: italic;
+		color: #4a4a4a;
+		margin-bottom: 20px;
+	}
+
+	.feedback-author {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.feedback-avatar {
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		background: var(--gal-ink);
+		color: #fff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 16px;
+		flex-shrink: 0;
+	}
+
+	.feedback-author-name {
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.feedback-author-label {
+		font-size: 12px;
+		color: #999;
+		margin: 0;
+	}
+
+	.feedback-empty {
+		text-align: center;
+		color: #999;
+		padding: 40px 0;
+	}
+</style>
+
 <!-- start banner Area -->
 <section class="banner-area relative" id="home">
 	<div class="overlay overlay-bg"></div>
 	<div class="container">
 		<div class="row fullscreen d-flex align-items-center justify-content-center">
 			<div class="banner-content col-lg-8">
-				<h6 class="text-white">Openning on 21st February, 2018</h6>
+				<h6 class="text-white">A Curated Space For Contemporary Art</h6>
 				<h1 class="text-white">
-					Exhibition on Modern Era
+					Where Every Piece Finds Its Collector
 				</h1>
 				<p class="pt-20 pb-20 text-white">
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim.  sed do eiusmod tempor incididunt..
+					Browse original paintings, sculpture, and mixed media from independent artists.
+					Buy outright or place a bid on limited pieces — every purchase supports the
+					artist directly.
 				</p>
-				<a href="#" class="primary-btn text-uppercase">Get Started</a>
+				<a href="/User/Allproducts" class="primary-btn text-uppercase">Browse the Collection</a>
 			</div>
 		</div>
 	</div>
@@ -32,7 +382,7 @@
 			<div class="col-lg-4">
 				<div class="single-service">
 					<span class="lnr lnr-clock"></span>
-					<h4>Openning Hours</h4>
+					<h4>Opening Hours</h4>
 					<p>
 						Mon - Fri: 10.00am to 05.00pm
 						Sat: 12.00pm to 03.00 pm
@@ -41,9 +391,11 @@
 					<div class="overlay">
 						<div class="text">
 							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
+								Drop by during gallery hours to view pieces in person before you
+								buy or bid — our staff are on hand to talk you through any
+								collection.
 							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
+							<a href="/User/Tickets" class="text-uppercase primary-btn">Buy ticket</a>
 						</div>
 					</div>
 				</div>
@@ -53,16 +405,17 @@
 					<span class="lnr lnr-rocket"></span>
 					<h4>Ongoing Exhibitions</h4>
 					<p>
-						Mon - Fri: 10.00am to 05.00pm
-						Sat: 12.00pm to 03.00 pm
-						Sunday Closed
+						New collections rotate in
+						every month, spanning
+						painting, sculpture, and more
 					</p>
 					<div class="overlay">
 						<div class="text">
 							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
+								See what's currently on display and what's arriving next —
+								our exhibitions update as new artists join the gallery.
 							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
+							<a href="#exhibitions" class="text-uppercase primary-btn">View Exhibits</a>
 						</div>
 					</div>
 				</div>
@@ -70,18 +423,19 @@
 			<div class="col-lg-4">
 				<div class="single-service">
 					<span class="lnr lnr-briefcase"></span>
-					<h4>Openning Events</h4>
+					<h4>Opening Events</h4>
 					<p>
-						Mon - Fri: 10.00am to 05.00pm
-						Sat: 12.00pm to 03.00 pm
-						Sunday Closed
+						Meet the artists, watch live
+						demonstrations, and preview
+						new arrivals first
 					</p>
 					<div class="overlay">
 						<div class="text">
 							<p>
-								Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features that we use in life Here, I focus on a range of items and features.that we use in life
+								Our events calendar brings collectors and artists together —
+								check upcoming dates and reserve your spot.
 							</p>
-							<a href="#" class="text-uppercase primary-btn">Buy ticket</a>
+							<a href="#events" class="text-uppercase primary-btn">See Events</a>
 						</div>
 					</div>
 				</div>
@@ -90,20 +444,95 @@
 	</div>
 </section>
 <!-- End service Area -->
+<!-- Start subcategories Area -->
+<section class="subcat-area section-gap" id="collections">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-40 col-lg-10">
+				<div class="text-center">
+					<span class="gal-eyebrow">Browse by Collection</span>
+					<h1 class="mb-10 gal-heading">Explore Every Collection</h1>
+					<p>From portraiture to abstract sculpture — find the category that speaks to you.</p>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<div class="subcat-slider-wrap">
+					@{
+						var subCategoryCounts = ViewBag.SubCategoryCounts as Dictionary<int, int>;
+					}
+					@if (ViewBag.SubCategories != null && ((System.Collections.IEnumerable)ViewBag.SubCategories).GetEnumerator().MoveNext())
+					{
+						<div class="subcat-track" id="subcatTrack">
+							@foreach (var sc in ViewBag.SubCategories)
+							{
+								int scId = (int)sc.Id;
+								int itemCount = (subCategoryCounts != null && subCategoryCounts.ContainsKey(scId)) ? subCategoryCounts[scId] : 0;
+								<div class="subcat-card">
+									<span class="subcat-parent">@sc.category?.CategoryName</span>
+									<h5>@sc.SubCategoryName</h5>
+									<div class="subcat-count">@itemCount piece@(itemCount == 1 ? "" : "s") available</div>
+								</div>
+							}
+						</div>
+						<div class="subcat-nav">
+							<button type="button" aria-label="Scroll left" onclick="document.getElementById('subcatTrack').scrollBy({left:-260, behavior:'smooth'})">&#8592;</button>
+							<button type="button" aria-label="Scroll right" onclick="document.getElementById('subcatTrack').scrollBy({left:260, behavior:'smooth'})">&#8594;</button>
+						</div>
+					}
+					else
+					{
+						<p class="subcat-empty text-center">Collections will appear here once categories are added.</p>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- End subcategories Area -->
+<!-- Start stats Area -->
+<section class="stats-area">
+	<div class="container">
+		<div class="row">
+			<div class="col-6 col-md-3 stat-item">
+				<div class="stat-number">@ViewBag.TotalArtworks<span class="stat-accent">+</span></div>
+				<div class="stat-label">Artworks Listed</div>
+			</div>
+			<div class="col-6 col-md-3 stat-item">
+				<div class="stat-number">@ViewBag.TotalArtists<span class="stat-accent">+</span></div>
+				<div class="stat-label">Independent Artists</div>
+			</div>
+			<div class="col-6 col-md-3 stat-item">
+				<div class="stat-number">@ViewBag.TotalCategories</div>
+				<div class="stat-label">Curated Categories</div>
+			</div>
+			<div class="col-6 col-md-3 stat-item">
+				<div class="stat-number">@ViewBag.TotalCollectors<span class="stat-accent">+</span></div>
+				<div class="stat-label">Happy Collectors</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- End stats Area -->
 <!-- Start quote Area -->
 <section class="quote-area section-gap">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-6 quote-left">
 				<h1>
-					<span>Music</span> gives soul to the universe, <br>
-					wings to the <span>mind</span>, flight <br>
-					to the <span>imagination</span>.
+					Every <span>canvas</span> holds a conversation <br>
+					between silence and <span>color</span> — step closer, <br>
+					and let it <span>speak</span>.
 				</h1>
 			</div>
 			<div class="col-lg-6 quote-right">
 				<p>
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+					We built this gallery to close the distance between artists and the people
+					who fall in love with their work. Every piece here is listed directly by
+					its creator — no middlemen, no markups you can't trace. Whether you're
+					furnishing a first apartment or adding to a lifelong collection, you're
+					buying straight from the source.
 				</p>
 			</div>
 		</div>
@@ -116,127 +545,35 @@
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-60 col-lg-10">
 				<div class="title text-center">
-					<h1 class="mb-10">Ongoing Exhibitions from the scratch</h1>
-					<p>Who are in extremely love with eco friendly system.</p>
+					<span class="gal-eyebrow">On Display Now</span>
+					<h1 class="mb-10 gal-heading">Ongoing Exhibitions</h1>
+					<p>A rotating selection of recently listed and highly viewed pieces.</p>
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="active-exibition-carusel">
-				<div class="single-exibition item">
-					<img src="~/User/img/e1.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img src="~/User/img/e2.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img src="~/User/img/e3.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-				<div class="single-exibition item">
-					<img src="~/User/img/e1.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img src="~/User/img/e2.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img src="~/User/img/e3.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-				<div class="single-exibition item">
-					<img src="~/User/img/e1.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img class="img-fluid" src="~/User/img/e2.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
-
-				<div class="single-exibition item">
-					<img class="img-fluid" src="~/User/img/e3.jpg" alt="">
-					<ul class="tags">
-						<li><a href="#">Travel</a></li>
-						<li><a href="#">Life style</a></li>
-					</ul>
-					<a href="#"><h4>Portable latest blog for women</h4></a>
-					<p>
-						Lorem ipsum dolor sit amet, consec teturadip isicing elit, sed do eiusmod tempor.
-					</p>
-					<h6 class="date">31st January, 2018</h6>
-				</div>
+				@if (ViewBag.FeaturedExhibits != null && ((System.Collections.IEnumerable)ViewBag.FeaturedExhibits).GetEnumerator().MoveNext())
+				{
+					@foreach (var product in ViewBag.FeaturedExhibits)
+					{
+						<div class="single-exibition item">
+							<img src="@product.Image1" alt="@product.Name">
+							<ul class="tags">
+								<li><a href="#">@product.SubCategory?.category?.Name</a></li>
+								<li><a href="#">@product.SubCategory?.Name</a></li>
+							</ul>
+							<a href="/User/Viewproductdetails/@product.Id"><h4>@product.Name</h4></a>
+							<p>
+								@product.Description
+							</p>
+						</div>
+					}
+				}
+				else
+				{
+					<p class="subcat-empty text-center w-100">New exhibits will appear here as artists list their work.</p>
+				}
 			</div>
 		</div>
 	</div>
@@ -248,8 +585,9 @@
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-60 col-lg-10">
 				<div class="title text-center">
-					<h1 class="mb-10">Checkout our Upcoming Events</h1>
-					<p>Who are in extremely love with eco friendly system.</p>
+					<span class="gal-eyebrow">Save the Date</span>
+					<h1 class="mb-10 gal-heading">Checkout our Upcoming Events</h1>
+					<p>Meet artists in person and preview new arrivals before anyone else.</p>
 				</div>
 			</div>
 		</div>
@@ -257,39 +595,42 @@
 			<div class="col-lg-6 event-left">
 				<div class="single-events">
 					<img class="img-fluid" src="~/User/img/u1.jpg" alt="">
-					<a href="#"><h4>Event on the rock solid carbon</h4></a>
-					<h6><span>21st February</span> at Central government museum</h6>
+					<a href="#"><h4>Opening Night: New Arrivals</h4></a>
+					<h6><span>First Saturday</span> at the Main Gallery Floor</h6>
 					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards especially.
+						A first look at the month's newest listings, with several artists on
+						site to talk through their process and inspiration.
 					</p>
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 				</div>
 				<div class="single-events">
 					<img class="img-fluid" src="~/User/img/u3.jpg" alt="">
-					<a href="#"><h4>Event on the rock solid carbon</h4></a>
-					<h6><span>21st February</span> at Central government museum</h6>
+					<a href="#"><h4>Live Sketching Session</h4></a>
+					<h6><span>Every Sunday</span> at the Courtyard Studio</h6>
 					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards especially.
+						Watch a working artist build a piece from a blank canvas, then ask
+						questions about technique, materials, and pricing.
 					</p>
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 				</div>
 			</div>
 			<div class="col-lg-6 event-right">
 				<div class="single-events">
-					<a href="#"><h4>Event on the rock solid carbon</h4></a>
-					<h6><span>21st February</span> at Central government museum</h6>
+					<a href="#"><h4>Collector's Preview Evening</h4></a>
+					<h6><span>Last Friday</span> at the Main Gallery Floor</h6>
 					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards especially.
+						An early-access evening for returning collectors to view auction
+						pieces before bidding opens to the public.
 					</p>
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 					<img class="img-fluid" src="~/User/img/u2.jpg" alt="">
 				</div>
 				<div class="single-events">
-
-					<a href="#"><h4>Event on the rock solid carbon</h4></a>
-					<h6><span>21st February</span> at Central government museum</h6>
+					<a href="#"><h4>Artist Talk & Q&A</h4></a>
+					<h6><span>Third Wednesday</span> at the Reading Room</h6>
 					<p>
-						inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards especially.
+						A relaxed conversation with a featured artist about their body of
+						work, followed by an open floor for questions.
 					</p>
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 					<img class="img-fluid" src="~/User/img/u4.jpg" alt="">
@@ -299,98 +640,50 @@
 	</div>
 </section>
 <!-- End upcoming-event Area -->
-<!-- Start blog Area -->
-<section class="blog-area section-gap" id="blog">
+<!-- Start feedback Area (replaces Blog) -->
+<section class="feedback-area section-gap" id="feedback">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-70 col-lg-8">
 				<div class="title text-center">
-					<h1 class="mb-10">Latest From Our Blog</h1>
-					<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua.</p>
+					<span class="gal-eyebrow">In Their Words</span>
+					<h1 class="mb-10 gal-heading">What Our Visitors Say</h1>
+					<p>Real feedback from people who've walked through our gallery.</p>
 				</div>
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b1.jpg" alt="">
+			@if (ViewBag.Feedbacks != null && ((System.Collections.IEnumerable)ViewBag.Feedbacks).GetEnumerator().MoveNext())
+			{
+				@foreach (var fb in ViewBag.Feedbacks)
+				{
+					var displayName = fb.User?.UserName ?? "Anonymous visitor";
+					var initial = displayName.Length > 0 ? displayName[0].ToString().ToUpper() : "?";
+					<div class="col-lg-4 col-md-6 mb-4">
+						<div class="feedback-card">
+							<div class="feedback-quote-icon">&ldquo;</div>
+							<p class="feedback-message">@fb.message</p>
+							<div class="feedback-author">
+								<div class="feedback-avatar">@initial</div>
+								<div>
+									<p class="feedback-author-name">@displayName</p>
+									<p class="feedback-author-label">Verified visitor</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<div class="col-12">
+					<p class="feedback-empty">No feedback yet — be the first to share your experience.</p>
 				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b2.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b3.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
-			<div class="col-lg-3 col-md-6 single-blog">
-				<div class="thumb">
-					<img class="img-fluid" src="~/User/img/b4.jpg" alt="">
-				</div>
-				<p class="date">10 Jan 2018</p>
-				<a href="#">
-					<h4>
-						Addiction When Gambling
-						Becomes A Problem
-					</h4>
-				</a>
-				<p>
-					inappropriate behavior ipsum dolor sit amet, consectetur.
-				</p>
-				<div class="meta-bottom d-flex justify-content-between">
-					<p><span class="lnr lnr-heart"></span> 15 Likes</p>
-					<p><span class="lnr lnr-bubble"></span> 02 Comments</p>
-				</div>
-			</div>
+			}
 		</div>
 	</div>
 </section>
-<!-- End blog Area -->
+<!-- End feedback Area -->
 <!-- Start gallery Area -->
 <section class="gallery-area section-gap" id="gallery">
 	<div class="container">
@@ -398,25 +691,22 @@
 			<div class="menu-content pb-70 col-lg-8">
 				<div class="title text-center">
 					<h1 class="mb-10 text-white">Our Exhibition Gallery</h1>
-					<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua.</p>
+					<p>A closer look at brushstrokes, textures, and details from pieces recently added to our collection.</p>
 				</div>
 			</div>
 		</div>
 		<div id="grid-container" class="row">
-			<a class="single-gallery" href="~/User/img/g1.jpg"><img class="grid-item" src="~/User/img/g1.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g2.jpg"><img class="grid-item" src="~/User/img/g2.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g3.jpg"><img class="grid-item" src="~/User/img/g3.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g4.jpg"><img class="grid-item" src="~/User/img/g4.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g5.jpg"><img class="grid-item" src="~/User/img/g5.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g6.jpg"><img class="grid-item" src="~/User/img/g6.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g7.jpg"><img class="grid-item" src="~/User/img/g7.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g8.jpg"><img class="grid-item" src="~/User/img/g8.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g9.jpg"><img class="grid-item" src="~/User/img/g9.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g10.jpg"><img class="grid-item" src="~/User/img/g10.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g11.jpg"><img class="grid-item" src="~/User/img/g11.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g12.jpg"><img class="grid-item" src="~/User/img/g12.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g4.jpg"><img class="grid-item" src="~/User/img/g4.jpg"></a>
-			<a class="single-gallery" href="~/User/img/g5.jpg"><img class="grid-item" src="~/User/img/g5.jpg"></a>
+			@if (ViewBag.GalleryImages != null && ((System.Collections.IEnumerable)ViewBag.GalleryImages).GetEnumerator().MoveNext())
+			{
+				@foreach (var product in ViewBag.GalleryImages)
+				{
+					<a class="single-gallery" href="@product.Image1"><img class="grid-item" src="@product.Image1"></a>
+				}
+			}
+			else
+			{
+				<p class="subcat-empty text-center w-100 text-white">Gallery images will appear here once artworks are listed.</p>
+			}
 		</div>
 	</div>
 </section>
