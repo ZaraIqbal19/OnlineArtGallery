@@ -1,10 +1,12 @@
 ﻿using Art_Gallery.Areas.Identity.Data;
 using Art_Gallery.Data;
 using Art_Gallery.Models;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -824,17 +826,386 @@ namespace Art_Gallery.Controllers
             return RedirectToAction("Allcontacts");
 
         }
+        //Convert Reports to Excel
+        public IActionResult ExportOrdersToExcel()
+        {
+            var orders = bridge.orders.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Orders");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Wishlist ID";
+                worksheet.Cell(1, 3).Value = "User ID";
+                worksheet.Cell(1, 4).Value = "Product ID";
+                worksheet.Cell(1, 5).Value = "Status";
+                worksheet.Cell(1, 6).Value = "Quantity";
+                worksheet.Cell(1, 7).Value = "Price Paid";
+                worksheet.Cell(1, 8).Value = "Order Date";
+                worksheet.Cell(1, 9).Value = "Shipping Address";
+                worksheet.Cell(1, 10).Value = "Contact Phone";
+                worksheet.Cell(1, 11).Value = "Payment";
 
+                var headerRange = worksheet.Range("A1:K1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var o in orders)
+                {
+                    worksheet.Cell(row, 1).Value = o.Id;
+                    worksheet.Cell(row, 2).Value = o.WishlistId;
+                    worksheet.Cell(row, 3).Value = o.UserId;
+                    worksheet.Cell(row, 4).Value = o.ProductId;
+                    worksheet.Cell(row, 5).Value = o.Status;
+                    worksheet.Cell(row, 6).Value = o.Quantity;
+                    worksheet.Cell(row, 7).Value = o.PricePaid;
+                    worksheet.Cell(row, 8).Value = o.OrderDate;
+                    worksheet.Cell(row, 9).Value = o.ShippingAddress;
+                    worksheet.Cell(row, 10).Value = o.ContactPhone;
+                    worksheet.Cell(row, 11).Value = o.Payment.OrderId;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Orders.xlsx"
+                    );
+                }
+                
+            }
+            return RedirectToAction("Adminproductsorders", "Admin");
+        }
+        public IActionResult ExportCategoriesToExcel()
+        {
+            var categories = bridge.categories.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Categories");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Category Image";
+                
+
+                var headerRange = worksheet.Range("A1:C1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var c in categories)
+                {
+                    worksheet.Cell(row, 1).Value = c.Id;
+                    worksheet.Cell(row, 2).Value = c.Name;
+                    worksheet.Cell(row, 3).Value = c.Categoryimage;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Categories.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allcategories", "Admin");
+        }
+        public IActionResult ExportContactsToExcel()
+        {
+            var contacts = bridge.contacts.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Contacts");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Message";
+                worksheet.Cell(1, 3).Value = "User";
+
+
+                var headerRange = worksheet.Range("A1:C1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var c in contacts)
+                {
+                    worksheet.Cell(row, 1).Value = c.Id;
+                    worksheet.Cell(row, 2).Value = c.Message;
+                    worksheet.Cell(row, 3).Value = c.User.UserName;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Contacts.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allcontacts", "Admin");
+        }
+        public IActionResult ExportPaymentsToExcel()
+        {
+            var payments = bridge.payments.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Payments");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Mode of Payment";
+                worksheet.Cell(1, 3).Value = "Order Status";
+
+
+                var headerRange = worksheet.Range("A1:C1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var p in payments)
+                {
+                    worksheet.Cell(row, 1).Value = p.Id;
+                    worksheet.Cell(row, 2).Value = p.ModeofPayment;
+                    worksheet.Cell(row, 3).Value = p.Order.Status;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Payments.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allorderspayments", "Admin");
+        }
+        public IActionResult ExportProductsToExcel()
+        {
+            var products = bridge.products.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Products");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Description";
+                worksheet.Cell(1, 4).Value = "Image";
+                worksheet.Cell(1, 5).Value = "Price";
+                worksheet.Cell(1, 6).Value = "Quantity";
+                worksheet.Cell(1, 7).Value = "Sub Category Name";
+                worksheet.Cell(1, 8).Value = "Status";
+                worksheet.Cell(1, 9).Value = "Available for Bid";
+                worksheet.Cell(1, 10).Value = "Bid Price";
+                
+
+                var headerRange = worksheet.Range("A1:J1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var p in products)
+                {
+                    worksheet.Cell(row, 1).Value = p.Id;
+                    worksheet.Cell(row, 2).Value = p.Name;
+                    worksheet.Cell(row, 3).Value = p.Description;
+                    worksheet.Cell(row, 4).Value = p.Image1;
+                    worksheet.Cell(row, 5).Value = p.price;
+                    worksheet.Cell(row, 6).Value = p.quantity;
+                    worksheet.Cell(row, 7).Value = p.SubCategory.Name;
+                    worksheet.Cell(row, 8).Value = p.Status;
+                    worksheet.Cell(row, 9).Value = p.AvailableForBid;
+                    worksheet.Cell(row, 10).Value = p.BidPrice;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Products.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allproducts", "Admin");
+        }
+        public IActionResult ExportSubCategoriesToExcel()
+        {
+            var subcategories = bridge.subCategories.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All SubCategories");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Image";
+                worksheet.Cell(1, 5).Value = "Category";
+
+                var headerRange = worksheet.Range("A1:D1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var sub in subcategories)
+                {
+                    worksheet.Cell(row, 1).Value = sub.Id;
+                    worksheet.Cell(row, 2).Value = sub.Name;
+                    worksheet.Cell(row, 3).Value = sub.SubCategoryimage;
+                    worksheet.Cell(row, 4).Value = sub.category.Name;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "SubCategories.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allsubcategories", "Admin");
+        }
+        public IActionResult ExportAuctionsToExcel()
+        {
+            var auctiondetails = bridge.auctionDetails.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Auctions");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Product";
+                worksheet.Cell(1, 3).Value = "User";
+                worksheet.Cell(1, 4).Value = "Bid Amount";
+                worksheet.Cell(1, 5).Value = "Bid Status";
+                
+
+                var headerRange = worksheet.Range("A1:E1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var a in auctiondetails)
+                {
+                    worksheet.Cell(row, 1).Value = a.Id;
+                    worksheet.Cell(row, 2).Value = a.Product.Name;
+                    worksheet.Cell(row, 3).Value = a.User.UserName;
+                    worksheet.Cell(row, 4).Value = a.bidamount;
+                    worksheet.Cell(row, 5).Value = a.bidstatus;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "AuctionDetails.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Auctiondetails", "Admin");
+        }
+        public IActionResult ExportCustomersToExcel()
+        {
+            var users = bridge.Users.ToList();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("All Users");
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Address";
+                worksheet.Cell(1, 4).Value = "Gender";
+                worksheet.Cell(1, 5).Value = "Age";
+                worksheet.Cell(1, 6).Value = "Role";
+                worksheet.Cell(1, 7).Value = "Email";
+
+                var headerRange = worksheet.Range("A1:G1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                int row = 2;
+                foreach (var u in users)
+                {
+                    worksheet.Cell(row, 1).Value = u.Id;
+                    worksheet.Cell(row, 2).Value = u.UserName;
+                    worksheet.Cell(row, 3).Value = u.address;
+                    worksheet.Cell(row, 4).Value = u.gender;
+                    worksheet.Cell(row, 5).Value = u.age;
+                    worksheet.Cell(row, 6).Value = u.Role;
+                    worksheet.Cell(row, 7).Value = u.Email;
+                    row++;
+                }
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+
+                    return File(
+                        stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "Customers.xlsx"
+                    );
+                }
+
+            }
+            return RedirectToAction("Allcustomers", "Admin");
+        }
         // user contact work ended
 
 
-       
 
 
 
-       
 
-      
+
+
+
 
 
     }

@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿    using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Art_Gallery.Migrations
 {
     /// <inheritdoc />
-    public partial class m1 : Migration
+    public partial class mig19 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
