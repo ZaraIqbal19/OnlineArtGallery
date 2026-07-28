@@ -3,6 +3,7 @@ using Art_Gallery.Data;
 using Art_Gallery.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Tasks.Deployment.Bootstrapper;
@@ -21,11 +22,14 @@ namespace Art_Gallery.Controllers
         Art_GalleryContext bridge;
         // ✅
         private readonly IPasswordHasher<Art_GalleryUser> _passwordHasher;
+        private readonly IEmailSender _emailSender;
 
-        public UserController(Art_GalleryContext _bridge, IPasswordHasher<Art_GalleryUser> passwordHasher)
+        public UserController(Art_GalleryContext _bridge, IPasswordHasher<Art_GalleryUser> passwordHasher, IEmailSender emailSender)
         {
             bridge = _bridge;
             _passwordHasher = passwordHasher;
+            _emailSender = emailSender;
+
         }
 
         public IActionResult Index()
@@ -37,7 +41,6 @@ namespace Art_Gallery.Controllers
                 .OrderByDescending(p => p.Id)
                 .Take(9)
                 .ToList();
-
             ViewBag.FeaturedExhibits = featured;
             ViewBag.GalleryImages = featured;
 
@@ -47,6 +50,24 @@ namespace Art_Gallery.Controllers
                 .Take(6)
                 .ToList();
 
+            // ---- NEW: populate the subcategory slider ----
+            var subCategories = bridge.subCategories
+                .Include(sc => sc.category)
+                .ToList();
+            ViewBag.SubCategories = subCategories;
+
+            ViewBag.SubCategoryCounts = bridge.products
+                .Where(p => p.Status == "Available")
+                .GroupBy(p => p.SubCategoryId)
+                .ToDictionary(g => g.Key, g => g.Count());
+            ViewBag.SubCategoryImages = bridge.products
+    .Where(p => p.Status == "Available" && p.Image1 != null)
+    .GroupBy(p => p.SubCategoryId)
+    .ToDictionary(g => g.Key, g => g.First().Image1);
+            ViewBag.TotalArtworks = bridge.products.Count(p => p.Status == "Available");
+            ViewBag.TotalCollections = bridge.subCategories.Count();
+            ViewBag.TotalCategories = bridge.categories.Count();
+            ViewBag.TotalReviews = bridge.feedbacks.Count();
             return View();
         }
         public IActionResult About()
@@ -121,6 +142,7 @@ namespace Art_Gallery.Controllers
                 BidStartDate = default;
                 BidEndDate = default;
                 BidPrice = 0;
+
             }
 
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -279,7 +301,8 @@ namespace Art_Gallery.Controllers
                     TempData["Message"] = "Please fill in bid start date, end date, and bid price for an auction.";
                     return RedirectToAction("Edit", new { Id });
                 }
-                price = 0; // ignore any price value submitted
+                price = BidPrice; // ignore any price value submitted
+                quantity = 1;
             }
             else
             {
@@ -350,6 +373,7 @@ namespace Art_Gallery.Controllers
         public IActionResult Allproducts()
         {
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ResolveAllEndedAuctions();
 
             var products = bridge.products
                                           .Where(p => p.Status == "Available" && p.UserId != userid)
@@ -441,26 +465,41 @@ namespace Art_Gallery.Controllers
         }
 
         public IActionResult Placeorderlogic(int ProductId, String ContactPhone, String ShippingAddress, int Quantity, int? WishlistId, String ModeofPayment)
-
         {
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var prodid = bridge.products.Find(ProductId);
 
-            var price = prodid.price;
+            // If ordering from a wishlist entry, resolve the ProductId from it
+            Wishlist wishlistItem = null;
+            if (WishlistId.HasValue)
+            {
+                wishlistItem = bridge.wishlist.Find(WishlistId.Value);
+                if (wishlistItem == null)
+                {
+                    TempData["Message"] = "Wishlist item not found.";
+                    return RedirectToAction("Index"); // or wherever makes sense
+                }
+                ProductId = wishlistItem.ProductId; // trust the wishlist's product, not a client-passed one
+            }
+
+            var prodid = bridge.products.Find(ProductId);
+            if (prodid == null)
+            {
+                TempData["Message"] = "Product not found.";
+                return RedirectToAction("Placeorder", new { id = ProductId });
+            }
+
             decimal pricePaid = Convert.ToDecimal(prodid.price) * Quantity;
 
             if (ModeofPayment == "Card")
             {
-                var paymentDetails = bridge.paymentDetails
-                    .FirstOrDefault(p => p.UserId == userid);
-
+                var paymentDetails = bridge.paymentDetails.FirstOrDefault(p => p.UserId == userid);
                 if (paymentDetails == null)
                 {
                     TempData["Message"] = "Please add card details before ordering.";
-
                     return RedirectToAction("Placeorder", new { id = ProductId });
                 }
             }
+
             var order = new Order()
             {
                 WishlistId = WishlistId,
@@ -471,7 +510,6 @@ namespace Art_Gallery.Controllers
                 ShippingAddress = ShippingAddress,
                 Quantity = Quantity,
                 PricePaid = pricePaid,
-
             };
             bridge.orders.Add(order);
             bridge.SaveChanges();
@@ -483,12 +521,112 @@ namespace Art_Gallery.Controllers
             };
             bridge.payments.Add(payment);
             bridge.SaveChanges();
-            TempData["Orderpaymentmessage"] = "Your order has been placed successfully.";
 
+            // Remove from wishlist now that it's been ordered
+            if (wishlistItem != null)
+            {
+                bridge.wishlist.Remove(wishlistItem);
+                bridge.SaveChanges();
+            }
+
+            TempData["Orderpaymentmessage"] = "Your order has been placed successfully.";
             return RedirectToAction("Placeorder", new { id = ProductId });
         }
 
+        
+        public IActionResult PlaceOrderFromWishlist(int id) // id = WishlistId
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            var wishlistItem = bridge.wishlist
+                .Include(w => w.Product)
+                    .ThenInclude(p => p.SubCategory)
+                .Include(w => w.Product.User)
+                .FirstOrDefault(w => w.Id == id);
+
+            if (wishlistItem == null || wishlistItem.Product == null)
+            {
+                TempData["Message"] = "This item is no longer available.";
+                return RedirectToAction("Index", "Wishlist");
+            }
+
+            return View(wishlistItem);
+        }
+
+        public IActionResult PlaceOrderFromWishlistlogic(int WishlistId, String ContactPhone, String ShippingAddress, int Quantity, String ModeofPayment)
+        {
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var wishlistItem = bridge.wishlist.Find(WishlistId);
+            if (wishlistItem == null)
+            {
+                TempData["Message"] = "Wishlist item not found.";
+                return RedirectToAction("Index", "Wishlist");
+            }
+
+            var prodid = bridge.products.Find(wishlistItem.ProductId);
+            if (prodid == null)
+            {
+                TempData["Message"] = "This product is no longer available.";
+                return RedirectToAction("Index", "Wishlist");
+            }
+
+            if (Quantity < 1) Quantity = 1;
+            if (Quantity > prodid.quantity) Quantity = prodid.quantity;
+
+            decimal pricePaid = Convert.ToDecimal(prodid.price) * Quantity;
+
+            if (ModeofPayment == "Card")
+            {
+                var paymentDetails = bridge.paymentDetails.FirstOrDefault(p => p.UserId == userid);
+                if (paymentDetails == null)
+                {
+                    TempData["Message"] = "Please add card details before ordering.";
+                    return RedirectToAction("Mywishlist", new { id = WishlistId });
+                }
+            }
+
+            var order = new Order()
+            {
+                WishlistId = wishlistItem.Id,
+                ProductId = prodid.Id,
+                UserId = userid,
+                OrderDate = DateTime.Now,
+                ContactPhone = ContactPhone,
+                ShippingAddress = ShippingAddress,
+                Quantity = Quantity,
+                PricePaid = pricePaid,
+            };
+            bridge.orders.Add(order);
+            bridge.SaveChanges();
+
+            var payment = new Payment()
+            {
+                ModeofPayment = ModeofPayment,
+                OrderId = order.Id,
+            };
+            bridge.payments.Add(payment);
+            bridge.SaveChanges();
+
+            // decrement stock
+            prodid.quantity -= Quantity;
+            if (prodid.quantity <= 0)
+            {
+                prodid.quantity = 0;
+                prodid.Status = "Sold Out";
+            }
+            bridge.products.Update(prodid);
+            bridge.SaveChanges();
+
+            // remove the wishlist entry now that it's been ordered
+            bridge.wishlist.Remove(wishlistItem);
+            bridge.SaveChanges();
+
+            TempData["Orderpaymentmessage"] = "Your order has been placed successfully.";
+            return RedirectToAction("mywishlist", new { id = WishlistId });
+            // NOTE: wishlistItem is deleted above, so this redirect will 404 on the GET action
+            // since it can no longer find that WishlistId. Redirect somewhere else instead — see note below.
+        }
         public IActionResult Placebid(int id)
         {
             var product = bridge.products
@@ -518,11 +656,13 @@ namespace Art_Gallery.Controllers
         }
 
 
-        public IActionResult Placebidlogic(int id, float bidamount)
+        [HttpPost]
+        public async Task<IActionResult> Placebidlogic(int id, float bidamount)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var product = bridge.products.FirstOrDefault(p => p.Id == id);
+
             if (product == null)
             {
                 return NotFound();
@@ -534,6 +674,12 @@ namespace Art_Gallery.Controllers
                 return RedirectToAction("Placebid", new { id });
             }
 
+            if (product.Status == "Sold" || product.Status == "Expired")
+            {
+                TempData["ErrorMessage"] = "This auction has already ended.";
+                return RedirectToAction("Placebid", new { id });
+            }
+
             var highestBid = bridge.auctionDetails
                 .Where(b => b.ProductId == id)
                 .Select(b => (float?)b.bidamount)
@@ -541,30 +687,237 @@ namespace Art_Gallery.Controllers
 
             if (bidamount < highestBid + 50)
             {
-                TempData["ErrorMessage"] = "Your bid must be higher than the current bid.";
+                TempData["ErrorMessage"] = $"Your bid must be at least {highestBid + 50}.";
                 return RedirectToAction("Placebid", new { id });
             }
 
-            // Save the new bid
+            // Find the previous leading bid
+            var previousLeadingBid = bridge.auctionDetails
+                .FirstOrDefault(b => b.ProductId == id && b.bidstatus == "Leading");
+
+            // Send OutBid email to the previous leader
+            if (previousLeadingBid != null && previousLeadingBid.UserId != userId)
+            {
+                var previousLeader = bridge.Users.Find(previousLeadingBid.UserId);
+
+                if (previousLeader != null)
+                {
+                    var outBidBody = System.IO.File.ReadAllText("Views/Emails/OutBid.html");
+
+                    outBidBody = outBidBody.Replace("{{Username}}", previousLeader.UserName);
+                    outBidBody = outBidBody.Replace("{{ProductName}}", product.Name);
+                    outBidBody = outBidBody.Replace("{{BidAmount}}", bidamount.ToString("0.00"));
+                    outBidBody = outBidBody.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+                    await _emailSender.SendEmailAsync(
+                        previousLeader.Email,
+                        "⚠️ You've Been Outbid!",
+                        outBidBody);
+                }
+            }
+
+            // Mark all previous bids as Lost
+            var previousBids = bridge.auctionDetails
+                .Where(b => b.ProductId == id)
+                .ToList();
+
+            foreach (var bid in previousBids)
+            {
+                bid.bidstatus = "Lost";
+            }
+
             var newBid = new AuctionDetails
             {
-                UserId = userId,
                 ProductId = id,
+                UserId = userId,
                 bidamount = bidamount,
-                bidstatus = "Pending"
+                bidstatus = "Leading"
             };
 
             product.BidPrice = bidamount;
 
-
-
-
             bridge.auctionDetails.Add(newBid);
-            bridge.SaveChanges();
 
-            TempData["SuccessMessage"] = "Your bid was placed successfully.";
+            await bridge.SaveChangesAsync();
+
+            // ==========================
+            // SEND BID PLACED EMAIL
+            // ==========================
+
+            var user = bridge.Users.Find(userId);
+
+            var body = System.IO.File.ReadAllText("Views/Emails/BidPlaced.html");
+
+            body = body.Replace("{{Username}}", user.UserName);
+            body = body.Replace("{{ProductName}}", product.Name);
+            body = body.Replace("{{BidAmount}}", bidamount.ToString());
+            body = body.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "🎉 Your Bid Has Been Placed Successfully!",
+                body);
+
+            TempData["SuccessMessage"] = "Your bid has been placed successfully.";
+
             return RedirectToAction("Placebid", new { id });
         }
+        private async Task ResolveAuctionIfEnded(int productId)
+        {
+            var product = bridge.products.FirstOrDefault(p => p.Id == productId);
+
+            if (product == null)
+                return;
+
+            if (product.AvailableForBid != "Yes")
+                return;
+
+            // Already resolved
+            if (product.Status == "Sold" || product.Status == "Expired")
+                return;
+
+            // Auction still running
+            if (product.BidEndDate > DateOnly.FromDateTime(DateTime.Now))
+                return;
+
+            // Find highest bid
+            var winningBid = bridge.auctionDetails
+                .Where(b => b.ProductId == productId)
+                .OrderByDescending(b => b.bidamount)
+                .FirstOrDefault();
+
+            if (winningBid == null)
+            {
+                product.Status = "Expired";
+                await bridge.SaveChangesAsync();
+                return;
+            }
+
+            // Prevent duplicate orders
+            bool orderExists = bridge.orders.Any(o => o.ProductId == productId);
+
+            if (!orderExists)
+            {
+                winningBid.bidstatus = "Won";
+
+                var loserBids = bridge.auctionDetails
+                    .Where(b => b.ProductId == productId && b.Id != winningBid.Id)
+                    .ToList();
+
+                foreach (var bid in loserBids)
+                {
+                    bid.bidstatus = "Lost";
+                }
+
+                product.Status = "Sold";
+
+                var winner = bridge.Users.FirstOrDefault(u => u.Id == winningBid.UserId);
+
+                var order = new Order
+                {
+                    ProductId = product.Id,
+                    UserId = winningBid.UserId,
+                    Quantity = 1,
+                    PricePaid = Convert.ToDecimal(winningBid.bidamount),
+                    OrderDate = DateTime.Now,
+                    ShippingAddress = winner?.address,
+                    ContactPhone = winner?.PhoneNumber,
+                    Status = "Pending"
+                };
+
+                bridge.orders.Add(order);
+
+                await bridge.SaveChangesAsync();
+
+                // ====================================
+                // AUCTION WINNER EMAIL
+                // ====================================
+
+                var winnerBody = System.IO.File.ReadAllText("Views/Emails/AuctionWinner.html");
+
+                winnerBody = winnerBody.Replace("{{Username}}", winner.UserName);
+                winnerBody = winnerBody.Replace("{{ProductName}}", product.Name);
+                winnerBody = winnerBody.Replace("{{WinningBid}}", winningBid.bidamount.ToString("0.00"));
+                winnerBody = winnerBody.Replace("{{OrderId}}", order.Id.ToString());
+                winnerBody = winnerBody.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+                await _emailSender.SendEmailAsync(
+                    winner.Email,
+                    "🏆 Congratulations! You Won the Auction!",
+                    winnerBody);
+
+                // ====================================
+                // AUCTION LOST EMAILS
+                // ====================================
+
+                foreach (var bid in loserBids)
+                {
+                    var loser = bridge.Users.FirstOrDefault(u => u.Id == bid.UserId);
+
+                    if (loser == null)
+                        continue;
+
+                    var loserBody = System.IO.File.ReadAllText("Views/Emails/AuctionLost.html");
+
+                    loserBody = loserBody.Replace("{{Username}}", loser.UserName);
+                    loserBody = loserBody.Replace("{{ProductName}}", product.Name);
+                    loserBody = loserBody.Replace("{{WinningBid}}", winningBid.bidamount.ToString("0.00"));
+                    loserBody = loserBody.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+                    await _emailSender.SendEmailAsync(
+                        loser.Email,
+                        "😔 Auction Ended - Better Luck Next Time",
+                        loserBody);
+                }
+
+                // ====================================
+                // CREATE PAYMENT
+                // ====================================
+
+                var payment = new Payment
+                {
+                    OrderId = order.Id,
+                    ModeofPayment = "Cash on Delivery"
+                };
+
+                bridge.payments.Add(payment);
+
+                await bridge.SaveChangesAsync();
+
+                // ====================================
+                // AUCTION ENDED EMAIL TO SELLER
+                // ====================================
+
+                var seller = bridge.Users.FirstOrDefault(u => u.Id == product.UserId);
+
+                if (seller != null)
+                {
+                    var sellerBody = System.IO.File.ReadAllText("Views/Emails/AuctionEnded.html");
+
+                    sellerBody = sellerBody.Replace("{{Username}}", seller.UserName);
+                    sellerBody = sellerBody.Replace("{{ProductName}}", product.Name);
+                    sellerBody = sellerBody.Replace("{{WinningBid}}", winningBid.bidamount.ToString("0.00"));
+                    sellerBody = sellerBody.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+                    await _emailSender.SendEmailAsync(
+                        seller.Email,
+                        "🏁 Your Auction Has Ended",
+                        sellerBody);
+                }
+            }
+
+            await bridge.SaveChangesAsync();
+        }
+
+
+
+
+
+
+
+
+
+
 
 
         public IActionResult Myorders()
@@ -580,7 +933,20 @@ namespace Art_Gallery.Controllers
 
             return View(orders);
         }
+        private async Task ResolveAllEndedAuctions()
+        {
+            var endedProducts = bridge.products
+                .Where(p => p.AvailableForBid == "Yes"
+                         && p.Status != "Sold"
+                         && p.Status != "Expired"
+                         && p.BidEndDate <= DateOnly.FromDateTime(DateTime.Now))
+                .ToList();
 
+            foreach (var product in endedProducts)
+            {
+                await ResolveAuctionIfEnded(product.Id);
+            }
+        }
 
         public IActionResult Myorderdetails(int id)
         {
@@ -633,60 +999,122 @@ namespace Art_Gallery.Controllers
             return View(orderdetails);
         }
 
-        public IActionResult markorderasprocessinglogic(int id)
+        public async Task<IActionResult> markorderasprocessinglogic(int id)
         {
             var order = bridge.orders.Find(id);
-            if (order == null) return NotFound();
+
+            if (order == null)
+                return NotFound();
+
+            var user = bridge.Users.Find(order.UserId);
+
             order.Status = "Processing";
-            bridge.SaveChanges();
 
-            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
+            await bridge.SaveChangesAsync();
 
+            var body = System.IO.File.ReadAllText("Views/Emails/OrderProcessing.html");
 
-            return RedirectToAction("Myproductsorderdetails", new { id = id });
-        }
+            body = body.Replace("{{Username}}", user.UserName);
+            body = body.Replace("{{OrderNumber}}", order.Id.ToString());
+            body = body.Replace("{{WebsiteUrl}}", "https://localhost:7015");
 
-        public IActionResult markorderasdispatchedlogic(int id)
-        {
-            var order = bridge.orders.Find(id);
-            if (order == null) return NotFound();
-
-            order.Status = "Dispatched";
-            bridge.SaveChanges();
-
-            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
-
-
-            return RedirectToAction("Myproductsorderdetails", new { id = id });
-        }
-
-        public IActionResult markorderasdeliveredlogic(int id)
-        {
-            var order = bridge.orders.Find(id);
-            if (order == null) return NotFound();
-
-            order.Status = "Delivered";
-            bridge.SaveChanges();
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "🛠️ Your Order Is Being Processed",
+                body);
 
             TempData["Message"] = $"Order marked as {order.Status} successfully.";
 
-
-            return RedirectToAction("Myproductsorderdetails", new { id = id });
+            return RedirectToAction("Myproductsorderdetails", new { id });
         }
 
-        public IActionResult markorderasrejectedlogic(int id)
+        public async Task<IActionResult> markorderasdispatchedlogic(int id)
         {
             var order = bridge.orders.Find(id);
 
+            if (order == null)
+                return NotFound();
+
+            var user = bridge.Users.Find(order.UserId);
+
+            order.Status = "Dispatched";
+
+            await bridge.SaveChangesAsync();
+
+            var body = System.IO.File.ReadAllText("Views/Emails/OrderShipped.html");
+
+            body = body.Replace("{{Username}}", user.UserName);
+            body = body.Replace("{{OrderNumber}}", order.Id.ToString());
+            body = body.Replace("{{TrackingNumber}}", "Not Available");
+            body = body.Replace("{{EstimatedDelivery}}", DateTime.Now.AddDays(3).ToString("dd MMM yyyy"));
+            body = body.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "🚚 Your ArtGallery Order Has Been Dispatched",
+                body);
+
+            TempData["Message"] = $"Order marked as {order.Status} successfully.";
+
+            return RedirectToAction("Myproductsorderdetails", new { id });
+        }
+
+        public async Task<IActionResult> markorderasdeliveredlogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+
+            if (order == null)
+                return NotFound();
+
+            var user = bridge.Users.Find(order.UserId);
+
+            order.Status = "Delivered";
+
+            await bridge.SaveChangesAsync();
+
+            var body = System.IO.File.ReadAllText("Views/Emails/OrderDelivered.html");
+
+            body = body.Replace("{{Username}}", user.UserName);
+            body = body.Replace("{{OrderNumber}}", order.Id.ToString());
+            body = body.Replace("{{WebsiteUrl}}", "https://localhost:7015");
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "🎉 Your ArtGallery Order Has Been Delivered",
+                body);
+
+            TempData["Message"] = $"Order marked as {order.Status} successfully.";
+
+            return RedirectToAction("Myproductsorderdetails", new { id });
+        }
+
+        public async Task<IActionResult> markorderasrejectedlogic(int id)
+        {
+            var order = bridge.orders.Find(id);
+
+            if (order == null)
+                return NotFound();
+
+            var user = bridge.Users.Find(order.UserId);
 
             order.Status = "Rejected";
-            bridge.SaveChanges();
 
-            TempData["Message"] = $"Order marked as  {order.Status} successfully.";
+            await bridge.SaveChangesAsync();
 
+            var body = System.IO.File.ReadAllText("Views/Emails/OrderRejected.html");
 
+            body = body.Replace("{{Username}}", user.UserName);
+            body = body.Replace("{{OrderNumber}}", order.Id.ToString());
+            body = body.Replace("{{WebsiteUrl}}", "https://localhost:7015");
 
-            return RedirectToAction("Myproductsorderdetails", new { id = id });
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "❌ Your ArtGallery Order Has Been Rejected",
+                body);
+
+            TempData["Message"] = $"Order marked as {order.Status} successfully.";
+
+            return RedirectToAction("Myproductsorderdetails", new { id });
         }
 
 
@@ -1218,45 +1646,7 @@ namespace Art_Gallery.Controllers
 
         }
         
-        public IActionResult Allusersfeedbacks()
-        {
-            var Usersfeedbacks = bridge.feedbacks
-       .Include(f => f.User)
-       .ToList();
-            return View(Usersfeedbacks);
-        }
-
-        public IActionResult Edituserfeedback(int id)
-        {
-            var feedback = bridge.feedbacks.Find(id);
-            return View(feedback);
-        }
-
-        public IActionResult Edituserfeedbacklogic(int id, String message)
-        {
-            var Feedback = bridge.feedbacks.Find(id);
-
-            Feedback.message = message;
-
-            bridge.SaveChanges();
-            TempData["Message"] = " feedback  updated sucessfully";
-
-            return RedirectToAction("Allusersfeedbacks");
-        }
-
-
-        public IActionResult Deleteuserfeebacklogic(int id) {
-
-
-            var Feedbackid = bridge.feedbacks.Find(id);
-            bridge.feedbacks.Remove(Feedbackid);
-            bridge.SaveChanges();
-
-            TempData["Message"] = "User feedback  deleted sucessfully";
-
-
-            return RedirectToAction("Allusersfeedbacks");
-        }
+     
 
         public IActionResult Addproductreview(int productid)
         {

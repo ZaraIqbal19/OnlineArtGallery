@@ -7,23 +7,39 @@
 	Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 <style>
 	/* ============================================================
-		   Museum-placard design system (scoped to this page only)
-		   Palette: deep gallery green + brass + warm paper
-		   ============================================================ */
+				   Museum-placard design system (scoped to this page only)
+				   ============================================================ */
 	:root {
-		--gal-ink: #1F2A24; /* deep gallery-wall green */
+		--gal-ink: #1F2A24;
 		--gal-ink-2: #26332C;
-		--gal-brass: #B08D57; /* brass plaque accent */
+		--gal-brass: #B08D57;
 		--gal-brass-light: #D3B57E;
-		--gal-paper: #F3EFE6; /* warm paper background */
+		--gal-brass-dark: #8C6D3F;
+		--gal-paper: #F3EFE6;
+		--gal-paper-2: #EAE3D3;
 		--gal-charcoal: #2B2B28;
 		--gal-muted: #8B8A82;
+		--gal-line: rgba(31,42,36,.10);
 		--font-display: 'Playfair Display', Georgia, serif;
 		--font-body: 'Inter', -apple-system, sans-serif;
+		--font-caption: 'Cormorant Garamond', Georgia, serif;
+		/* buy-now green */
+		--shop-green: #88d200;
+		--shop-dark-green: #6fa800;
+		--shop-light-green: #d4f09b;
+		--shop-ultra-light-green: #f0fae6;
+		/* auction amber/red — urgency identity, distinct from buy-now */
+		--auc-amber: #d98c00;
+		--auc-amber-dark: #a86400;
+		--auc-red: #c23b3b;
+		--auc-red-dark: #962c2c;
+		--auc-cream: #fdf3e2;
+		--auc-cream-2: #f7e6c4;
 	}
 
 	.gal-eyebrow {
@@ -35,7 +51,7 @@
 		font-weight: 600;
 		letter-spacing: .18em;
 		text-transform: uppercase;
-		color: var(--gal-brass);
+		color: var(--gal-brass-dark);
 		border: 1px solid rgba(176,141,87,.4);
 		padding: 6px 16px;
 		border-radius: 2px;
@@ -49,18 +65,98 @@
 			background: var(--gal-brass);
 			border-radius: 50%;
 			display: inline-block;
+			animation: eyebrowPulse 2.4s ease-in-out infinite;
 		}
+
+		.gal-eyebrow.auc-eyebrow {
+			color: var(--auc-red-dark);
+			border-color: rgba(194,59,59,.35);
+		}
+
+			.gal-eyebrow.auc-eyebrow::before {
+				background: var(--auc-red);
+			}
+
+		.gal-eyebrow.buy-eyebrow {
+			color: var(--shop-dark-green);
+			border-color: rgba(136,210,0,.35);
+		}
+
+			.gal-eyebrow.buy-eyebrow::before {
+				background: var(--shop-green);
+			}
+
+	@@keyframes eyebrowPulse {
+		0%, 100% {
+			transform: scale(1);
+			opacity: 1;
+		}
+
+		50% {
+			transform: scale(1.4);
+			opacity: .6;
+		}
+	}
 
 	.gal-heading {
 		font-family: var(--font-display);
 		font-weight: 700;
 		color: var(--gal-charcoal);
+		letter-spacing: -.01em;
+	}
+
+	.gal-sub {
+		font-family: var(--font-body);
+		color: var(--gal-muted);
+		max-width: 560px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.gal-divider {
+		width: 46px;
+		height: 2px;
+		background: var(--gal-brass);
+		margin: 18px auto 0;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.section-heading-wrap {
+		position: relative;
+	}
+
+	.section-underline {
+		width: 0;
+		height: 3px;
+		border-radius: 3px;
+		margin: 14px auto 0;
+		background: linear-gradient(90deg, var(--gal-brass), var(--gal-brass-light));
+	}
+
+	.js-motion .section-heading-wrap.reveal.is-visible .section-underline {
+		animation: growUnderline .8s cubic-bezier(.2,.8,.25,1) .1s forwards;
+	}
+
+	.section-underline.buy {
+		background: linear-gradient(90deg, var(--shop-dark-green), var(--shop-green));
+	}
+
+	.section-underline.auc {
+		background: linear-gradient(90deg, var(--auc-red-dark), var(--auc-amber));
+	}
+
+	@@keyframes growUnderline {
+		to {
+			width: 64px;
+		}
 	}
 
 	/* ---- Service cards ---- */
 	.single-service {
-		transition: transform .35s ease, box-shadow .35s ease;
+		transition: transform .35s cubic-bezier(.2,.8,.25,1), box-shadow .35s ease;
 		border-radius: 12px;
+		position: relative;
 	}
 
 		.single-service:hover {
@@ -79,108 +175,643 @@
 			font-size: 26px;
 			margin-bottom: 18px;
 			color: var(--gal-ink);
-			transition: background .3s ease, color .3s ease;
+			transition: background .3s ease, color .3s ease, transform .3s ease;
 		}
 
 		.single-service:hover .lnr {
 			background: var(--gal-brass);
 			color: #fff;
+			transform: rotate(-8deg) scale(1.08);
 		}
 
-	/* ---- Subcategory slider ---- */
+	/* ============================================================
+				   Subcategory area — museum wall backdrop
+				   ============================================================ */
 	.subcat-area {
 		background: var(--gal-paper);
+		background-image: linear-gradient(var(--gal-paper-2) 1px, transparent 1px), linear-gradient(90deg, var(--gal-paper-2) 1px, transparent 1px);
+		background-size: 42px 42px;
+		background-position: center;
 	}
-
-	.subcat-slider-wrap {
-		position: relative;
-	}
-
-	.subcat-track {
-		display: flex;
-		gap: 20px;
-		overflow-x: auto;
-		scroll-snap-type: x mandatory;
-		padding: 6px 4px 20px;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
-
-		.subcat-track::-webkit-scrollbar {
-			display: none;
-		}
-
-	.subcat-card {
-		scroll-snap-align: start;
-		flex: 0 0 240px;
-		background: #fff;
-		border: 1px solid rgba(31,42,36,.08);
-		border-radius: 10px;
-		padding: 24px 22px;
-		transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
-	}
-
-		.subcat-card:hover {
-			transform: translateY(-6px);
-			box-shadow: 0 18px 36px -22px rgba(0,0,0,.3);
-			border-color: var(--gal-brass);
-		}
-
-		.subcat-card .subcat-parent {
-			font-family: var(--font-body);
-			font-size: 11px;
-			letter-spacing: .12em;
-			text-transform: uppercase;
-			color: var(--gal-brass);
-			font-weight: 600;
-			margin-bottom: 8px;
-			display: block;
-		}
-
-		.subcat-card h5 {
-			font-family: var(--font-display);
-			font-weight: 600;
-			color: var(--gal-charcoal);
-			margin-bottom: 10px;
-		}
-
-		.subcat-card .subcat-count {
-			font-family: var(--font-body);
-			font-size: 13px;
-			color: var(--gal-muted);
-			border-top: 1px solid rgba(0,0,0,.06);
-			padding-top: 10px;
-			margin-top: 6px;
-		}
-
-	.subcat-nav {
-		display: flex;
-		gap: 10px;
-		justify-content: center;
-		margin-top: 8px;
-	}
-
-		.subcat-nav button {
-			width: 42px;
-			height: 42px;
-			border-radius: 50%;
-			border: 1px solid var(--gal-ink);
-			background: transparent;
-			color: var(--gal-ink);
-			font-size: 18px;
-			cursor: pointer;
-			transition: background .25s ease, color .25s ease;
-		}
-
-			.subcat-nav button:hover {
-				background: var(--gal-ink);
-				color: #fff;
-			}
 
 	.subcat-empty {
 		color: var(--gal-muted);
 		font-family: var(--font-body);
 	}
+
+	/* ============================================================
+				   Shop-style subcategory cards
+				   ============================================================ */
+	.shop-cards-wrap {
+		padding: 10px 4px 30px;
+		perspective: 1200px;
+	}
+
+	.shop {
+		position: relative;
+		overflow: hidden;
+		margin: 0;
+		border-radius: 20px;
+		height: 230px;
+		cursor: pointer;
+		box-shadow: 0 8px 24px rgba(0, 20, 4, 0.1);
+		transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease;
+		transform-style: preserve-3d;
+		will-change: transform;
+	}
+
+		.shop:hover {
+			transform: translateY(-8px) scale(1.015);
+			box-shadow: 0 24px 48px rgba(0, 20, 4, 0.22);
+		}
+
+	.shop-media {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(--shop-ultra-light-green);
+		overflow: hidden;
+	}
+
+		.shop-media img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1), filter .5s ease;
+			filter: saturate(1);
+		}
+
+	.shop:hover .shop-media img {
+		transform: scale(1.12);
+		filter: saturate(1.15);
+	}
+
+	.shop-panel {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: linear-gradient(135deg, var(--shop-green) 0%, var(--shop-dark-green) 55%, #3d6600 100%);
+		clip-path: polygon(0 0, 62% 0, 46% 100%, 0 100%);
+		pointer-events: none;
+		transition: clip-path .45s cubic-bezier(.2,.8,.2,1);
+	}
+
+	.shop:hover .shop-panel {
+		clip-path: polygon(0 0, 68% 0, 52% 100%, 0 100%);
+	}
+
+	.shop-shine {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.45) 50%, transparent 60%);
+		background-size: 220% 100%;
+		background-position: -200% 0;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.shop:hover .shop-shine {
+		opacity: 1;
+		animation: shineSweep 1s ease forwards;
+	}
+
+	@@keyframes shineSweep {
+		to {
+			background-position: 200% 0;
+		}
+	}
+
+	.shop-content {
+		position: absolute;
+		inset: 0;
+		z-index: 4;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		max-width: 58%;
+		padding: 24px 16px 24px 26px;
+		pointer-events: none;
+	}
+
+		.shop-content h3 {
+			color: #fff;
+			font-weight: 800;
+			font-size: 21px;
+			line-height: 1.28;
+			margin: 0 0 18px;
+			text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+			transition: transform .35s ease;
+		}
+
+	.shop:hover .shop-content h3 {
+		transform: translateX(3px);
+	}
+
+	.shop-content .cta-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		color: #fff;
+		text-transform: uppercase;
+		font-weight: 700;
+		font-size: 12px;
+		letter-spacing: 0.5px;
+		white-space: nowrap;
+		border: 1.5px solid rgba(255,255,255,0.7);
+		border-radius: 30px;
+		padding: 9px 18px;
+		width: fit-content;
+		text-decoration: none;
+		transition: background 0.25s ease, transform 0.25s ease, gap .25s ease;
+		pointer-events: auto;
+	}
+
+		.shop-content .cta-btn i {
+			transition: transform .3s ease;
+		}
+
+		.shop-content .cta-btn:hover {
+			background: rgba(255,255,255,0.2);
+			transform: translateY(-2px);
+			color: #fff;
+			gap: 14px;
+		}
+
+			.shop-content .cta-btn:hover i {
+				transform: translateX(3px);
+			}
+
+	.shop-count-badge {
+		position: absolute;
+		top: 14px;
+		right: 14px;
+		z-index: 5;
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		background: rgba(255,255,255,0.95);
+		color: var(--shop-dark-green);
+		font-size: 11px;
+		font-weight: 700;
+		padding: 5px 13px;
+		border-radius: 20px;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+		transition: transform .3s ease;
+	}
+
+	.shop:hover .shop-count-badge {
+		transform: translateY(-2px) scale(1.05);
+	}
+
+	.shop-count-badge i {
+		font-size: 9px;
+	}
+
+	@@media (max-width: 768px) {
+		.shop {
+			height: 200px;
+		}
+
+		.shop-content {
+			max-width: 64%;
+			padding: 18px 14px 18px 20px;
+		}
+
+			.shop-content h3 {
+				font-size: 17px;
+				margin-bottom: 14px;
+			}
+
+		.shop-panel {
+			clip-path: polygon(0 0, 68% 0, 50% 100%, 0 100%);
+		}
+	}
+
+	@@media (max-width: 576px) {
+		.shop {
+			height: 180px;
+		}
+
+		.shop-content h3 {
+			font-size: 15px;
+		}
+
+		.shop-panel {
+			clip-path: polygon(0 0, 78% 0, 55% 100%, 0 100%);
+		}
+
+		.shop-content {
+			max-width: 74%;
+		}
+	}
+
+	/* ============================================================
+				   PRODUCT CARDS — shared base
+				   ============================================================ */
+	.product-split-area {
+		background: var(--gal-paper);
+		position: relative;
+	}
+
+	.product-tab-row {
+		display: flex;
+		justify-content: center;
+		gap: 12px;
+		margin-bottom: 6px;
+	}
+
+	.pgrid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+		gap: 26px;
+		perspective: 1200px;
+	}
+
+	.home-product-card {
+		position: relative;
+		background: #fff;
+		border-radius: 18px;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+		transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease;
+		opacity: 0;
+		transform: translateY(24px);
+	}
+
+	.js-motion .home-product-card.reveal.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+		animation: cardSettle .6s cubic-bezier(.2,.8,.25,1.05);
+	}
+
+	@@keyframes cardSettle {
+		0% {
+			opacity: 0;
+			transform: translateY(24px) scale(.97);
+		}
+
+		60% {
+			opacity: 1;
+			transform: translateY(-4px) scale(1.005);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	.home-product-card:hover {
+		transform: translateY(-10px);
+	}
+
+	.home-product-card__media {
+		position: relative;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+	}
+
+		.home-product-card__media img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform .6s cubic-bezier(.2,.7,.3,1), filter .4s ease;
+		}
+
+	.home-product-card:hover .home-product-card__media img {
+		transform: scale(1.13) rotate(.3deg);
+	}
+
+	.home-product-card__media::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.4) 100%);
+		opacity: 0;
+		transition: opacity .35s ease;
+	}
+
+	.home-product-card:hover .home-product-card__media::after {
+		opacity: 1;
+	}
+
+	.home-product-card__shine {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%);
+		background-size: 220% 100%;
+		background-position: -200% 0;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.home-product-card:hover .home-product-card__shine {
+		opacity: 1;
+		animation: shineSweep 1s ease forwards;
+	}
+
+	.home-product-card__view-btn {
+		position: absolute;
+		left: 50%;
+		bottom: 16px;
+		transform: translate(-50%, 14px);
+		z-index: 3;
+		background: rgba(255,255,255,0.95);
+		color: var(--gal-charcoal);
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: .05em;
+		padding: 9px 18px;
+		border-radius: 30px;
+		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		opacity: 0;
+		transition: opacity .3s ease, transform .3s cubic-bezier(.2,.8,.2,1);
+		white-space: nowrap;
+	}
+
+	.home-product-card:hover .home-product-card__view-btn {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+
+	.home-product-card__badge {
+		position: absolute;
+		top: 12px;
+		left: 12px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		padding: 6px 13px;
+		border-radius: 999px;
+		color: #fff;
+		text-transform: uppercase;
+		z-index: 2;
+		box-shadow: 0 3px 8px rgba(0,0,0,.18);
+	}
+
+		.home-product-card__badge.buy {
+			background: var(--shop-dark-green);
+			animation: badgeFloat 2.6s ease-in-out infinite;
+		}
+
+		.home-product-card__badge.bid {
+			background: var(--auc-red);
+			animation: badgePulseRed 2s ease-in-out infinite, badgeFloat 2.6s ease-in-out infinite;
+		}
+
+	@@keyframes badgeFloat {
+		0%, 100% {
+			transform: translateY(0);
+		}
+
+		50% {
+			transform: translateY(-2px);
+		}
+	}
+
+	@@keyframes badgePulseRed {
+		0%, 100% {
+			box-shadow: 0 0 0 0 rgba(194,59,59,.5), 0 3px 8px rgba(0,0,0,.18);
+		}
+
+		50% {
+			box-shadow: 0 0 0 6px rgba(194,59,59,0), 0 3px 8px rgba(0,0,0,.18);
+		}
+	}
+
+	.home-product-card__body {
+		padding: 18px 20px 20px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.home-product-card__title {
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 1.05rem;
+		color: var(--gal-charcoal);
+		margin-bottom: 3px;
+		transition: color .25s ease;
+	}
+
+	.home-product-card:hover .home-product-card__title {
+		color: var(--shop-dark-green);
+	}
+
+	.auction-card:hover .home-product-card__title {
+		color: var(--auc-red-dark);
+	}
+
+	.home-product-card__category {
+		font-size: 0.75rem;
+		font-weight: 600;
+		margin-bottom: 10px;
+	}
+
+	.home-product-card__meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: auto;
+		margin-bottom: 14px;
+	}
+
+	.home-product-card__price {
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 1.2rem;
+	}
+
+	.home-product-card__price-label {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: .04em;
+		opacity: .75;
+		display: block;
+	}
+
+	.home-btn-action {
+		position: relative;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		padding: 11px 16px;
+		border-radius: 12px;
+		font-weight: 600;
+		font-size: 0.85rem;
+		color: #fff;
+		text-decoration: none;
+		width: 100%;
+		transition: transform 0.25s ease, box-shadow .25s ease;
+	}
+
+		.home-btn-action::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: -60%;
+			width: 40%;
+			height: 100%;
+			background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.4) 50%, rgba(255,255,255,0) 100%);
+			transform: skewX(-20deg);
+			transition: left .5s ease;
+		}
+
+		.home-btn-action:hover::before {
+			left: 130%;
+		}
+
+		.home-btn-action:hover {
+			transform: translateY(-3px);
+			color: #fff;
+		}
+
+	/* ---- Buy Now identity ---- */
+	.buynow-section-bg {
+		background: linear-gradient(180deg, var(--gal-paper) 0%, var(--shop-ultra-light-green) 100%);
+	}
+
+	.home-product-card.buynow-card {
+		border: 1px solid var(--shop-light-green);
+	}
+
+		.home-product-card.buynow-card:hover {
+			box-shadow: 0 24px 44px -14px rgba(111,168,0,.32);
+		}
+
+	.home-product-card__category.buy-cat {
+		color: var(--shop-dark-green);
+	}
+
+	.home-product-card__price.buy-price {
+		color: var(--shop-dark-green);
+	}
+
+	.home-product-card__price-label.buy-price {
+		color: var(--shop-dark-green);
+	}
+
+	.home-btn-action.buy {
+		background: linear-gradient(135deg, var(--shop-dark-green), #587f00);
+	}
+
+		.home-btn-action.buy:hover {
+			box-shadow: 0 12px 24px rgba(111,168,0,.35);
+		}
+
+	/* ---- Auction identity ---- */
+	.auction-section-bg {
+		background: linear-gradient(180deg, var(--gal-paper) 0%, var(--auc-cream) 100%);
+		position: relative;
+		overflow: hidden;
+	}
+
+		.auction-section-bg::before {
+			content: "";
+			position: absolute;
+			top: -60px;
+			right: -60px;
+			width: 320px;
+			height: 320px;
+			background: radial-gradient(circle, rgba(217,140,0,.14), transparent 70%);
+			pointer-events: none;
+		}
+
+		.auction-section-bg::after {
+			content: "";
+			position: absolute;
+			bottom: -80px;
+			left: -80px;
+			width: 360px;
+			height: 360px;
+			background: radial-gradient(circle, rgba(194,59,59,.1), transparent 70%);
+			pointer-events: none;
+		}
+
+	.home-product-card.auction-card {
+		border: 1px solid var(--auc-cream-2);
+	}
+
+		.home-product-card.auction-card:hover {
+			box-shadow: 0 24px 44px -14px rgba(194,59,59,.28);
+		}
+
+	.home-product-card__category.auc-cat {
+		color: var(--auc-amber-dark);
+	}
+
+	.home-product-card__price.auc-price {
+		color: var(--auc-red-dark);
+	}
+
+	.home-product-card__price-label.auc-price {
+		color: var(--auc-amber-dark);
+	}
+
+	.home-btn-action.bid {
+		background: linear-gradient(135deg, var(--auc-amber), var(--auc-red));
+	}
+
+		.home-btn-action.bid:hover {
+			box-shadow: 0 12px 24px rgba(194,59,59,.35);
+		}
+
+	.auc-countdown {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: var(--auc-red-dark);
+		background: #fdeaea;
+		border: 1px solid #f3c6c6;
+		padding: 4px 10px;
+		border-radius: 999px;
+		margin-bottom: 10px;
+		width: fit-content;
+	}
+
+		.auc-countdown.urgent {
+			animation: pulseUrgentAuc 1.4s ease-in-out infinite;
+		}
+
+	@@keyframes pulseUrgentAuc {
+		0%, 100% {
+			box-shadow: 0 0 0 0 rgba(194,59,59,.35);
+		}
+
+		50% {
+			box-shadow: 0 0 0 6px rgba(194,59,59,0);
+		}
+	}
+
+	.no-items-msg {
+		text-align: center;
+		color: var(--gal-muted);
+		font-family: var(--font-body);
+		padding: 50px 20px;
+		grid-column: 1 / -1;
+	}
+
+		.no-items-msg i {
+			display: block;
+			font-size: 2rem;
+			margin-bottom: 10px;
+			opacity: .5;
+		}
 
 	/* ---- Stats band ---- */
 	.stats-area {
@@ -193,7 +824,12 @@
 		text-align: center;
 		padding: 10px 12px;
 		border-left: 1px solid rgba(255,255,255,.12);
+		transition: transform .3s ease;
 	}
+
+		.stat-item:hover {
+			transform: translateY(-4px);
+		}
 
 		.stat-item:first-child {
 			border-left: none;
@@ -220,37 +856,6 @@
 		color: rgba(255,255,255,.65);
 	}
 
-	/* ---- Exhibitions ---- */
-	.single-exibition.item {
-		border-radius: 14px;
-		overflow: hidden;
-		box-shadow: 0 10px 30px -18px rgba(0,0,0,.35);
-		transition: transform .35s ease, box-shadow .35s ease;
-	}
-
-		.single-exibition.item:hover {
-			transform: translateY(-6px);
-			box-shadow: 0 24px 48px -20px rgba(0,0,0,.4);
-		}
-
-		.single-exibition.item img {
-			transition: transform .5s ease;
-			width: 100%;
-			height: 220px;
-			object-fit: cover;
-		}
-
-		.single-exibition.item:hover img {
-			transform: scale(1.06);
-		}
-
-		.single-exibition.item .tags a {
-			font-size: 12px;
-			letter-spacing: .04em;
-			text-transform: uppercase;
-			opacity: .75;
-		}
-
 	/* ---- Gallery grid ---- */
 	#grid-container .single-gallery {
 		position: relative;
@@ -260,7 +865,7 @@
 	}
 
 	#grid-container .grid-item {
-		transition: transform .5s ease;
+		transition: transform .5s cubic-bezier(.2,.8,.2,1);
 	}
 
 	#grid-container .single-gallery::after {
@@ -276,83 +881,555 @@
 	}
 
 	#grid-container .single-gallery:hover .grid-item {
-		transform: scale(1.08);
+		transform: scale(1.1) rotate(.5deg);
 	}
 
-	/* ---- Feedback ---- */
-	.feedback-area {
+	/* ============================================================
+				   Visitor Reviews
+				   ============================================================ */
+	.reviews-area {
 		background: var(--gal-paper);
+		position: relative;
 	}
 
-	.feedback-card {
-		background: #fff;
-		border-radius: 16px;
-		padding: 32px 28px;
-		height: 100%;
-		box-shadow: 0 12px 30px -20px rgba(0,0,0,.25);
-		border: 1px solid rgba(0,0,0,.05);
-		display: flex;
-		flex-direction: column;
-		transition: transform .3s ease, box-shadow .3s ease;
-	}
-
-		.feedback-card:hover {
-			transform: translateY(-6px);
-			box-shadow: 0 22px 44px -20px rgba(0,0,0,.3);
+		.reviews-area .gal-sub {
+			max-width: 520px;
 		}
 
-	.feedback-quote-icon {
-		font-family: var(--font-display);
-		font-size: 32px;
-		line-height: 1;
+	.review-card {
+		position: relative;
+		background: #fff;
+		border-radius: 4px;
+		padding: 30px 26px 26px;
+		height: 100%;
+		box-shadow: 0 12px 30px -22px rgba(0,0,0,.3);
+		border: 1px solid var(--gal-line);
+		display: flex;
+		flex-direction: column;
+		transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
+	}
+
+		.review-card::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 26px;
+			width: 34px;
+			height: 6px;
+			background: var(--gal-brass);
+			opacity: .85;
+			border-radius: 0 0 3px 3px;
+			transition: width .3s ease;
+		}
+
+		.review-card:hover::before {
+			width: 50px;
+		}
+
+		.review-card:hover {
+			transform: translateY(-6px);
+			box-shadow: 0 22px 44px -20px rgba(0,0,0,.32);
+		}
+
+	.review-stars {
+		font-size: 14px;
+		letter-spacing: 3px;
 		color: var(--gal-brass);
 		margin-bottom: 14px;
 	}
 
-	.feedback-message {
-		flex-grow: 1;
-		font-style: italic;
-		color: #4a4a4a;
-		margin-bottom: 20px;
+		.review-stars .star-off {
+			color: var(--gal-line);
+		}
+
+	.review-quote-icon {
+		font-family: var(--font-display);
+		font-size: 30px;
+		line-height: .6;
+		color: rgba(31,42,36,.14);
+		margin-bottom: 6px;
 	}
 
-	.feedback-author {
+	.review-message {
+		flex-grow: 1;
+		font-family: var(--font-caption);
+		font-style: italic;
+		font-size: 18px;
+		line-height: 1.5;
+		color: #4a4a4a;
+		margin-bottom: 22px;
+	}
+
+	.review-author {
 		display: flex;
 		align-items: center;
 		gap: 12px;
+		border-top: 1px dashed var(--gal-line);
+		padding-top: 16px;
 	}
 
-	.feedback-avatar {
-		width: 44px;
-		height: 44px;
+	.review-avatar {
+		width: 42px;
+		height: 42px;
 		border-radius: 50%;
 		background: var(--gal-ink);
-		color: #fff;
+		color: var(--gal-brass-light);
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		font-family: var(--font-display);
 		font-weight: 600;
-		font-size: 16px;
+		font-size: 15px;
 		flex-shrink: 0;
+		border: 2px solid var(--gal-brass);
 	}
 
-	.feedback-author-name {
+	.review-author-name {
+		font-family: var(--font-body);
 		font-weight: 600;
 		margin: 0;
+		color: var(--gal-charcoal);
+		font-size: 14px;
 	}
 
-	.feedback-author-label {
-		font-size: 12px;
-		color: #999;
-		margin: 0;
+	.review-author-label {
+		font-family: var(--font-body);
+		font-size: 11px;
+		letter-spacing: .06em;
+		text-transform: uppercase;
+		color: var(--gal-muted);
+		margin: 2px 0 0;
 	}
 
-	.feedback-empty {
+	.review-empty {
 		text-align: center;
-		color: #999;
+		color: var(--gal-muted);
+		font-family: var(--font-body);
 		padding: 40px 0;
 	}
+
+	/* ============================================================
+				   Banner, service, quote, events
+				   ============================================================ */
+	.banner-area .banner-content {
+		text-align: center;
+	}
+
+		.banner-area .banner-content h6 {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			font-family: var(--font-body);
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: .22em;
+			text-transform: uppercase;
+			color: var(--gal-brass-light) !important;
+			border: 1px solid rgba(211,181,126,.5);
+			padding: 7px 18px;
+			border-radius: 2px;
+			margin-bottom: 26px;
+		}
+
+			.banner-area .banner-content h6::before {
+				content: "";
+				width: 6px;
+				height: 6px;
+				background: var(--gal-brass-light);
+				border-radius: 50%;
+				display: inline-block;
+				animation: eyebrowPulse 2.4s ease-in-out infinite;
+			}
+
+		.banner-area .banner-content h1 {
+			font-family: var(--font-display);
+			font-weight: 700;
+			font-size: 58px;
+			line-height: 1.18;
+			letter-spacing: -.01em;
+		}
+
+		.banner-area .banner-content p {
+			font-family: var(--font-body);
+			font-size: 17px;
+			line-height: 1.7;
+			max-width: 620px;
+			margin-left: auto;
+			margin-right: auto;
+			opacity: .9;
+		}
+
+	.banner-area .primary-btn {
+		background: var(--gal-brass);
+		border-color: var(--gal-brass);
+		letter-spacing: .12em;
+		font-weight: 600;
+		padding: 14px 34px;
+		border-radius: 2px;
+		transition: background .3s ease, transform .3s ease, box-shadow .3s ease;
+	}
+
+		.banner-area .primary-btn:hover {
+			background: var(--gal-brass-dark);
+			transform: translateY(-2px);
+			box-shadow: 0 10px 24px rgba(176,141,87,.35);
+		}
+
+	.service-area {
+		background: var(--gal-paper);
+	}
+
+	.single-service {
+		background: #fff;
+		border: 1px solid var(--gal-line);
+		padding: 40px 30px;
+		height: 100%;
+	}
+
+		.single-service h4 {
+			font-family: var(--font-display);
+			font-weight: 600;
+			font-size: 21px;
+			color: var(--gal-charcoal);
+			margin-bottom: 10px;
+		}
+
+		.single-service > p {
+			font-family: var(--font-body);
+			font-size: 14px;
+			line-height: 1.7;
+			color: var(--gal-muted);
+		}
+
+	.quote-area {
+		background: var(--gal-ink);
+		background-image: linear-gradient(180deg, var(--gal-ink) 0%, var(--gal-ink-2) 100%);
+		padding: 90px 0;
+		position: relative;
+		overflow: hidden;
+	}
+
+		.quote-area::before {
+			content: "\201C";
+			position: absolute;
+			top: -40px;
+			left: 20px;
+			font-family: var(--font-display);
+			font-size: 260px;
+			color: rgba(255,255,255,.04);
+			line-height: 1;
+			pointer-events: none;
+		}
+
+		.quote-area .quote-left h1 {
+			font-family: var(--font-display);
+			font-weight: 600;
+			font-size: 34px;
+			line-height: 1.5;
+			color: #fff;
+		}
+
+			.quote-area .quote-left h1 span {
+				font-family: var(--font-caption);
+				font-style: italic;
+				font-weight: 500;
+				color: var(--gal-brass-light);
+			}
+
+		.quote-area .quote-right p {
+			font-family: var(--font-body);
+			font-size: 16px;
+			line-height: 1.85;
+			color: rgba(255,255,255,.7);
+			padding-top: 6px;
+		}
+
+	.upcoming-event-area {
+		background: var(--gal-paper);
+	}
+
+	.single-events {
+		background: #fff;
+		border: 1px solid var(--gal-line);
+		border-radius: 4px;
+		padding: 26px 26px 30px;
+		margin-bottom: 24px;
+		position: relative;
+		border-left: 3px solid var(--gal-brass);
+		transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .3s ease;
+	}
+
+		.single-events:last-child {
+			margin-bottom: 0;
+		}
+
+		.single-events:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 18px 36px -24px rgba(0,0,0,.3);
+			border-color: var(--gal-brass-dark);
+		}
+
+		.single-events img {
+			border-radius: 3px;
+			margin-bottom: 18px;
+			transition: transform .4s ease;
+		}
+
+		.single-events:hover img {
+			transform: scale(1.02);
+		}
+
+		.single-events > a h4 {
+			font-family: var(--font-display);
+			font-weight: 600;
+			font-size: 20px;
+			color: var(--gal-charcoal);
+			margin-bottom: 8px;
+		}
+
+		.single-events h6 {
+			font-family: var(--font-body);
+			font-size: 12px;
+			letter-spacing: .06em;
+			text-transform: uppercase;
+			color: var(--gal-muted);
+			margin-bottom: 14px;
+		}
+
+			.single-events h6 span {
+				font-family: var(--font-caption);
+				font-style: italic;
+				font-size: 15px;
+				text-transform: none;
+				letter-spacing: 0;
+				color: var(--gal-brass-dark);
+				font-weight: 600;
+			}
+
+		.single-events > p {
+			font-family: var(--font-body);
+			font-size: 14px;
+			line-height: 1.7;
+			color: var(--gal-muted);
+			margin-bottom: 18px;
+		}
+
+		.single-events .primary-btn {
+			border: 1px solid var(--gal-ink);
+			color: var(--gal-ink);
+			background: transparent;
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: .1em;
+			padding: 10px 22px;
+			border-radius: 2px;
+			transition: background .25s ease, color .25s ease;
+		}
+
+			.single-events .primary-btn:hover {
+				background: var(--gal-ink);
+				color: #fff;
+			}
+
+	.gallery-area {
+		background: var(--gal-ink);
+		background-image: linear-gradient(180deg, var(--gal-ink) 0%, var(--gal-ink-2) 100%);
+		padding-bottom: 100px;
+	}
+
+		.gallery-area .menu-content h1 {
+			font-family: var(--font-display);
+			font-weight: 700;
+		}
+
+		.gallery-area .menu-content p {
+			font-family: var(--font-body);
+			color: rgba(255,255,255,.6);
+		}
+
+	#grid-container .single-gallery {
+		aspect-ratio: 1 / 1;
+	}
+
+		#grid-container .single-gallery img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+	@@media (max-width: 767px) {
+		.banner-area .banner-content h1 {
+			font-size: 36px;
+		}
+
+		.quote-area .quote-left h1 {
+			font-size: 26px;
+		}
+
+		.quote-area .quote-right {
+			margin-top: 24px;
+		}
+	}
+
+	/* ============================================================
+				   Motion — hero parallax + staggered scroll reveal
+				   ============================================================ */
+	.banner-area {
+		background-position: center 50%;
+	}
+
+	.js-motion .reveal {
+		opacity: 0;
+		transform: translateY(28px);
+		transition: opacity .7s ease, transform .7s ease;
+	}
+
+		.js-motion .reveal.is-visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+	.js-motion .shop-cards-wrap .col-md-4:nth-of-type(2) .reveal,
+	.js-motion .shop-cards-wrap .col-6:nth-of-type(2) .reveal {
+		transition-delay: .08s;
+	}
+
+	.js-motion .shop-cards-wrap .col-md-4:nth-of-type(3) .reveal,
+	.js-motion .shop-cards-wrap .col-6:nth-of-type(3) .reveal {
+		transition-delay: .16s;
+	}
+
+	.js-motion .shop-cards-wrap .col-md-4:nth-of-type(4) .reveal {
+		transition-delay: .24s;
+	}
+
+	.js-motion .shop-cards-wrap .col-md-4:nth-of-type(5) .reveal {
+		transition-delay: .32s;
+	}
+
+	.js-motion .shop-cards-wrap .col-md-4:nth-of-type(6) .reveal {
+		transition-delay: .4s;
+	}
+
+	.js-motion .service-area .col-lg-4:nth-of-type(2) .reveal {
+		transition-delay: .08s;
+	}
+
+	.js-motion .service-area .col-lg-4:nth-of-type(3) .reveal {
+		transition-delay: .16s;
+	}
+
+	.js-motion .reviews-area .col-lg-4:nth-of-type(2) .reveal,
+	.js-motion .reviews-area .col-md-6:nth-of-type(2) .reveal {
+		transition-delay: .08s;
+	}
+
+	.js-motion .reviews-area .col-lg-4:nth-of-type(3) .reveal,
+	.js-motion .reviews-area .col-md-6:nth-of-type(3) .reveal {
+		transition-delay: .16s;
+	}
+
+	@@media (prefers-reduced-motion: reduce) {
+		.js-motion .reveal, .home-product-card {
+			opacity: 1 !important;
+			transform: none !important;
+			transition: none !important;
+			animation: none !important;
+		}
+
+		.banner-area {
+			background-attachment: initial !important;
+		}
+
+			.home-product-card__badge, .gal-eyebrow::before, .banner-area .banner-content h6::before {
+				animation: none !important;
+			}
+	}
 </style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		document.documentElement.classList.add('js-motion');
+		var revealEls = document.querySelectorAll('.reveal');
+		if (prefersReduced || !('IntersectionObserver' in window)) {
+			revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+		} else {
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('is-visible');
+						io.unobserve(entry.target);
+					}
+				});
+			}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+			revealEls.forEach(function (el) { io.observe(el); });
+		}
+
+		// staggered per-card delay for product grids
+		document.querySelectorAll('.pgrid .home-product-card').forEach(function (card, idx) {
+			card.style.transitionDelay = (idx % 4) * 0.08 + 's';
+		});
+
+		// hero parallax
+		if (!prefersReduced) {
+			var banner = document.querySelector('.banner-area');
+			if (banner) {
+				var ticking = false;
+				function updateParallax() {
+					var rect = banner.getBoundingClientRect();
+					var progress = Math.min(Math.max(-rect.top, 0), rect.height);
+					var offset = progress * 0.25;
+					banner.style.backgroundPosition = 'center calc(50% + ' + offset + 'px)';
+					ticking = false;
+				}
+				window.addEventListener('scroll', function () {
+					if (!ticking) { window.requestAnimationFrame(updateParallax); ticking = true; }
+				}, { passive: true });
+				updateParallax();
+			}
+		}
+
+		// subtle 3D tilt on shop + product cards
+		if (!prefersReduced && window.matchMedia('(pointer: fine)').matches) {
+			document.querySelectorAll('.shop, .home-product-card').forEach(function (card) {
+				card.addEventListener('mousemove', function (e) {
+					var rect = card.getBoundingClientRect();
+					var x = (e.clientX - rect.left) / rect.width - 0.5;
+					var y = (e.clientY - rect.top) / rect.height - 0.5;
+					card.style.transform = 'translateY(-8px) rotateX(' + (y * -4) + 'deg) rotateY(' + (x * 5) + 'deg)';
+				});
+				card.addEventListener('mouseleave', function () {
+					card.style.transform = '';
+				});
+			});
+		}
+
+		// live auction countdowns
+		var countdownEls = document.querySelectorAll('[data-auc-countdown]');
+		function updateAucCountdowns() {
+			countdownEls.forEach(function (el) {
+				var end = new Date(el.getAttribute('data-auc-countdown')).getTime();
+				var diff = end - Date.now();
+				var textEl = el.querySelector('.auc-countdown-text');
+				if (!textEl) return;
+				if (diff <= 0) {
+					textEl.textContent = 'Auction ended';
+					el.classList.remove('urgent');
+					return;
+				}
+				var d = Math.floor(diff / 86400000);
+				var h = Math.floor((diff % 86400000) / 3600000);
+				var m = Math.floor((diff % 3600000) / 60000);
+				textEl.textContent = d > 0 ? (d + 'd ' + h + 'h left') : (h > 0 ? (h + 'h ' + m + 'm left') : (m + 'm left'));
+				el.classList.toggle('urgent', diff <= 86400000);
+			});
+		}
+		if (countdownEls.length) { updateAucCountdowns(); setInterval(updateAucCountdowns, 30000); }
+	});
+</script>
+
 
 <!-- start banner Area -->
 <section class="banner-area relative" id="home">
@@ -380,7 +1457,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-4">
-				<div class="single-service">
+				<div class="single-service reveal">
 					<span class="lnr lnr-clock"></span>
 					<h4>Opening Hours</h4>
 					<p>
@@ -401,7 +1478,7 @@
 				</div>
 			</div>
 			<div class="col-lg-4">
-				<div class="single-service">
+				<div class="single-service reveal">
 					<span class="lnr lnr-rocket"></span>
 					<h4>Ongoing Exhibitions</h4>
 					<p>
@@ -421,7 +1498,7 @@
 				</div>
 			</div>
 			<div class="col-lg-4">
-				<div class="single-service">
+				<div class="single-service reveal">
 					<span class="lnr lnr-briefcase"></span>
 					<h4>Opening Events</h4>
 					<p>
@@ -449,44 +1526,49 @@
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-40 col-lg-10">
-				<div class="text-center">
+				<div class="text-center section-heading-wrap reveal">
 					<span class="gal-eyebrow">Browse by Collection</span>
 					<h1 class="mb-10 gal-heading">Explore Every Collection</h1>
-					<p>From portraiture to abstract sculpture — find the category that speaks to you.</p>
+					<p class="gal-sub">From portraiture to abstract sculpture — find the category that speaks to you.</p>
+					<div class="section-underline"></div>
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-12">
-				<div class="subcat-slider-wrap">
-					@{
-						var subCategoryCounts = ViewBag.SubCategoryCounts as Dictionary<int, int>;
-					}
-					@if (ViewBag.SubCategories != null && ((System.Collections.IEnumerable)ViewBag.SubCategories).GetEnumerator().MoveNext())
-					{
-						<div class="subcat-track" id="subcatTrack">
-							@foreach (var sc in ViewBag.SubCategories)
-							{
-								int scId = (int)sc.Id;
-								int itemCount = (subCategoryCounts != null && subCategoryCounts.ContainsKey(scId)) ? subCategoryCounts[scId] : 0;
-								<div class="subcat-card">
-									<span class="subcat-parent">@sc.category?.CategoryName</span>
-									<h5>@sc.SubCategoryName</h5>
-									<div class="subcat-count">@itemCount piece@(itemCount == 1 ? "" : "s") available</div>
-								</div>
-							}
-						</div>
-						<div class="subcat-nav">
-							<button type="button" aria-label="Scroll left" onclick="document.getElementById('subcatTrack').scrollBy({left:-260, behavior:'smooth'})">&#8592;</button>
-							<button type="button" aria-label="Scroll right" onclick="document.getElementById('subcatTrack').scrollBy({left:260, behavior:'smooth'})">&#8594;</button>
-						</div>
-					}
-					else
-					{
-						<p class="subcat-empty text-center">Collections will appear here once categories are added.</p>
-					}
-				</div>
-			</div>
+		<div class="row shop-cards-wrap">
+			@{
+				var subCategoryCounts = ViewBag.SubCategoryCounts as Dictionary<int, int>;
+				var subCategoryImages = ViewBag.SubCategoryImages as Dictionary<int, string>;
+			}
+			@if (ViewBag.SubCategories != null && ((System.Collections.IEnumerable)ViewBag.SubCategories).GetEnumerator().MoveNext())
+			{
+				@foreach (var sc in ViewBag.SubCategories)
+				{
+					int scId = (int)sc.Id;
+					int itemCount = (subCategoryCounts != null && subCategoryCounts.ContainsKey(scId)) ? subCategoryCounts[scId] : 0;
+					string scImg = (subCategoryImages != null && subCategoryImages.ContainsKey(scId)) ? subCategoryImages[scId] : null;
+					<div class="col-md-4 col-6 mb-4">
+						<a href="/User/Allproducts?subCategoryId=@scId" class="shop reveal" style="display:block; text-decoration:none;">
+							<div class="shop-media">
+								@if (!string.IsNullOrEmpty(scImg))
+								{
+									<img src="@scImg" alt="@sc.Name">
+								}
+							</div>
+							<div class="shop-panel"></div>
+							<div class="shop-shine"></div>
+							<span class="shop-count-badge"><i class="fa fa-cube"></i> @itemCount piece@(itemCount == 1 ? "" : "s")</span>
+							<div class="shop-content">
+								<h3>@sc.Name</h3>
+								<span class="cta-btn">Shop Now <i class="fa fa-arrow-circle-right"></i></span>
+							</div>
+						</a>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="subcat-empty text-center w-100">Collections will appear here once categories are added.</p>
+			}
 		</div>
 	</div>
 </section>
@@ -495,21 +1577,21 @@
 <section class="stats-area">
 	<div class="container">
 		<div class="row">
-			<div class="col-6 col-md-3 stat-item">
+			<div class="col-6 col-md-3 stat-item reveal">
 				<div class="stat-number">@ViewBag.TotalArtworks<span class="stat-accent">+</span></div>
 				<div class="stat-label">Artworks Listed</div>
 			</div>
-			<div class="col-6 col-md-3 stat-item">
-				<div class="stat-number">@ViewBag.TotalArtists<span class="stat-accent">+</span></div>
-				<div class="stat-label">Independent Artists</div>
+			<div class="col-6 col-md-3 stat-item reveal">
+				<div class="stat-number">@ViewBag.TotalCollections</div>
+				<div class="stat-label">Curated Collections</div>
 			</div>
-			<div class="col-6 col-md-3 stat-item">
+			<div class="col-6 col-md-3 stat-item reveal">
 				<div class="stat-number">@ViewBag.TotalCategories</div>
 				<div class="stat-label">Curated Categories</div>
 			</div>
-			<div class="col-6 col-md-3 stat-item">
-				<div class="stat-number">@ViewBag.TotalCollectors<span class="stat-accent">+</span></div>
-				<div class="stat-label">Happy Collectors</div>
+			<div class="col-6 col-md-3 stat-item reveal">
+				<div class="stat-number">@ViewBag.TotalReviews<span class="stat-accent">+</span></div>
+				<div class="stat-label">Visitor Reviews</div>
 			</div>
 		</div>
 	</div>
@@ -519,14 +1601,14 @@
 <section class="quote-area section-gap">
 	<div class="container">
 		<div class="row">
-			<div class="col-lg-6 quote-left">
+			<div class="col-lg-6 quote-left reveal">
 				<h1>
 					Every <span>canvas</span> holds a conversation <br>
 					between silence and <span>color</span> — step closer, <br>
 					and let it <span>speak</span>.
 				</h1>
 			</div>
-			<div class="col-lg-6 quote-right">
+			<div class="col-lg-6 quote-right reveal">
 				<p>
 					We built this gallery to close the distance between artists and the people
 					who fall in love with their work. Every piece here is listed directly by
@@ -539,61 +1621,138 @@
 	</div>
 </section>
 <!-- End quote Area -->
-<!-- Start exibition Area -->
-<section class="exibition-area section-gap" id="exhibitions">
+<!-- Start Buy Now Area -->
+<section class="buynow-section-bg section-gap" id="exhibitions">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
-			<div class="menu-content pb-60 col-lg-10">
-				<div class="title text-center">
-					<span class="gal-eyebrow">On Display Now</span>
-					<h1 class="mb-10 gal-heading">Ongoing Exhibitions</h1>
-					<p>A rotating selection of recently listed and highly viewed pieces.</p>
+			<div class="menu-content pb-50 col-lg-10">
+				<div class="title text-center section-heading-wrap reveal">
+					<span class="gal-eyebrow buy-eyebrow"><i class="bi bi-bag-check-fill"></i>&nbsp; Ready to Own</span>
+					<h1 class="mb-10 gal-heading">Buy Now Collection</h1>
+					<p class="gal-sub">Take a piece home today — no waiting, no bidding, just yours.</p>
+					<div class="section-underline buy"></div>
 				</div>
 			</div>
 		</div>
 		<div class="row">
-			<div class="active-exibition-carusel">
+			<div class="pgrid col-12">
+				@{
+					bool anyBuy = false;
+				}
 				@if (ViewBag.FeaturedExhibits != null && ((System.Collections.IEnumerable)ViewBag.FeaturedExhibits).GetEnumerator().MoveNext())
 				{
 					@foreach (var product in ViewBag.FeaturedExhibits)
 					{
-						<div class="single-exibition item">
-							<img src="@product.Image1" alt="@product.Name">
-							<ul class="tags">
-								<li><a href="#">@product.SubCategory?.category?.Name</a></li>
-								<li><a href="#">@product.SubCategory?.Name</a></li>
-							</ul>
-							<a href="/User/Viewproductdetails/@product.Id"><h4>@product.Name</h4></a>
-							<p>
-								@product.Description
-							</p>
+						bool isBid = product.AvailableForBid == "Yes";
+						if (isBid) { continue; }
+						anyBuy = true;
+						decimal displayPrice = (decimal)product.price;
+						<div class="home-product-card buynow-card reveal">
+							<div class="home-product-card__media">
+								<img src="@product.Image1" alt="@product.Name">
+								<div class="home-product-card__shine"></div>
+								<span class="home-product-card__badge buy"><i class="bi bi-bag-check"></i> Buy Now</span>
+								<a href="/User/Viewproductdetails/@product.Id" class="home-product-card__view-btn"><i class="bi bi-eye"></i> Quick View</a>
+							</div>
+							<div class="home-product-card__body">
+								<a href="/User/Viewproductdetails/@product.Id" style="text-decoration:none;">
+									<p class="home-product-card__title">@product.Name</p>
+								</a>
+								<p class="home-product-card__category buy-cat">@product.SubCategory?.category?.Name — @product.SubCategory?.Name</p>
+								<div class="home-product-card__meta">
+									<span class="home-product-card__price buy-price">@displayPrice.ToString("C")</span>
+								</div>
+								<a href="/User/Placeorder/@product.Id" class="home-btn-action buy"><i class="bi bi-bag-check"></i> Buy Now</a>
+							</div>
 						</div>
 					}
 				}
-				else
+				@if (!anyBuy)
 				{
-					<p class="subcat-empty text-center w-100">New exhibits will appear here as artists list their work.</p>
+					<p class="no-items-msg"><i class="bi bi-bag"></i>New Buy Now pieces will appear here as artists list their work.</p>
 				}
 			</div>
 		</div>
 	</div>
 </section>
-<!-- End exibition Area -->
+<!-- End Buy Now Area -->
+<!-- Start Live Auctions Area -->
+<section class="auction-section-bg section-gap">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-50 col-lg-10">
+				<div class="title text-center section-heading-wrap reveal">
+					<span class="gal-eyebrow auc-eyebrow"><i class="bi bi-hammer"></i>&nbsp; Bidding Now Open</span>
+					<h1 class="mb-10 gal-heading">Live Auctions</h1>
+					<p class="gal-sub">Rare and limited pieces — place your bid before time runs out.</p>
+					<div class="section-underline auc"></div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="pgrid col-12">
+				@{
+					bool anyBid = false;
+				}
+				@if (ViewBag.FeaturedExhibits != null && ((System.Collections.IEnumerable)ViewBag.FeaturedExhibits).GetEnumerator().MoveNext())
+				{
+					@foreach (var product in ViewBag.FeaturedExhibits)
+					{
+						bool isBid = product.AvailableForBid == "Yes";
+						if (!isBid) { continue; }
+						anyBid = true;
+						decimal displayPrice = (decimal)product.BidPrice;
+						<div class="home-product-card auction-card reveal">
+							<div class="home-product-card__media">
+								<img src="@product.Image1" alt="@product.Name">
+								<div class="home-product-card__shine"></div>
+								<span class="home-product-card__badge bid"><i class="bi bi-hammer"></i> On Bid</span>
+								<a href="/User/Viewproductdetails/@product.Id" class="home-product-card__view-btn"><i class="bi bi-eye"></i> Quick View</a>
+							</div>
+							<div class="home-product-card__body">
+								<a href="/User/Viewproductdetails/@product.Id" style="text-decoration:none;">
+									<p class="home-product-card__title">@product.Name</p>
+								</a>
+								<p class="home-product-card__category auc-cat">@product.SubCategory?.category?.Name — @product.SubCategory?.Name</p>
+								<span class="auc-countdown" data-auc-countdown="@product.BidEndDate.ToString("yyyy-MM-dd")T00:00:00">
+									<i class="bi bi-clock-fill"></i> <span class="auc-countdown-text">calculating...</span>
+								</span>
+								<div class="home-product-card__meta">
+									<div>
+										<span class="home-product-card__price-label auc-price">Current bid</span>
+										<span class="home-product-card__price auc-price">@displayPrice.ToString("C")</span>
+									</div>
+								</div>
+								<a href="/User/Placebid/@product.Id" class="home-btn-action bid"><i class="bi bi-hammer"></i> Start Bidding</a>
+							</div>
+						</div>
+					}
+				}
+				@if (!anyBid)
+				{
+					<p class="no-items-msg"><i class="bi bi-hammer"></i>New auction pieces will appear here as artists list their work.</p>
+				}
+			</div>
+		</div>
+	</div>
+</section>
+<!-- End Live Auctions Area -->
 <!-- Start upcoming-event Area -->
 <section class="upcoming-event-area section-gap" id="events">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-60 col-lg-10">
-				<div class="title text-center">
+				<div class="title text-center section-heading-wrap reveal">
 					<span class="gal-eyebrow">Save the Date</span>
 					<h1 class="mb-10 gal-heading">Checkout our Upcoming Events</h1>
-					<p>Meet artists in person and preview new arrivals before anyone else.</p>
+					<p class="gal-sub">Meet artists in person and preview new arrivals before anyone else.</p>
+					<div class="section-underline"></div>
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-lg-6 event-left">
-				<div class="single-events">
+				<div class="single-events reveal">
 					<img class="img-fluid" src="~/User/img/u1.jpg" alt="">
 					<a href="#"><h4>Opening Night: New Arrivals</h4></a>
 					<h6><span>First Saturday</span> at the Main Gallery Floor</h6>
@@ -603,7 +1762,7 @@
 					</p>
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 				</div>
-				<div class="single-events">
+				<div class="single-events reveal">
 					<img class="img-fluid" src="~/User/img/u3.jpg" alt="">
 					<a href="#"><h4>Live Sketching Session</h4></a>
 					<h6><span>Every Sunday</span> at the Courtyard Studio</h6>
@@ -615,7 +1774,7 @@
 				</div>
 			</div>
 			<div class="col-lg-6 event-right">
-				<div class="single-events">
+				<div class="single-events reveal">
 					<a href="#"><h4>Collector's Preview Evening</h4></a>
 					<h6><span>Last Friday</span> at the Main Gallery Floor</h6>
 					<p>
@@ -625,7 +1784,7 @@
 					<a href="#" class="primary-btn text-uppercase">View Details</a>
 					<img class="img-fluid" src="~/User/img/u2.jpg" alt="">
 				</div>
-				<div class="single-events">
+				<div class="single-events reveal">
 					<a href="#"><h4>Artist Talk & Q&A</h4></a>
 					<h6><span>Third Wednesday</span> at the Reading Room</h6>
 					<p>
@@ -640,15 +1799,16 @@
 	</div>
 </section>
 <!-- End upcoming-event Area -->
-<!-- Start feedback Area (replaces Blog) -->
-<section class="feedback-area section-gap" id="feedback">
+<!-- Start reviews Area -->
+<section class="reviews-area section-gap" id="reviews">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-70 col-lg-8">
-				<div class="title text-center">
+				<div class="title text-center section-heading-wrap reveal">
 					<span class="gal-eyebrow">In Their Words</span>
-					<h1 class="mb-10 gal-heading">What Our Visitors Say</h1>
-					<p>Real feedback from people who've walked through our gallery.</p>
+					<h1 class="mb-10 gal-heading">Visitor & Collector Reviews</h1>
+					<p class="gal-sub">Real feedback from collectors who've bought, bid on, or walked through our gallery.</p>
+					<div class="section-underline"></div>
 				</div>
 			</div>
 		</div>
@@ -660,14 +1820,15 @@
 					var displayName = fb.User?.UserName ?? "Anonymous visitor";
 					var initial = displayName.Length > 0 ? displayName[0].ToString().ToUpper() : "?";
 					<div class="col-lg-4 col-md-6 mb-4">
-						<div class="feedback-card">
-							<div class="feedback-quote-icon">&ldquo;</div>
-							<p class="feedback-message">@fb.message</p>
-							<div class="feedback-author">
-								<div class="feedback-avatar">@initial</div>
+						<div class="review-card reveal">
+							<div class="review-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+							<div class="review-quote-icon">&ldquo;</div>
+							<p class="review-message">@fb.message</p>
+							<div class="review-author">
+								<div class="review-avatar">@initial</div>
 								<div>
-									<p class="feedback-author-name">@displayName</p>
-									<p class="feedback-author-label">Verified visitor</p>
+									<p class="review-author-name">@displayName</p>
+									<p class="review-author-label">Verified visitor</p>
 								</div>
 							</div>
 						</div>
@@ -677,21 +1838,22 @@
 			else
 			{
 				<div class="col-12">
-					<p class="feedback-empty">No feedback yet — be the first to share your experience.</p>
+					<p class="review-empty">No reviews yet — be the first to share your experience.</p>
 				</div>
 			}
 		</div>
 	</div>
 </section>
-<!-- End feedback Area -->
+<!-- End reviews Area -->
 <!-- Start gallery Area -->
 <section class="gallery-area section-gap" id="gallery">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
 			<div class="menu-content pb-70 col-lg-8">
-				<div class="title text-center">
-					<h1 class="mb-10 text-white">Our Exhibition Gallery</h1>
-					<p>A closer look at brushstrokes, textures, and details from pieces recently added to our collection.</p>
+				<div class="title text-center reveal">
+					<span class="gal-eyebrow">A Closer Look</span>
+					<h1 class="mb-10 text-white gal-heading" style="color:#fff;">Our Exhibition Gallery</h1>
+					<p>Brushstrokes, textures, and details from pieces recently added to our collection.</p>
 				</div>
 			</div>
 		</div>

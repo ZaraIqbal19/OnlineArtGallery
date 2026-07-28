@@ -8,21 +8,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-
-    <!-- Bootstrap 5 + Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@@1.11.3/font/bootstrap-icons.min.css" />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ===== RESET & ROOT ===== */
+        /* ===== RESET ===== */
         * {
             margin: 0;
             padding: 0;
@@ -35,651 +27,828 @@
             --primary-light: #d4f09b;
             --primary-ultra-light: #f0fae6;
             --primary-glow: rgba(136, 210, 0, 0.18);
-            --accent-1: #ff6b6b;
-            --neutral-1: #f8fafc;
-            --neutral-2: #e9edf4;
-            --neutral-3: #cbd5e1;
-            --neutral-4: #94a3b8;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-            --radius: 24px;
-            --shadow-sm: 0 8px 30px rgba(0, 0, 0, 0.04);
-            --shadow-hover: 0 24px 60px rgba(136, 210, 0, 0.14);
-            --transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --white: #ffffff;
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.18);
+            --radius: 16px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* ===== BODY ===== */
         body.register-page {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            background-image: radial-gradient(ellipse at 10% 20%, rgba(136, 210, 0, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 90% 80%, rgba(106, 168, 0, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(212, 240, 155, 0.04) 0%, transparent 70%);
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
-            margin: 0;
+            background: var(--bg-primary);
             position: relative;
-            line-height: 1.6;
-            color: var(--text-secondary);
+            overflow-x: hidden;
         }
 
-        /* ===== ANIMATED BACKGROUND PARTICLES ===== */
-        .particles {
+            body.register-page::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                background: linear-gradient(-45deg, rgba(136, 210, 0, 0.15), rgba(212, 240, 155, 0.15), rgba(111, 168, 0, 0.12), rgba(136, 210, 0, 0.10));
+                background-size: 400% 400%;
+                animation: gradientBG 15s ease infinite;
+                pointer-events: none;
+            }
+
+        @@keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .particle-system {
             position: fixed;
             inset: 0;
-            pointer-events: none;
             z-index: 0;
+            pointer-events: none;
             overflow: hidden;
         }
 
-        .particle {
+        .particle-dot {
             position: absolute;
             border-radius: 50%;
             background: var(--primary);
-            opacity: 0.10;
-            animation: floatParticle 22s infinite alternate ease-in-out;
-        }
-
-            .particle:nth-child(1) {
-                width: 6px;
-                height: 6px;
-                left: 8%;
-                animation-duration: 18s;
-                animation-delay: 0s;
-            }
-
-            .particle:nth-child(2) {
-                width: 10px;
-                height: 10px;
-                left: 18%;
-                animation-duration: 24s;
-                animation-delay: 2s;
-                opacity: 0.07;
-            }
-
-            .particle:nth-child(3) {
-                width: 5px;
-                height: 5px;
-                left: 28%;
-                animation-duration: 20s;
-                animation-delay: 4s;
-            }
-
-            .particle:nth-child(4) {
-                width: 8px;
-                height: 8px;
-                left: 38%;
-                animation-duration: 26s;
-                animation-delay: 1s;
-            }
-
-            .particle:nth-child(5) {
-                width: 4px;
-                height: 4px;
-                left: 48%;
-                animation-duration: 16s;
-                animation-delay: 3s;
-            }
-
-            .particle:nth-child(6) {
-                width: 7px;
-                height: 7px;
-                left: 58%;
-                animation-duration: 22s;
-                animation-delay: 5s;
-            }
-
-            .particle:nth-child(7) {
-                width: 5px;
-                height: 5px;
-                left: 68%;
-                animation-duration: 19s;
-                animation-delay: 2s;
-            }
-
-            .particle:nth-child(8) {
-                width: 9px;
-                height: 9px;
-                left: 78%;
-                animation-duration: 25s;
-                animation-delay: 4s;
-                opacity: 0.06;
-            }
-
-            .particle:nth-child(9) {
-                width: 4px;
-                height: 4px;
-                left: 88%;
-                animation-duration: 21s;
-                animation-delay: 0.5s;
-            }
-
-            .particle:nth-child(10) {
-                width: 7px;
-                height: 7px;
-                left: 15%;
-                animation-duration: 28s;
-                animation-delay: 6s;
-            }
-
-        @@-webkit-keyframes floatParticle {
-            0% {
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-
-            50% {
-                transform: translateY(-140px) rotate(180deg) scale(1.6);
-                opacity: 0.20;
-            }
-
-            100% {
-                transform: translateY(-50px) rotate(360deg) scale(0.9);
-                opacity: 0.08;
-            }
-        }
-
-        @@keyframes floatParticle {
-            0% {
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-
-            50% {
-                transform: translateY(-140px) rotate(180deg) scale(1.6);
-                opacity: 0.20;
-            }
-
-            100% {
-                transform: translateY(-50px) rotate(360deg) scale(0.9);
-                opacity: 0.08;
-            }
-        }
-
-        /* ===== WRAPPER ===== */
-        .register-wrapper {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 0.5rem;
-            position: relative;
-            z-index: 1;
-            animation: fadeUp 0.8s ease forwards;
-        }
-
-        @@-webkit-keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(36px) scale(0.97);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @@keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(36px) scale(0.97);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* ===== GLASS CARD ===== */
-        .register-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: var(--radius);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            padding: 3.2rem 3rem;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-            .register-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 5px;
-                background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200);
-                background-size: 300% 100%;
-                animation: shimmer 4s linear infinite;
-                z-index: 2;
-            }
-
-        @@-webkit-keyframes shimmer {
-            0% {
-                background-position: -300% 0;
-            }
-
-            100% {
-                background-position: 300% 0;
-            }
-        }
-
-        @@keyframes shimmer {
-            0% {
-                background-position: -300% 0;
-            }
-
-            100% {
-                background-position: 300% 0;
-            }
-        }
-
-        .register-card:hover {
-            box-shadow: var(--shadow-hover);
-            transform: translateY(-4px);
-            border-color: rgba(136, 210, 0, 0.15);
-        }
-
-        /* ===== TITLE ===== */
-        .page-title {
-            font-weight: 800;
-            font-size: 2.5rem;
-            color: var(--text-primary);
-            letter-spacing: -0.03em;
-            position: relative;
-            display: inline-block;
-            margin-bottom: 0.3rem;
-        }
-
-            .page-title::after {
-                content: '';
-                position: absolute;
-                left: 0;
-                bottom: -6px;
-                width: 60px;
-                height: 4px;
-                background: var(--primary);
-                border-radius: 4px;
-                transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-        .register-card:hover .page-title::after {
-            width: 120px;
-        }
-
-        .sub-heading {
-            font-weight: 400;
-            color: var(--text-muted);
-            font-size: 1.05rem;
-            margin-top: 0.6rem;
-        }
-
-        /* ===== FORM PROGRESS ===== */
-        .form-progress-wrap {
-            margin-top: 1.4rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .form-progress-labels {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.4rem;
-        }
-
-        .form-progress-caption {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 0.02em;
-        }
-
-        .form-progress-count {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--primary-dark);
-        }
-
-        .form-progress-track {
-            height: 8px;
-            border-radius: 8px;
-            background: var(--neutral-2);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .form-progress-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 8px;
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-            transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-        }
-
-            .form-progress-fill.complete {
-                background: linear-gradient(90deg, var(--primary-dark), var(--primary), #4caf50, var(--primary));
-                background-size: 300% 100%;
-                animation: shimmer 2s linear infinite;
-            }
-
-        /* ===== ENHANCED FORM FLOATING ===== */
-        .register-page .form-floating {
-            position: relative;
-            margin-bottom: 1.6rem !important;
-            transition: var(--transition);
-        }
-
-            .register-page .form-floating .form-control,
-            .register-page .form-floating select.form-control {
-                border: 2px solid var(--neutral-2);
-                border-radius: 16px;
-                padding: 1rem 2.8rem 0.25rem 1.2rem;
-                height: 62px;
-                font-size: 0.95rem;
-                background: rgba(255, 255, 255, 0.6);
-                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
-                color: var(--text-primary);
-                will-change: transform, box-shadow;
-            }
-
-                .register-page .form-floating .form-control:hover,
-                .register-page .form-floating select.form-control:hover {
-                    border-color: var(--neutral-3);
-                    background: rgba(255, 255, 255, 0.85);
-                }
-
-                .register-page .form-floating .form-control:focus,
-                .register-page .form-floating select.form-control:focus {
-                    border-color: var(--primary);
-                    box-shadow: 0 0 0 5px var(--primary-glow), inset 0 0 0 1px var(--primary);
-                    background: #ffffff;
-                    transform: scale(1.02) translateY(-2px);
-                    outline: none;
-                }
-
-            /* ===== SELECT BOX ===== */
-            .register-page .form-floating select.form-control {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2388d200' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: right 1.2rem center;
-                background-size: 18px;
-                padding-right: 3.2rem;
-                cursor: pointer;
-            }
-
-        /* ===== PASSWORD FIELD WRAP (keeps the eye icon vertically centered on the input itself,
-                       instead of the whole .form-floating block which also contains the strength meter) ===== */
-        .password-field-wrap {
-            position: relative;
-        }
-
-        /* ===== LABELS ===== */
-        .register-page .form-floating label {
-            padding-left: 1.2rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            opacity: 0.08;
             pointer-events: none;
         }
 
-        .register-page .form-floating .form-control:focus ~ label,
-        .register-page .form-floating .form-control:not(:placeholder-shown) ~ label,
-        .register-page .form-floating select.form-control:focus ~ label,
-        .register-page .form-floating select.form-control:not(:placeholder-shown) ~ label {
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(120px);
+            opacity: 0.28;
+            animation: orbFloat 20s infinite alternate ease-in-out;
+        }
+
+            .glow-orb:nth-child(1) {
+                width: 400px;
+                height: 400px;
+                background: rgba(136, 210, 0, 0.16);
+                top: -100px;
+                right: -100px;
+            }
+
+            .glow-orb:nth-child(2) {
+                width: 500px;
+                height: 500px;
+                background: rgba(111, 168, 0, 0.10);
+                bottom: -150px;
+                left: -150px;
+                animation-delay: 5s;
+            }
+
+        @@keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(60px, 40px) scale(1.3);
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+            padding: 38px 40px 32px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: calc(var(--radius) + 4px);
+            box-shadow: var(--shadow), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+            transition: var(--transition);
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @@keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark), var(--primary-light), var(--primary));
+            background-size: 300% 100%;
+            animation: shimmerGradient 4s infinite linear;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: 50%;
+            width: 70%;
+            height: 140%;
+            transform: translateX(-50%);
+            background: radial-gradient(ellipse at center, rgba(136, 210, 0, 0.10), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .header-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            background: rgba(136, 210, 0, 0.10);
             color: var(--primary-dark);
-            font-weight: 600;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+            .header-eyebrow i {
+                font-size: 0.7rem;
+            }
+
+        @@keyframes shimmerGradient {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 300% 0%;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .logo-icon {
+            color: var(--primary-dark);
+            font-size: 2.8rem;
+            animation: logoPulse 2.5s infinite ease-in-out;
+            filter: drop-shadow(0 4px 12px rgba(136, 210, 0, 0.25));
+        }
+
+        .logo-badge {
+            width: 68px;
+            height: 68px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            font-size: 1.9rem;
+            box-shadow: 0 14px 32px rgba(136, 210, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            animation: logoPulse 2.5s infinite ease-in-out;
+            transform: rotate(-6deg);
+        }
+
+        .step-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 20px 9px 16px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--primary-ultra-light), var(--primary-light));
+            color: var(--primary-dark);
             font-size: 0.8rem;
-            transform: scale(0.85) translateY(-0.6rem) translateX(0.2rem);
+            font-weight: 700;
             letter-spacing: 0.02em;
+            border: 1px solid rgba(136, 210, 0, 0.3);
+            box-shadow: 0 4px 14px rgba(136, 210, 0, 0.18);
+            transition: var(--transition);
         }
 
-        /* ===== VALIDATION STATES ===== */
-        .register-page .form-floating .form-control.is-valid,
-        .register-page .form-floating select.form-control.is-valid {
-            border-color: var(--primary);
-            background-color: var(--primary-ultra-light);
-            box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.08);
-        }
-
-        .register-page .form-floating .form-control.is-invalid,
-        .register-page .form-floating select.form-control.is-invalid {
-            border-color: var(--accent-1);
-            background-color: #fff6f6;
-            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
-        }
-
-        .register-page .form-floating .form-control,
-        .register-page .form-floating select.form-control {
-            border-color: var(--neutral-2);
-        }
-
-        .register-page .text-danger {
-            font-size: 0.78rem;
-            margin-top: 0.2rem;
-            display: block;
-            font-weight: 500;
-            color: var(--accent-1);
-            animation: slideDown 0.25s ease;
-        }
-
-        .register-page .text-success {
-            font-size: 0.78rem;
-            margin-top: 0.2rem;
-            display: block;
-            font-weight: 500;
-            color: var(--primary-dark);
-            animation: slideDown 0.25s ease;
-        }
-
-        .register-page .app-error-banner {
-            background: linear-gradient(135deg, #fff6f6, #fff0f0);
-            border: 1px solid rgba(255, 107, 107, 0.25);
-            border-left: 4px solid var(--accent-1);
-            padding: 0.95rem 1.1rem 0.95rem 1.2rem;
-            border-radius: 14px;
-            margin-bottom: 1.5rem;
-            font-size: 0.88rem;
-            color: #a94442;
-            display: none;
-            align-items: flex-start;
-            gap: 0.7rem;
-            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.08);
-        }
-
-            .register-page .app-error-banner.show {
-                display: flex;
-                animation: slideDown 0.35s ease, errorShake 0.5s ease 0.1s;
-            }
-
-            .register-page .app-error-banner .error-icon {
-                font-size: 1.2rem;
-                color: var(--accent-1);
+            .step-chip::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--primary-dark);
+                box-shadow: 0 0 0 0 rgba(111, 168, 0, 0.5);
+                animation: chipPulse 1.8s infinite;
                 flex-shrink: 0;
-                margin-top: 0.1rem;
             }
 
-            .register-page .app-error-banner .error-body {
-                flex: 1;
-                min-width: 0;
+        @@keyframes chipPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(111, 168, 0, 0.45);
             }
 
-            .register-page .app-error-banner .error-title {
-                font-weight: 700;
-                color: #8a2f2f;
-                font-size: 0.88rem;
-                margin-bottom: 0.15rem;
+            70% {
+                box-shadow: 0 0 0 6px rgba(111, 168, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(111, 168, 0, 0);
+            }
+        }
+
+        .header-watermark {
+            position: absolute;
+            top: 50%;
+            right: 6%;
+            transform: translateY(-50%) rotate(-12deg);
+            font-size: 6rem;
+            color: var(--primary);
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== ACCESSIBLE FOCUS RINGS ===== */
+        .form-input:focus-visible,
+        .btn:focus-visible,
+        .tab:focus-visible,
+        .password-toggle:focus-visible,
+        .step-btn:focus-visible {
+            outline: 3px solid var(--primary-dark);
+            outline-offset: 2px;
+        }
+
+        .custom-checkbox input:focus-visible + .checkmark {
+            outline: 3px solid var(--primary-dark);
+            outline-offset: 2px;
+        }
+
+        /* ===== USERNAME / EMAIL AVAILABILITY SPINNER ===== */
+        .input-spinner {
+            display: none;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(136, 210, 0, 0.25);
+            border-top-color: var(--primary-dark);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+            .input-spinner.show {
                 display: block;
             }
 
-            .register-page .app-error-banner .error-detail {
-                color: #a94442;
-                font-size: 0.85rem;
-                line-height: 1.5;
+        /* ===== AGE STEPPER ===== */
+        .stepper-wrap {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+        }
+
+            .stepper-wrap .floating-label-wrapper {
+                flex: 1;
+                margin-top: 10px;
             }
 
-                .register-page .app-error-banner .error-detail a {
-                    color: #8a2f2f;
-                    font-weight: 700;
-                    text-decoration: underline;
+            .stepper-wrap input[type="number"]::-webkit-outer-spin-button,
+            .stepper-wrap input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            .stepper-wrap input[type="number"] {
+                -moz-appearance: textfield;
+                text-align: center;
+            }
+
+        .step-btn {
+            width: 44px;
+            margin-top: 10px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            color: var(--primary-dark);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+            .step-btn:hover {
+                background: var(--primary-ultra-light);
+                border-color: var(--primary);
+            }
+
+            .step-btn:active {
+                transform: scale(0.92);
+            }
+
+        /* ===== TRUST ROW ===== */
+        .trust-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+            .trust-row .trust-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.76rem;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+
+                .trust-row .trust-item i {
+                    color: var(--primary-dark);
                 }
 
-            .register-page .app-error-banner .error-close {
-                background: none;
-                border: none;
-                color: #c98a8a;
-                font-size: 1rem;
+        .show-passwords-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+            .show-passwords-toggle input {
+                accent-color: var(--primary-dark);
                 cursor: pointer;
-                padding: 0.2rem;
-                line-height: 1;
-                flex-shrink: 0;
-                border-radius: 50%;
-                transition: all 0.2s ease;
-                margin-top: -0.1rem;
             }
 
-                .register-page .app-error-banner .error-close:hover {
-                    background: rgba(255, 107, 107, 0.15);
-                    color: #8a2f2f;
-                    transform: rotate(90deg);
+            .show-passwords-toggle:hover {
+                color: var(--primary-dark);
+            }
+
+        @@keyframes logoPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        .logo-text {
+            font-size: 2.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary), #4caf50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 {
+            font-size: 1.85rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+            .header h1 .highlight {
+                color: var(--primary-dark);
+                position: relative;
+            }
+
+                .header h1 .highlight::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 3px;
+                    background: linear-gradient(90deg, var(--primary), transparent);
+                    border-radius: 10px;
                 }
 
-        @@-webkit-keyframes errorShake {
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.97rem;
+            max-width: 500px;
+            margin: 0 auto 6px;
+            line-height: 1.7;
+        }
+
+        .header-divider {
+            width: 64px;
+            height: 4px;
+            margin: 18px auto 16px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary), var(--primary-light));
+            opacity: 0.6;
+        }
+
+        .form-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease-out, box-shadow 0.5s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+            animation-delay: 0.2s;
+        }
+
+            .form-container:hover {
+                box-shadow: var(--shadow-hover);
+            }
+
+        .form-tabs {
+            display: flex;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            overflow: hidden;
+            position: relative;
+        }
+
+            .form-tabs::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+                animation: tabShimmer 3s infinite;
+            }
+
+        @@keyframes tabShimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 8px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .tab:last-child {
+                border-right: none;
+            }
+
+            .tab i {
+                margin-right: 8px;
+                transition: var(--transition);
+            }
+
+            .tab::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: 0.6s;
+            }
+
+            .tab:hover::before {
+                left: 100%;
+            }
+
+            .tab:hover {
+                background: rgba(255, 255, 255, 0.12);
+                color: var(--white);
+                transform: translateY(-2px);
+            }
+
+            .tab.active {
+                background: rgba(255, 255, 255, 0.18);
+                color: var(--white);
+                box-shadow: inset 0 -3px 0 var(--white);
+            }
+
+                .tab.active i {
+                    transform: scale(1.1);
+                }
+
+            .tab .step-num {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.18);
+                border: 1.5px solid rgba(255, 255, 255, 0.4);
+                font-size: 0.72rem;
+                font-weight: 700;
+                margin-right: 8px;
+                transition: var(--transition);
+                vertical-align: -6px;
+            }
+
+            .tab.active .step-num {
+                background: var(--white);
+                color: var(--primary-dark);
+                border-color: var(--white);
+                box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+            }
+
+            .tab.done .step-num {
+                background: var(--primary-light);
+                color: var(--primary-dark);
+                border-color: var(--primary-light);
+            }
+
+                .tab.done .step-num i {
+                    margin: 0;
+                }
+
+            .tab .step-label {
+                display: inline-block;
+            }
+
+        .tab-content {
+            display: none;
+            padding: 22px 30px;
+            animation: slideContent 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @@keyframes slideContent {
+            0% {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            flex: 1 1 calc(50% - 16px);
+            min-width: 220px;
+        }
+
+            .form-group.full-width {
+                flex: 1 1 100%;
+            }
+
+        .floating-label-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+
+            .floating-label-wrapper .form-input {
+                width: 100%;
+                min-height: 60px;
+                padding: 22px 16px 10px 48px;
+                border: 2px solid var(--border-color);
+                border-radius: 14px;
+                font-size: 1rem;
+                transition: var(--transition);
+                background: var(--bg-secondary);
+                color: var(--text-primary);
+                outline: none;
+                font-family: 'Inter', sans-serif;
+                appearance: none;
+                -webkit-appearance: none;
+            }
+
+                .floating-label-wrapper .form-input:focus {
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 6px var(--primary-glow), 0 8px 24px rgba(136, 210, 0, 0.08);
+                    transform: translateY(-2px);
+                }
+
+                .floating-label-wrapper .form-input.is-invalid {
+                    border-color: #e04b4b;
+                    background: rgba(255, 235, 235, 0.25);
+                    animation: shake 0.5s ease;
+                    box-shadow: 0 0 0 6px rgba(224, 75, 75, 0.06);
+                }
+
+        @@keyframes shake {
             0%, 100% {
                 transform: translateX(0);
             }
 
             20% {
-                transform: translateX(-8px);
-            }
-
-            40% {
-                transform: translateX(7px);
+                transform: translateX(-10px);
             }
 
             60% {
-                transform: translateX(-5px);
-            }
-
-            80% {
-                transform: translateX(3px);
+                transform: translateX(10px);
             }
         }
 
-        @@keyframes errorShake {
-            0%, 100% {
-                transform: translateX(0);
-            }
-
-            20% {
-                transform: translateX(-8px);
-            }
-
-            40% {
-                transform: translateX(7px);
-            }
-
-            60% {
-                transform: translateX(-5px);
-            }
-
-            80% {
-                transform: translateX(3px);
-            }
+        .floating-label-wrapper .form-input.is-valid {
+            border-color: var(--primary);
+            background: var(--primary-ultra-light);
+            box-shadow: 0 0 0 4px rgba(136, 210, 0, 0.08);
         }
 
-        .form-floating.field-shake {
-            animation: errorShake 0.5s ease;
-        }
-
-        .register-page .form-floating .form-control.is-invalid.field-flash {
-            animation: fieldFlash 1.4s ease;
-        }
-
-        @@-webkit-keyframes fieldFlash {
-            0%, 100% {
-                box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
-            }
-
-            30% {
-                box-shadow: 0 0 0 7px rgba(255, 107, 107, 0.22);
-            }
-        }
-
-        @@keyframes fieldFlash {
-            0%, 100% {
-                box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.06);
-            }
-
-            30% {
-                box-shadow: 0 0 0 7px rgba(255, 107, 107, 0.22);
-            }
-        }
-
-        @@-webkit-keyframes slideDown {
-            0% {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @@keyframes slideDown {
-            0% {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ===== PASSWORD TOGGLE ===== */
-        .password-toggle {
+        .floating-label-wrapper .input-icon {
             position: absolute;
-            right: 14px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--neutral-4);
-            padding: 8px;
-            border-radius: 50%;
-            transition: all 0.25s ease;
-            z-index: 5;
-            font-size: 1.15rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .floating-label-wrapper .form-input:focus + .input-icon {
+            color: var(--primary-dark);
+            transform: translateY(-50%) scale(1.15);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 48px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-weight: 500;
+        }
+
+        .floating-label-wrapper .form-input:focus ~ .floating-label,
+        .floating-label-wrapper .form-input:not(:placeholder-shown) ~ .floating-label {
+            top: 12px;
+            font-size: 0.7rem;
+            color: var(--primary-dark);
+            transform: translateY(0);
+            font-weight: 700;
+        }
+
+        .floating-label-wrapper .form-input.is-valid ~ .floating-label {
+            color: var(--primary-dark);
+        }
+
+        .floating-label-wrapper .form-input.is-invalid ~ .floating-label {
+            color: #e04b4b;
+        }
+
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236fa800' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding: 26px 40px 10px 48px;
             cursor: pointer;
         }
 
+        /* select doesn't support :placeholder-shown, so the floating label
+                                       is driven by the .has-value class (toggled in JS) instead */
+        .floating-label-wrapper select.form-input ~ .floating-label {
+            top: 12px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            transform: translateY(0);
+            font-weight: 700;
+        }
+
+        .floating-label-wrapper select.form-input:focus ~ .floating-label,
+        .floating-label-wrapper select.form-input.has-value ~ .floating-label {
+            color: var(--primary-dark);
+        }
+
+        .floating-label-wrapper select.form-input.is-valid ~ .floating-label {
+            color: var(--primary-dark);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            padding: 4px;
+            z-index: 2;
+        }
+
             .password-toggle:hover {
-                color: var(--primary);
-                background: var(--primary-light);
-                transform: translateY(-50%) scale(1.1);
+                color: var(--primary-dark);
+                transform: translateY(-50%) scale(1.15);
+            }
+
+        .error-message,
+        span.text-danger {
+            color: #e04b4b;
+            font-size: 0.78rem;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+            .error-message.show,
+            span.text-danger:not(:empty) {
+                display: block;
+            }
+
+                .error-message::before,
+                span.text-danger:not(:empty)::before {
+                    content: '⚠ ';
+                }
+
+        .text-success {
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+            .text-success::before {
+                content: '✓ ';
             }
 
         /* ===== PASSWORD STRENGTH ===== */
         .password-strength {
-            margin-top: 0.5rem;
+            margin-top: 10px;
             height: 6px;
             border-radius: 6px;
-            background: var(--neutral-2);
+            background: var(--border-color);
             overflow: hidden;
-            transition: all 0.3s ease;
         }
 
         .password-strength-bar {
@@ -701,45 +870,25 @@
 
             .password-strength-bar.good {
                 width: 75%;
-                background: linear-gradient(90deg, #b8d96e, var(--primary));
+                background: linear-gradient(90deg, var(--primary-light), var(--primary));
             }
 
             .password-strength-bar.strong {
                 width: 100%;
                 background: linear-gradient(90deg, var(--primary-dark), var(--primary), #4caf50, var(--primary));
                 background-size: 300% 100%;
-                animation: shimmer 2s linear infinite, pulse 1.2s ease infinite;
+                animation: shimmerGradient 2s linear infinite;
             }
-
-        @@-webkit-keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        @@keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-        }
 
         .password-strength-text {
             font-size: 0.75rem;
-            margin-top: 0.2rem;
+            margin-top: 4px;
             display: block;
             font-weight: 600;
         }
 
             .password-strength-text.weak {
-                color: var(--accent-1);
+                color: #e04b4b;
             }
 
             .password-strength-text.fair {
@@ -755,21 +904,21 @@
             }
 
         .password-requirements {
-            margin-top: 0.5rem;
+            margin-top: 8px;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 6px;
         }
 
         .password-requirement {
             font-size: 0.7rem;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            padding: 0.15rem 0.8rem;
+            gap: 4px;
+            padding: 3px 10px;
             border-radius: 30px;
-            background: var(--neutral-1);
+            background: var(--bg-primary);
             transition: all 0.3s ease;
             font-weight: 500;
         }
@@ -780,67 +929,201 @@
                 transform: scale(1.04);
             }
 
-        /* ===== REGISTER BUTTON ===== */
-        .btn-register {
-            background: linear-gradient(135deg, #7bc000, var(--primary-dark), #5a8a00);
-            background-size: 200% 100%;
-            border: none;
-            border-radius: 60px;
-            padding: 0.95rem 2.2rem;
-            font-weight: 700;
-            font-size: 1.05rem;
-            color: #fff;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 12px 32px rgba(136, 210, 0, 0.25);
-            width: 100%;
-            margin-top: 0.6rem;
+        /* ===== CHECKBOX ===== */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 10px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: var(--transition);
+            background: var(--primary-ultra-light);
+            border: 1px solid var(--border-color);
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            letter-spacing: 0.02em;
         }
 
-            .btn-register:hover:not(:disabled) {
-                background-position: 100% 0;
-                transform: translateY(-4px) scale(1.02);
-                box-shadow: 0 18px 44px rgba(136, 210, 0, 0.35);
+            .checkbox-group:hover {
+                transform: translateX(8px);
+                border-color: rgba(136, 210, 0, 0.25);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
             }
 
-            .btn-register:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-                background: var(--neutral-3);
-                box-shadow: none;
-                transform: none !important;
-            }
-
-            .btn-register .spinner {
-                display: none;
-                width: 22px;
-                height: 22px;
-                border: 3px solid rgba(255, 255, 255, 0.3);
+            .checkbox-group .ripple {
+                position: absolute;
                 border-radius: 50%;
-                border-top-color: #fff;
-                animation: spin 0.8s linear infinite;
-                margin: 0 auto;
+                background: rgba(136, 210, 0, 0.18);
+                transform: scale(0);
+                animation: rippleAnim 0.6s ease-out;
+                pointer-events: none;
             }
 
-            .btn-register.loading .spinner {
-                display: inline-block;
-            }
-
-            .btn-register.loading .btn-text {
-                display: none;
-            }
-
-            .btn-register.loading i {
-                display: none;
-            }
-
-        @@-webkit-keyframes spin {
+        @@keyframes rippleAnim {
             to {
-                transform: rotate(360deg);
+                transform: scale(4);
+                opacity: 0;
             }
+        }
+
+        .custom-checkbox {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+            .custom-checkbox input {
+                position: absolute;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+                z-index: 2;
+            }
+
+            .custom-checkbox .checkmark {
+                position: absolute;
+                inset: 0;
+                border: 2px solid var(--border-color);
+                border-radius: 6px;
+                transition: var(--transition);
+                background: var(--bg-secondary);
+            }
+
+            .custom-checkbox input:checked + .checkmark {
+                background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+                border-color: var(--primary-dark);
+                animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+        @@keyframes pop {
+            0% {
+                transform: scale(0.7);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .custom-checkbox .checkmark::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: var(--white);
+            font-size: 0.7rem;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .custom-checkbox input:checked + .checkmark::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 13px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                transition: 0.6s;
+            }
+
+            .btn:hover::before {
+                left: 100%;
+            }
+
+        .btn-prev {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+            .btn-prev:hover {
+                transform: translateX(-6px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: 0 4px 16px rgba(136, 210, 0, 0.3);
+        }
+
+            .btn-next:hover {
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 8px 28px rgba(136, 210, 0, 0.4);
+            }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-dark), #557f00);
+            color: var(--white);
+            width: 100%;
+            font-size: 1rem;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(111, 168, 0, 0.3);
+        }
+
+            .btn-submit:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 32px rgba(111, 168, 0, 0.45);
+                letter-spacing: 0.5px;
+            }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border-color);
+            gap: 16px;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         @@keyframes spin {
@@ -849,796 +1132,893 @@
             }
         }
 
-        /* Ripple effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-            animation: rippleEffect 0.7s ease forwards;
+        .btn.loading .loading-spinner {
+            display: inline-block;
         }
 
-        @@-webkit-keyframes rippleEffect {
-            0% {
-                transform: scale(0);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(3);
-                opacity: 0;
-            }
+        .btn.loading .btn-text,
+        .btn.loading .btn-icon {
+            display: none;
         }
 
-        @@keyframes rippleEffect {
-            0% {
-                transform: scale(0);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(3);
-                opacity: 0;
-            }
+        /* ===== PROGRESS ===== */
+        .form-progress-wrap {
+            padding: 12px 30px 0;
         }
 
-        /* ===== TERMS CHECKBOX ===== */
-        .terms-checkbox {
+        .form-progress-labels {
             display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
-            margin: 0.8rem 0 1.2rem 0;
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
         }
 
-        .custom-checkbox {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            border: 2px solid var(--neutral-3);
-            border-radius: 6px;
-            transition: all 0.25s ease;
-            cursor: pointer;
-            position: relative;
-            margin-top: 1px;
-            background: white;
+        .form-progress-caption {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
         }
 
-            .custom-checkbox:checked {
-                background: var(--primary);
-                border-color: var(--primary);
+        .form-progress-count {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .form-progress-track {
+            height: 8px;
+            border-radius: 8px;
+            background: var(--border-color);
+            overflow: hidden;
+        }
+
+        .form-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+            .form-progress-fill.complete {
+                background: linear-gradient(90deg, var(--primary-dark), var(--primary), #4caf50, var(--primary));
+                background-size: 300% 100%;
+                animation: shimmerGradient 2s linear infinite;
             }
 
-                .custom-checkbox:checked::after {
-                    content: '✓';
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    color: white;
-                    font-weight: 700;
-                    font-size: 13px;
+        /* ===== MESSAGES ===== */
+        .message-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .message-box {
+            padding: 1rem 2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid;
+            animation: msgSlideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+
+            .message-box.errors {
+                background: rgba(255, 236, 236, 0.95);
+                color: #a33;
+                border-color: rgba(224, 75, 75, 0.35);
+                box-shadow: 0 8px 24px rgba(224, 75, 75, 0.12);
+            }
+
+            .message-box .close-btn {
+                margin-left: auto;
+                cursor: pointer;
+                opacity: 0.5;
+                transition: all 0.3s;
+                font-size: 1.1rem;
+                padding: 0.1rem 0.7rem;
+                border-radius: 40px;
+            }
+
+                .message-box .close-btn:hover {
+                    opacity: 1;
+                    background: rgba(0, 0, 0, 0.06);
+                    transform: scale(1.2) rotate(90deg);
                 }
 
-            .custom-checkbox:hover {
-                border-color: var(--primary);
-                transform: scale(1.08);
-            }
-
-            .custom-checkbox.pulse-check {
-                animation: checkPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-        @@-webkit-keyframes checkPulse {
+        @@keyframes msgSlideDown {
             0% {
-                transform: scale(1);
-            }
-
-            40% {
-                transform: scale(1.35);
-                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
             }
 
             100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
         }
 
-        @@keyframes checkPulse {
-            0% {
-                transform: scale(1);
-            }
-
-            40% {
-                transform: scale(1.35);
-                box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.15);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(136, 210, 0, 0);
-            }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+            animation-delay: 0.4s;
         }
 
-        .terms-checkbox label a {
-            color: var(--primary-dark);
-            font-weight: 600;
-            text-decoration: none;
-            border-bottom: 2px solid transparent;
+            .footer:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow);
+            }
+
+            .footer .footer-icons {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                margin-top: 8px;
+            }
+
+                .footer .footer-icons i {
+                    color: var(--primary-dark);
+                    opacity: 0.45;
+                    transition: var(--transition);
+                    font-size: 0.9rem;
+                }
+
+                    .footer .footer-icons i:hover {
+                        opacity: 0.85;
+                        transform: scale(1.2) rotate(10deg);
+                    }
+
+        .review-summary {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary);
+            transition: var(--transition);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        }
+
+            .review-summary:hover {
+                transform: translateX(4px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .review-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
             transition: var(--transition);
         }
 
-            .terms-checkbox label a:hover {
-                border-bottom-color: var(--primary);
+            .review-item:hover {
+                transform: translateX(4px);
+                border-bottom-color: rgba(136, 210, 0, 0.25);
             }
 
-        /* ===== SUCCESS OVERLAY ===== */
-        .success-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 20, 30, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-            .success-overlay.active {
-                display: flex;
-                animation: fadeUp 0.5s ease;
-            }
-
-        .success-modal {
-            background: white;
-            border-radius: var(--radius);
-            padding: 3.5rem 3rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
-            animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .success-modal::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 5px;
-                background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
-                background-size: 200% 100%;
-                animation: shimmer 2s linear infinite;
-            }
-
-        @@-webkit-keyframes popIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) rotate(-4deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0);
-            }
-        }
-
-        @@keyframes popIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) rotate(-4deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0);
-            }
-        }
-
-        .confetti-container {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            top: -20px;
-            animation: confettiDrop linear forwards;
-            border-radius: 2px;
-        }
-
-            .confetti:nth-child(1) {
-                left: 5%;
-                background: #88d200;
-                animation-duration: 2.6s;
-                animation-delay: 0.1s;
-            }
-
-            .confetti:nth-child(2) {
-                left: 12%;
-                background: #ff6b6b;
-                animation-duration: 3s;
-                animation-delay: 0.3s;
-            }
-
-            .confetti:nth-child(3) {
-                left: 19%;
-                background: #f5a623;
-                animation-duration: 2.9s;
-                animation-delay: 0.2s;
-            }
-
-            .confetti:nth-child(4) {
-                left: 26%;
-                background: #4ecdc4;
-                animation-duration: 3.2s;
-                animation-delay: 0.5s;
-            }
-
-            .confetti:nth-child(5) {
-                left: 33%;
-                background: #4a90d9;
-                animation-duration: 2.7s;
-                animation-delay: 0.4s;
-            }
-
-            .confetti:nth-child(6) {
-                left: 40%;
-                background: #9b59b6;
-                animation-duration: 2.8s;
-                animation-delay: 0.6s;
-            }
-
-            .confetti:nth-child(7) {
-                left: 47%;
-                background: #88d200;
-                animation-duration: 3.1s;
-                animation-delay: 0.2s;
-            }
-
-            .confetti:nth-child(8) {
-                left: 54%;
-                background: #e67e22;
-                animation-duration: 2.5s;
-                animation-delay: 0.7s;
-            }
-
-            .confetti:nth-child(9) {
-                left: 61%;
-                background: #1abc9c;
-                animation-duration: 2.9s;
-                animation-delay: 0.3s;
-            }
-
-            .confetti:nth-child(10) {
-                left: 68%;
-                background: #ff6b6b;
-                animation-duration: 3.3s;
-                animation-delay: 0.5s;
-            }
-
-            .confetti:nth-child(11) {
-                left: 75%;
-                background: #f1c40f;
-                animation-duration: 2.4s;
-                animation-delay: 0.8s;
-            }
-
-            .confetti:nth-child(12) {
-                left: 82%;
-                background: #4ecdc4;
-                animation-duration: 2.6s;
-                animation-delay: 0.4s;
-            }
-
-            .confetti:nth-child(13) {
-                left: 89%;
-                background: #4a90d9;
-                animation-duration: 3s;
-                animation-delay: 0.6s;
-            }
-
-            .confetti:nth-child(14) {
-                left: 96%;
-                background: #9b59b6;
-                animation-duration: 2.7s;
-                animation-delay: 0.9s;
-            }
-
-            .confetti:nth-child(15) {
-                left: 50%;
-                background: #88d200;
-                animation-duration: 2.8s;
-                animation-delay: 0.1s;
-            }
-
-        @@-webkit-keyframes confettiDrop {
-            0% {
-                opacity: 1;
-                transform: translateY(-60px) rotate(0deg) scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(480px) rotate(720deg) scale(0.3);
-            }
-        }
-
-        @@keyframes confettiDrop {
-            0% {
-                opacity: 1;
-                transform: translateY(-60px) rotate(0deg) scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(480px) rotate(720deg) scale(0.3);
-            }
-        }
-
-        .success-icon {
-            font-size: 5rem;
-            color: var(--primary);
-            animation: floatIcon 2.6s ease-in-out infinite;
-            display: inline-block;
-            margin-bottom: 0.8rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        @@-webkit-keyframes floatIcon {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-14px) rotate(6deg);
-            }
-        }
-
-        @@keyframes floatIcon {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-14px) rotate(6deg);
-            }
-        }
-
-        .success-title {
-            color: var(--text-primary);
-            font-weight: 800;
-            font-size: 2rem;
-            margin-bottom: 0.2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-subtitle {
-            color: var(--primary-dark);
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-message {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 1.2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .success-loading {
-            display: flex;
-            justify-content: center;
-            gap: 0.6rem;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-            .success-loading .dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: var(--primary);
-                animation: pulse 1.2s ease infinite;
-            }
-
-                .success-loading .dot:nth-child(2) {
-                    animation-delay: 0.2s;
-                }
-
-                .success-loading .dot:nth-child(3) {
-                    animation-delay: 0.4s;
-                }
-
-        .redirect-text {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            position: relative;
-            z-index: 1;
-            animation: pulse 1.8s infinite;
-        }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        .toast-container {
-            z-index: 99999;
-        }
-
-        .toast-custom {
-            border: none;
-            border-radius: 14px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-            padding: 0.75rem 1rem;
-        }
-
-            .toast-custom .toast-body {
+            .review-item strong {
+                color: var(--text-primary);
+                font-size: 0.82rem;
                 display: flex;
                 align-items: center;
-                gap: 0.75rem;
+                gap: 6px;
+            }
+
+                .review-item strong i {
+                    color: var(--primary-dark);
+                    width: 20px;
+                }
+
+            .review-item span {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                display: block;
+                margin-top: 2px;
+                padding-left: 28px;
                 font-weight: 500;
             }
 
-        /* ===== RESPONSIVE ===== */
-        @@media (max-width: 992px) {
-            .register-card {
-                padding: 2.5rem 2rem;
+        .review-note {
+            padding: 15px 20px;
+            background: var(--primary-ultra-light);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== REDIRECTING OVERLAY (EMAIL VERIFICATION) ===== */
+        .redirecting-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 10, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1.5rem;
+        }
+
+            .redirecting-overlay.active {
+                display: flex;
+                animation: fadeInOverlay 0.5s ease;
+            }
+
+        @@keyframes fadeInOverlay {
+            0% {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .redirecting-modal {
+            background: white;
+            padding: 4rem 4.5rem;
+            border-radius: 3.5rem;
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+            animation: bounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 80px 200px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(136, 210, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @@keyframes bounceIn {
+            0% {
+                transform: scale(0.7) translateY(40px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .redirecting-modal .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.8rem;
+            box-shadow: 0 30px 60px -16px rgba(136, 210, 0, 0.45);
+            position: relative;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @@keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.06);
+            }
+        }
+
+        .redirecting-modal .icon-wrapper i {
+            font-size: 3.5rem;
+            color: white;
+        }
+
+        .redirecting-modal h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .redirecting-modal p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .redirecting-modal .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+            .redirecting-modal .loading-dots span {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+                animation: dotBounce 1.4s ease-in-out infinite;
+            }
+
+                .redirecting-modal .loading-dots span:nth-child(1) {
+                    animation-delay: 0s;
+                }
+
+                .redirecting-modal .loading-dots span:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .redirecting-modal .loading-dots span:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+        @@keyframes dotBounce {
+            0%, 80%, 100% {
+                transform: scale(0.4);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .redirecting-modal .progress-track {
+            width: 100%;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .redirecting-modal .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-light));
+            animation: progressFill 1s ease-in-out forwards;
+        }
+
+        @@keyframes progressFill {
+            0% {
+                width: 0%;
+            }
+
+            40% {
+                width: 60%;
+            }
+
+            70% {
+                width: 85%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        .redirecting-modal .float-particle {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0;
+            animation: floatParticle 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+            .redirecting-modal .float-particle:nth-child(1) {
+                left: 8%;
+                top: 10%;
+                animation-delay: 0s;
+            }
+
+            .redirecting-modal .float-particle:nth-child(2) {
+                right: 10%;
+                top: 20%;
+                animation-delay: 0.6s;
+            }
+
+            .redirecting-modal .float-particle:nth-child(3) {
+                left: 5%;
+                bottom: 25%;
+                animation-delay: 1.2s;
+            }
+
+            .redirecting-modal .float-particle:nth-child(4) {
+                right: 8%;
+                bottom: 15%;
+                animation-delay: 0.3s;
+            }
+
+        @@keyframes floatParticle {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.6;
+                transform: translateY(-10px) scale(1);
+            }
+
+            80% {
+                opacity: 0.6;
+                transform: translateY(-25px) scale(1);
+            }
+
+            100% {
+                transform: translateY(-40px) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        #confettiContainer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10001;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            top: -20px;
+            opacity: 1;
+            pointer-events: none;
+            animation: confettiFall linear forwards;
+        }
+
+        @@keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(720deg) scale(0.3);
+                opacity: 0;
             }
         }
 
         @@media (max-width: 768px) {
-            .register-card {
-                padding: 1.8rem 1.2rem;
-                border-radius: 20px;
+            .form-group {
+                flex: 1 1 100%;
             }
 
-            .page-title {
-                font-size: 2rem;
-                text-align: center;
+            .tab-content {
+                padding: 22px 18px;
             }
 
-                .page-title::after {
-                    left: 50%;
-                    transform: translateX(-50%);
-                }
-
-            .sub-heading {
-                text-align: center;
+            .form-progress-wrap {
+                padding: 16px 18px 0;
             }
 
-            .success-modal {
-                padding: 2.5rem 1.5rem;
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+
+            .redirecting-modal {
+                padding: 2.5rem 1.8rem;
                 margin: 1rem;
             }
+
+                .redirecting-modal .icon-wrapper {
+                    width: 80px;
+                    height: 80px;
+                }
+
+                    .redirecting-modal .icon-wrapper i {
+                        font-size: 2.8rem;
+                    }
+
+                .redirecting-modal h2 {
+                    font-size: 1.6rem;
+                }
+
+                .redirecting-modal .float-particle {
+                    display: none;
+                }
         }
 
-        @@media (max-width: 576px) {
-            .register-wrapper {
-                padding: 0.2rem;
+        @@media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.1rem;
             }
 
-            .register-card {
-                padding: 1.2rem 0.9rem;
-                border-radius: 16px;
+            .logo-text {
+                font-size: 1.3rem;
             }
 
-            .register-page .form-floating .form-control,
-            .register-page .form-floating select.form-control {
-                height: 54px;
-                font-size: 0.85rem;
-                padding: 0.75rem 2.5rem 0.2rem 1rem;
+            .redirecting-modal {
+                padding: 2rem 1.2rem;
             }
 
-            .btn-register {
-                font-size: 0.95rem;
-                padding: 0.75rem 1.2rem;
-            }
-
-            .success-icon {
-                font-size: 3.5rem;
-            }
-
-            .success-title {
-                font-size: 1.5rem;
-            }
+                .redirecting-modal h2 {
+                    font-size: 1.3rem;
+                }
         }
 
-        /* ===== REDUCED MOTION ===== */
         @@media (prefers-reduced-motion: reduce) {
-            * {
+            *, *::before, *::after {
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
-
-            body.register-page {
-                animation: none;
-            }
-
-            .register-card::before {
-                animation: none;
-            }
-
-            .register-card:hover {
-                transform: none !important;
-            }
-
-            .btn-register:hover:not(:disabled) {
-                transform: none !important;
-            }
-
-            .success-modal {
-                animation: none;
-            }
-
-            .confetti {
-                animation: none !important;
-                opacity: 0.3;
-            }
         }
     </style>
 </head>
-
 <body class="register-page">
-    <!-- Floating Particles -->
-    <div class="particles" aria-hidden="true">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
 
-    <!-- ===== SUCCESS OVERLAY ===== -->
-    <div class="success-overlay" id="successOverlay" role="dialog" aria-modal="true" aria-labelledby="successTitle">
-        <div class="success-modal">
-            <div class="confetti-container" aria-hidden="true">
-                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
-                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
-                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
-                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
-                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+    <!-- Floating Orbs -->
+    <div class="glow-orb"></div>
+    <div class="glow-orb"></div>
+
+    <!-- Particle System -->
+    <div class="particle-system" id="particleSystem"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <i class="fas fa-palette header-watermark" aria-hidden="true"></i>
+            <div class="logo">
+                <span class="logo-badge"><i class="fas fa-user-plus"></i></span>
+                <div class="logo-text">Art<span style="color:var(--text-primary);-webkit-text-fill-color: var(--text-primary);">Gallery</span></div>
             </div>
-            <div class="success-icon" aria-hidden="true">
-                <i class="bi bi-check-circle-fill"></i>
-            </div>
-            <h2 class="success-title" id="successTitle">🎉 Welcome!</h2>
-            <p class="success-subtitle">You're now part of the Art Gallery</p>
-            <p class="success-message">Your account is ready. Redirecting to your dashboard …</p>
-            <div class="success-loading" aria-hidden="true">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-            <p class="redirect-text">
-                <i class="bi bi-arrow-right me-1"></i> Redirecting to Home Page
-            </p>
+            <h1>Create <span class="highlight">Your Account</span></h1>
+            <p>Complete the form below. All fields with <span style="color:var(--primary-dark);font-weight:700;">*</span> are required.</p>
+            <div class="header-divider"></div>
+            <span class="step-chip" id="headerStepChip"><i class="fas fa-route"></i> Step 1 of 3 &mdash; Personal Info</span>
         </div>
-    </div>
 
-    <!-- ===== TOAST CONTAINER ===== -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="errorToast" class="toast toast-custom align-items-center text-white border-0 bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <span id="toastMessage">Registration failed. Please try again.</span>
+        <!-- Message Container -->
+        <div class="message-container" id="messageContainer"></div>
+
+        <!-- 3D Tilt Form -->
+        <div class="form-container" id="tiltCard">
+            <div class="form-tabs">
+                <div class="tab active" data-tab="personal"><span class="step-num">1</span><span class="step-label">Personal</span></div>
+                <div class="tab" data-tab="security"><span class="step-num">2</span><span class="step-label">Security</span></div>
+                <div class="tab" data-tab="review"><span class="step-num">3</span><span class="step-label">Review</span></div>
+            </div>
+
+            <div class="form-progress-wrap">
+                <div class="form-progress-labels">
+                    <span class="form-progress-caption">Profile completeness</span>
+                    <span class="form-progress-count" id="progressCount">0 / 9</span>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <div class="form-progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressTrack">
+                    <div class="form-progress-fill" id="progressFill"></div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="register-wrapper" style="max-width: 640px;">
-        <div class="register-card">
-            <div class="row g-4">
-                <!-- ===== Registration Form ===== -->
-                <div class="col-12">
-                    <h1 class="page-title">@ViewData["Title"]</h1>
-                    <p class="sub-heading">Start your journey — it only takes a minute.</p>
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" style="display:none;"></div>
 
-                    <div class="form-progress-wrap">
-                        <div class="form-progress-labels">
-                            <span class="form-progress-caption">Profile completeness</span>
-                            <span class="form-progress-count" id="progressCount">0 / 9</span>
-                        </div>
-                        <div class="form-progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressTrack">
-                            <div class="form-progress-fill" id="progressFill"></div>
+                <!-- ===== TAB 1: PERSONAL ===== -->
+                <div class="tab-content active" id="personal-tab">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.Username" class="form-input" placeholder=" " autocomplete="username" id="Input_Username" minlength="3" autofocus />
+                                <i class="fas fa-user input-icon"></i>
+                                <span class="input-spinner" id="usernameSpinner"></span>
+                                <label asp-for="Input.Username" class="floating-label">Username <span style="color:var(--primary-dark);">*</span></label>
+                            </div>
+                            <span asp-validation-for="Input.Username" class="text-danger"></span>
+                            <span class="text-success username-success">Username is available</span>
                         </div>
                     </div>
 
-                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="mt-4" novalidate>
-                        @Html.AntiForgeryToken()
-
-                        <div class="app-error-banner" id="errorSummary" role="alert" aria-live="assertive">
-                            <i class="bi bi-exclamation-octagon-fill error-icon" aria-hidden="true"></i>
-                            <div class="error-body">
-                                <span class="error-title">We couldn't create your account</span>
-                                <div class="error-detail" id="errorDetail"></div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.Email" type="email" class="form-input" placeholder=" " autocomplete="email" id="Input_Email" />
+                                <i class="fas fa-envelope input-icon"></i>
+                                <span class="input-spinner" id="emailSpinner"></span>
+                                <label asp-for="Input.Email" class="floating-label">Email Address <span style="color:var(--primary-dark);">*</span></label>
                             </div>
-                            <button type="button" class="error-close" id="errorClose" aria-label="Dismiss error">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                        <div asp-validation-summary="ModelOnly" style="display:none;"></div>
-
-                        <!-- Username -->
-                        <div class="form-floating">
-                            <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" id="Input_Username" minlength="3" />
-                            <label asp-for="Input.Username"><i class="bi bi-person me-1"></i> Username</label>
-                            <span asp-validation-for="Input.Username" class="text-danger"></span>
-                            <span class="text-success username-success" style="display:none;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Looks good
-                            </span>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="form-floating">
-                            <input asp-for="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="name@@example.com" id="Input_Email" />
-                            <label asp-for="Input.Email"><i class="bi bi-envelope me-1"></i> Email</label>
                             <span asp-validation-for="Input.Email" class="text-danger"></span>
-                            <span class="text-success email-success" style="display:none;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Valid email
-                            </span>
+                            <span class="text-success email-success">Valid email</span>
                         </div>
-
-                        <!-- Phone Number -->
-                        <div class="form-floating">
-                            <input asp-for="Input.PhoneNumber" class="form-control" type="tel" inputmode="numeric" autocomplete="tel" aria-required="true" placeholder="03XXXXXXXXX" id="Input_PhoneNumber" maxlength="11" />
-                            <label asp-for="Input.PhoneNumber"><i class="bi bi-phone me-1"></i> Phone Number</label>
+                        <div class="form-group">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.PhoneNumber" type="tel" inputmode="numeric" class="form-input" placeholder=" " autocomplete="tel" id="Input_PhoneNumber" maxlength="11" />
+                                <i class="fas fa-phone input-icon"></i>
+                                <label asp-for="Input.PhoneNumber" class="floating-label">Phone Number <span style="color:var(--primary-dark);">*</span></label>
+                            </div>
                             <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-                            <span class="text-success phone-success" style="display:none;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Valid number
-                            </span>
+                            <span class="text-success phone-success">Valid number</span>
                         </div>
+                    </div>
 
-                        <!-- Password -->
-                        <div class="form-floating">
-                            <div class="password-field-wrap">
-                                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_Password" />
-                                <label asp-for="Input.Password"><i class="bi bi-lock me-1"></i> Password</label>
-                                <button type="button" class="password-toggle" onclick="togglePassword('Input_Password', this)" aria-label="Toggle password visibility">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                    <div class="button-group">
+                        <div></div>
+                        <button type="button" id="continuePersonal" class="btn btn-next next-tab" data-next="security">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== TAB 2: SECURITY & DETAILS ===== -->
+                <div class="tab-content" id="security-tab">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.Password" class="form-input" placeholder=" " autocomplete="new-password" id="Input_Password" />
+                                <i class="fas fa-lock input-icon"></i>
+                                <button type="button" class="password-toggle" onclick="togglePassword('Input_Password', this)" aria-label="Toggle password visibility"><i class="fas fa-eye"></i></button>
+                                <label asp-for="Input.Password" class="floating-label">Password <span style="color:var(--primary-dark);">*</span></label>
                             </div>
                             <span asp-validation-for="Input.Password" class="text-danger"></span>
 
                             <div class="password-strength" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                                 <div class="password-strength-bar" id="passwordStrengthBar"></div>
                             </div>
-                            <span class="password-strength-text" id="passwordStrengthText"></span>
+                            <span class="password-strength-text" id="passwordStrengthText" aria-live="polite"></span>
 
                             <div class="password-requirements" id="passwordRequirements" role="list">
-                                <span class="password-requirement" id="req-length" role="listitem">
-                                    <i class="bi bi-circle"></i> 8+ chars
-                                </span>
-                                <span class="password-requirement" id="req-uppercase" role="listitem">
-                                    <i class="bi bi-circle"></i> Uppercase
-                                </span>
-                                <span class="password-requirement" id="req-lowercase" role="listitem">
-                                    <i class="bi bi-circle"></i> Lowercase
-                                </span>
-                                <span class="password-requirement" id="req-number" role="listitem">
-                                    <i class="bi bi-circle"></i> Number
-                                </span>
-                                <span class="password-requirement" id="req-special" role="listitem">
-                                    <i class="bi bi-circle"></i> Special
-                                </span>
+                                <span class="password-requirement" id="req-length" role="listitem"><i class="fas fa-circle"></i> 8+ chars</span>
+                                <span class="password-requirement" id="req-uppercase" role="listitem"><i class="fas fa-circle"></i> Uppercase</span>
+                                <span class="password-requirement" id="req-lowercase" role="listitem"><i class="fas fa-circle"></i> Lowercase</span>
+                                <span class="password-requirement" id="req-number" role="listitem"><i class="fas fa-circle"></i> Number</span>
+                                <span class="password-requirement" id="req-special" role="listitem"><i class="fas fa-circle"></i> Special</span>
                             </div>
                         </div>
-
-                        <!-- Confirm Password -->
-                        <div class="form-floating">
-                            <div class="password-field-wrap">
-                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" id="Input_ConfirmPassword" />
-                                <label asp-for="Input.ConfirmPassword"><i class="bi bi-shield-lock me-1"></i> Confirm Password</label>
-                                <button type="button" class="password-toggle" onclick="togglePassword('Input_ConfirmPassword', this)" aria-label="Toggle confirm password visibility">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                        <div class="form-group">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.ConfirmPassword" class="form-input" placeholder=" " autocomplete="new-password" id="Input_ConfirmPassword" />
+                                <i class="fas fa-lock input-icon"></i>
+                                <button type="button" class="password-toggle" onclick="togglePassword('Input_ConfirmPassword', this)" aria-label="Toggle confirm password visibility"><i class="fas fa-eye"></i></button>
+                                <label asp-for="Input.ConfirmPassword" class="floating-label">Confirm Password <span style="color:var(--primary-dark);">*</span></label>
                             </div>
                             <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                            <span class="text-success confirm-success" style="display:none;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Passwords match
-                            </span>
-                        </div>
+                            <span class="text-success confirm-success">Passwords match</span>
 
-                        <!-- Gender -->
-                        <div class="form-floating">
-                            <select asp-for="Input.Gender" class="form-control" id="Input_Gender" aria-required="true">
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <label asp-for="Input.Gender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
-                            <span asp-validation-for="Input.Gender" class="text-danger"></span>
-                        </div>
-
-                        <!-- Address -->
-                        <div class="form-floating">
-                            <input asp-for="Input.Address" class="form-control" placeholder="Street, city, country" id="Input_Address" />
-                            <label asp-for="Input.Address"><i class="bi bi-house-door me-1"></i> Address</label>
-                            <span asp-validation-for="Input.Address" class="text-danger"></span>
-                        </div>
-
-                        <!-- Age -->
-                        <div class="form-floating">
-                            <input asp-for="Input.Age" type="number" class="form-control" placeholder="18" min="1" max="120" id="Input_Age" />
-                            <label asp-for="Input.Age"><i class="bi bi-calendar2 me-1"></i> Age</label>
-                            <span asp-validation-for="Input.Age" class="text-danger"></span>
-                        </div>
-
-                        <!-- Terms Checkbox -->
-                        <div class="terms-checkbox">
-                            <input type="checkbox" id="termsCheckbox" class="custom-checkbox" required />
-                            <label for="termsCheckbox">
-                                I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                            <label class="show-passwords-toggle">
+                                <input type="checkbox" id="showBothPasswords" />
+                                <i class="fas fa-eye"></i> Show passwords
                             </label>
                         </div>
+                    </div>
 
-                        <button id="registerSubmit" type="submit" class="btn-register" disabled>
-                            <i class="bi bi-person-plus"></i>
-                            <span class="btn-text">Create Account</span>
-                            <span class="spinner"></span>
-                        </button>
-
-                        <div class="mt-3 text-center" style="font-size:0.8rem; color: var(--text-muted);">
-                            <i class="bi bi-shield-check me-1" style="color: var(--primary);"></i> Secure & encrypted
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="floating-label-wrapper">
+                                <select asp-for="Input.Gender" class="form-input" id="Input_Gender">
+                                    <option value="" selected disabled>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <i class="fas fa-venus-mars input-icon"></i>
+                                <label asp-for="Input.Gender" class="floating-label">Gender <span style="color:var(--primary-dark);">*</span></label>
+                            </div>
+                            <span asp-validation-for="Input.Gender" class="text-danger"></span>
                         </div>
-
-                        <div class="mt-3 text-center" style="font-size:0.9rem; color: var(--text-muted);">
-                            Already have an account?
-                            <a href="/Login" style="color: var(--primary-dark); font-weight:600; text-decoration:none; border-bottom: 2px solid transparent; transition: var(--transition);">
-                                Sign in
-                            </a>
+                        <div class="form-group">
+                            <div class="stepper-wrap">
+                                <button type="button" class="step-btn" id="ageDecrement" aria-label="Decrease age"><i class="fas fa-minus"></i></button>
+                                <div class="floating-label-wrapper">
+                                    <input asp-for="Input.Age" type="number" class="form-input" placeholder=" " min="1" max="120" id="Input_Age" />
+                                    <i class="fas fa-calendar-days input-icon"></i>
+                                    <label asp-for="Input.Age" class="floating-label">Age <span style="color:var(--primary-dark);">*</span></label>
+                                </div>
+                                <button type="button" class="step-btn" id="ageIncrement" aria-label="Increase age"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <span asp-validation-for="Input.Age" class="text-danger"></span>
                         </div>
-                    </form>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <div class="floating-label-wrapper">
+                                <input asp-for="Input.Address" class="form-input" placeholder=" " id="Input_Address" />
+                                <i class="fas fa-map-pin input-icon"></i>
+                                <label asp-for="Input.Address" class="floating-label">Address <span style="color:var(--primary-dark);">*</span></label>
+                            </div>
+                            <span asp-validation-for="Input.Address" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group" id="termsGroup">
+                        <div class="custom-checkbox">
+                            <input type="checkbox" id="termsCheckbox" required>
+                            <span class="checkmark"></span>
+                        </div>
+                        <label for="termsCheckbox" class="checkbox-label">
+                            <i class="fas fa-file-signature" style="color:var(--primary-dark);"></i>
+                            I agree to the <a href="#" target="_blank" style="color:var(--primary-dark);font-weight:600;">Terms of Service</a> and <a href="#" target="_blank" style="color:var(--primary-dark);font-weight:600;">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <div class="error-message" id="termsError">You must agree to the Terms &amp; Privacy Policy</div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-prev prev-tab" data-prev="personal"><i class="fas fa-arrow-left"></i> Back</button>
+                        <button type="button" id="continueSecurity" class="btn btn-next next-tab" data-next="review">Review <i class="fas fa-arrow-right"></i></button>
+                    </div>
                 </div>
+
+                <!-- ===== TAB 3: REVIEW ===== -->
+                <div class="tab-content" id="review-tab">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <h3 style="color:var(--primary-dark);margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:10px;">
+                                <i class="fas fa-clipboard-check"></i> Review Your Information
+                            </h3>
+                            <div class="review-summary" id="reviewSummary"></div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-prev prev-tab" data-prev="security"><i class="fas fa-arrow-left"></i> Back</button>
+                        <button type="submit" id="registerSubmit" class="btn btn-submit" disabled>
+                            <span class="loading-spinner"></span>
+                            <i class="fas fa-paper-plane btn-icon"></i>
+                            <span class="btn-text">Create Account</span>
+                        </button>
+                    </div>
+
+                    <div class="trust-row">
+                        <span class="trust-item"><i class="fas fa-lock"></i> SSL Secured</span>
+                        <span class="trust-item"><i class="fas fa-shield-halved"></i> Encrypted</span>
+                        <span class="trust-item"><i class="fas fa-user-shield"></i> We never share your data</span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Art Gallery &copy; 2026 | Secure Registration &nbsp;·&nbsp; Already have an account? <a href="/Login" style="color:var(--primary-dark);font-weight:600;text-decoration:none;">Sign in</a></p>
+            <div class="footer-icons">
+                <i class="fas fa-shield-alt"></i>
+                <i class="fas fa-lock"></i>
+                <i class="fas fa-database"></i>
             </div>
         </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
-    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ===== REDIRECTING TO EMAIL VERIFICATION OVERLAY ===== -->
+    <div class="redirecting-overlay" id="redirectingOverlay">
+        <div class="redirecting-modal">
+            <span class="float-particle">📧</span>
+            <span class="float-particle">✉️</span>
+            <span class="float-particle">🔐</span>
+            <span class="float-particle">✅</span>
+
+            <div class="icon-wrapper">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+
+            <h2>Redirecting to Verification</h2>
+            <p>Your account has been created! We're taking you to verify your email address.</p>
+
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div id="confettiContainer"></div>
 
     <script>
-        // ===== TOGGLE PASSWORD =====
+        // ============================================
+        // 1. PARTICLE SYSTEM (lazy, skipped for reduced-motion)
+        // ============================================
+        const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function initParticles() {
+            if (prefersReducedMotion) return;
+            const particleSystem = document.getElementById('particleSystem');
+            for (let i = 0; i < 18; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'particle-dot';
+                const size = Math.random() * 8 + 2;
+                dot.style.width = size + 'px';
+                dot.style.height = size + 'px';
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.top = Math.random() * 100 + '%';
+                dot.style.opacity = Math.random() * 0.12 + 0.03;
+                dot.style.background = ['#88d200', '#6fa800', '#d4f09b', '#557f00'][Math.floor(Math.random() * 4)];
+                particleSystem.appendChild(dot);
+            }
+        }
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(initParticles);
+        } else {
+            setTimeout(initParticles, 200);
+        }
+
+        // ============================================
+        // 2. 3D TILT EFFECT
+        // ============================================
+        const tiltCard = document.getElementById('tiltCard');
+        if (!prefersReducedMotion) {
+            tiltCard.addEventListener('mousemove', function (e) {
+                const rect = this.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                this.style.transform = `perspective(1000px) rotateX(${y * 8}deg) rotateY(${-x * 8}deg) scale3d(1.01, 1.01, 1.01)`;
+                this.style.transition = 'transform 0.08s ease-out';
+            });
+            tiltCard.addEventListener('mouseleave', function () {
+                this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                this.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            });
+        }
+
+        // ============================================
+        // 3. MAGNETIC BUTTONS
+        // ============================================
+        if (!prefersReducedMotion) {
+            document.querySelectorAll('.btn-prev, .btn-next, .btn-submit').forEach(btn => {
+                btn.addEventListener('mousemove', function (e) {
+                    if (this.disabled) return;
+                    const rect = this.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    this.style.transform = `translate(${x * 8}px, ${y * 8}px) scale(1.04)`;
+                    this.style.transition = 'transform 0.08s ease-out';
+                });
+                btn.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translate(0, 0) scale(1)';
+                    this.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                });
+            });
+        }
+
+        // ============================================
+        // 4. PASSWORD TOGGLE
+        // ============================================
         function togglePassword(id, btn) {
             const inp = document.getElementById(id);
             const icon = btn.querySelector('i');
             if (inp.type === 'password') {
                 inp.type = 'text';
-                icon.className = 'bi bi-eye-slash';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
                 inp.type = 'password';
-                icon.className = 'bi bi-eye';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
 
-        // ===== PASSWORD STRENGTH =====
+        // ============================================
+        // 5. PASSWORD STRENGTH
+        // ============================================
         function checkStrength(pw) {
             const req = {
                 length: pw.length >= 8,
@@ -1649,14 +2029,10 @@
             };
             const fulfilled = Object.values(req).filter(Boolean).length;
 
-            document.getElementById('req-length').className = 'password-requirement' + (req.length ? ' met' : '');
-            document.getElementById('req-uppercase').className = 'password-requirement' + (req.uppercase ? ' met' : '');
-            document.getElementById('req-lowercase').className = 'password-requirement' + (req.lowercase ? ' met' : '');
-            document.getElementById('req-number').className = 'password-requirement' + (req.number ? ' met' : '');
-            document.getElementById('req-special').className = 'password-requirement' + (req.special ? ' met' : '');
-
-            document.querySelectorAll('.password-requirement').forEach(el => {
-                el.querySelector('i').className = el.classList.contains('met') ? 'bi bi-check-circle-fill' : 'bi bi-circle';
+            ['length', 'uppercase', 'lowercase', 'number', 'special'].forEach(key => {
+                const el = document.getElementById('req-' + key);
+                el.className = 'password-requirement' + (req[key] ? ' met' : '');
+                el.querySelector('i').className = req[key] ? 'fas fa-circle-check' : 'fas fa-circle';
             });
 
             const bar = document.getElementById('passwordStrengthBar');
@@ -1675,26 +2051,20 @@
             bar.parentElement.setAttribute('aria-valuenow', pct);
 
             if (fulfilled <= 2) {
-                bar.className = 'password-strength-bar weak';
-                text.textContent = '⚠️ Weak';
-                text.className = 'password-strength-text weak';
+                bar.className = 'password-strength-bar weak'; text.textContent = '⚠️ Weak'; text.className = 'password-strength-text weak';
             } else if (fulfilled <= 3) {
-                bar.className = 'password-strength-bar fair';
-                text.textContent = '🔶 Fair';
-                text.className = 'password-strength-text fair';
+                bar.className = 'password-strength-bar fair'; text.textContent = '🔶 Fair'; text.className = 'password-strength-text fair';
             } else if (fulfilled <= 4) {
-                bar.className = 'password-strength-bar good';
-                text.textContent = '✅ Good';
-                text.className = 'password-strength-text good';
+                bar.className = 'password-strength-bar good'; text.textContent = '✅ Good'; text.className = 'password-strength-text good';
             } else {
-                bar.className = 'password-strength-bar strong';
-                text.textContent = '💪 Strong!';
-                text.className = 'password-strength-text strong';
+                bar.className = 'password-strength-bar strong'; text.textContent = '💪 Strong!'; text.className = 'password-strength-text strong';
             }
             return { strength: fulfilled, req };
         }
 
-        // ===== USERNAME AVAILABILITY (debounced AJAX check against server) =====
+        // ============================================
+        // 6. USERNAME / EMAIL AVAILABILITY (debounced AJAX)
+        // ============================================
         let usernameCheckTimer = null;
         let usernameServerState = { value: '', available: null };
 
@@ -1702,54 +2072,104 @@
             clearTimeout(usernameCheckTimer);
             const usernameField = document.getElementById('Input_Username');
             const successEl = document.querySelector('.username-success');
+            const spinner = document.getElementById('usernameSpinner');
             const trimmed = value.trim();
-
-            // Only bother calling the server if the value already passes local format rules
             const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+            spinner.classList.remove('show');
+
             if (trimmed.length < 3 || trimmed.length > 30 || !usernameRegex.test(trimmed)) {
                 usernameServerState = { value: trimmed, available: null };
                 return;
             }
 
             usernameCheckTimer = setTimeout(() => {
+                spinner.classList.add('show');
                 fetch(`?handler=CheckUsername&username=${encodeURIComponent(trimmed)}`, {
                     method: 'GET',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
                     .then(res => res.json())
                     .then(data => {
+                        spinner.classList.remove('show');
                         usernameServerState = { value: trimmed, available: !!(data.valid && data.available) };
-                        if (document.getElementById('Input_Username').value.trim() !== trimmed) return; // stale response
+                        if (document.getElementById('Input_Username').value.trim() !== trimmed) return;
 
                         if (usernameServerState.available) {
                             usernameField.classList.add('is-valid');
                             usernameField.classList.remove('is-invalid');
+                            successEl.classList.add('show');
                             successEl.style.display = 'block';
-                            successEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Username is available';
                         } else {
                             usernameField.classList.add('is-invalid');
                             usernameField.classList.remove('is-valid');
                             successEl.style.display = 'none';
                         }
-                        validateForm();
+                        validateAll();
                     })
                     .catch(() => {
-                        // If the availability check fails (network issue), fall back to local validation only
+                        spinner.classList.remove('show');
                         usernameServerState = { value: trimmed, available: null };
                     });
             }, 400);
         }
 
-        // ===== VALIDATION MESSAGE HELPERS =====
-        // The asp-validation-for spans render as <span data-valmsg-for="Input.X" ...></span>.
-        // Without jQuery unobtrusive validation those spans are never filled in, so we
-        // populate/clear them ourselves here, in sync with the is-valid/is-invalid classes.
+        let emailCheckTimer = null;
+        let emailServerState = { value: '', available: null };
+
+        function scheduleEmailCheck(value) {
+            clearTimeout(emailCheckTimer);
+            const emailField = document.getElementById('Input_Email');
+            const successEl = document.querySelector('.email-success');
+            const spinner = document.getElementById('emailSpinner');
+            const trimmed = value.trim();
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+            spinner.classList.remove('show');
+
+            if (!emailRegex.test(trimmed)) {
+                emailServerState = { value: trimmed, available: null };
+                return;
+            }
+
+            emailCheckTimer = setTimeout(() => {
+                spinner.classList.add('show');
+                fetch(`?handler=CheckEmail&email=${encodeURIComponent(trimmed)}`, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        spinner.classList.remove('show');
+                        emailServerState = { value: trimmed, available: !!(data.valid && data.available) };
+                        if (document.getElementById('Input_Email').value.trim() !== trimmed) return;
+
+                        if (emailServerState.available) {
+                            emailField.classList.add('is-valid');
+                            emailField.classList.remove('is-invalid');
+                            successEl.style.display = 'block';
+                        } else {
+                            emailField.classList.add('is-invalid');
+                            emailField.classList.remove('is-valid');
+                            successEl.style.display = 'none';
+                        }
+                        validateAll();
+                    })
+                    .catch(() => {
+                        spinner.classList.remove('show');
+                        emailServerState = { value: trimmed, available: null };
+                    });
+            }, 400);
+        }
+
+        // ============================================
+        // 7. VALIDATION MESSAGE HELPERS (fills the asp-validation-for spans)
+        // ============================================
         function getMsgEl(modelName) {
             return document.querySelector('[data-valmsg-for="' + modelName + '"]');
         }
 
         function setFieldState(el, modelName, state, message) {
-            // state: 'valid' | 'invalid' | 'neutral'
             const msgEl = getMsgEl(modelName);
             if (state === 'valid') {
                 el.classList.add('is-valid');
@@ -1765,8 +2185,68 @@
             }
         }
 
-        // ===== VALIDATE FORM =====
-        function validateForm() {
+        // ============================================
+        // 7b. APPLY SERVER-SIDE ERRORS (duplicate username/email, etc.)
+        // ============================================
+        const serverFieldMap = {
+            'Input.Username': { id: 'Input_Username', successSelector: '.username-success', tab: 'personal' },
+            'Input.Email': { id: 'Input_Email', successSelector: '.email-success', tab: 'personal' },
+            'Input.PhoneNumber': { id: 'Input_PhoneNumber', successSelector: '.phone-success', tab: 'personal' },
+            'Input.Password': { id: 'Input_Password', successSelector: null, tab: 'security' },
+            'Input.ConfirmPassword': { id: 'Input_ConfirmPassword', successSelector: '.confirm-success', tab: 'security' },
+            'Input.Gender': { id: 'Input_Gender', successSelector: null, tab: 'security' },
+            'Input.Address': { id: 'Input_Address', successSelector: null, tab: 'security' },
+            'Input.Age': { id: 'Input_Age', successSelector: null, tab: 'security' }
+        };
+
+        function applyServerErrors(errors) {
+            let firstBadTab = null;
+            const generalMessages = [];
+
+            Object.entries(errors || {}).forEach(([key, messages]) => {
+                const message = Array.isArray(messages) ? messages[0] : messages;
+                const mapping = serverFieldMap[key];
+
+                if (mapping) {
+                    const field = document.getElementById(mapping.id);
+                    if (field) {
+                        setFieldState(field, key, 'invalid', message);
+                        if (mapping.successSelector) {
+                            const successEl = document.querySelector(mapping.successSelector);
+                            if (successEl) successEl.style.display = 'none';
+                        }
+                        if (key === 'Input.Username') {
+                            usernameServerState = { value: field.value.trim(), available: false };
+                        }
+                        if (key === 'Input.Email') {
+                            emailServerState = { value: field.value.trim(), available: false };
+                        }
+                    }
+                    if (!firstBadTab) firstBadTab = mapping.tab;
+                } else if (message) {
+                    generalMessages.push(message);
+                }
+            });
+
+            if (firstBadTab) {
+                markTabTouched('personal-tab');
+                markTabTouched('security-tab');
+                switchTab(firstBadTab);
+            }
+
+            validateAll();
+
+            if (generalMessages.length) {
+                showToast(generalMessages.join(' '));
+            } else if (firstBadTab) {
+                showToast('Please fix the highlighted fields before submitting.');
+            }
+        }
+
+        // ============================================
+        // 8. FIELD VALIDATION (per-field, run continuously)
+        // ============================================
+        function validateAll() {
             const username = document.getElementById('Input_Username');
             const email = document.getElementById('Input_Email');
             const phone = document.getElementById('Input_PhoneNumber');
@@ -1776,14 +2256,10 @@
             const address = document.getElementById('Input_Address');
             const age = document.getElementById('Input_Age');
             const terms = document.getElementById('termsCheckbox');
-            const submitBtn = document.getElementById('registerSubmit');
 
             let valid = true;
 
-            // Username: must satisfy the SAME rules as the server
-            //   - 3 to 30 characters
-            //   - letters, numbers, underscores only
-            //   - (if we've already checked) must be available
+            // Username
             const usernameRegex = /^[a-zA-Z0-9_]+$/;
             const trimmedUsername = username.value.trim();
             const usernameFormatOk = trimmedUsername.length >= 3 && trimmedUsername.length <= 30 && usernameRegex.test(trimmedUsername);
@@ -1813,9 +2289,17 @@
 
             // Email
             const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-            if (email.value && emailRegex.test(email.value)) {
-                setFieldState(email, 'Input.Email', 'valid');
-                document.querySelector('.email-success').style.display = 'block';
+            const trimmedEmail = email.value.trim();
+            if (trimmedEmail && emailRegex.test(trimmedEmail)) {
+                const knownUnavailable = emailServerState.value === trimmedEmail && emailServerState.available === false;
+                if (knownUnavailable) {
+                    setFieldState(email, 'Input.Email', 'invalid', 'An account with this email already exists.');
+                    document.querySelector('.email-success').style.display = 'none';
+                    valid = false;
+                } else {
+                    setFieldState(email, 'Input.Email', 'valid');
+                    document.querySelector('.email-success').style.display = 'block';
+                }
             } else if (email.value) {
                 setFieldState(email, 'Input.Email', 'invalid', 'Please enter a valid email address.');
                 document.querySelector('.email-success').style.display = 'none';
@@ -1826,7 +2310,7 @@
                 valid = false;
             }
 
-            // Phone number: exactly 11 digits, numbers only, must start with 03
+            // Phone
             const phoneRegex = /^03\d{9}$/;
             if (phone.value && phoneRegex.test(phone.value)) {
                 setFieldState(phone, 'Input.PhoneNumber', 'valid');
@@ -1853,7 +2337,7 @@
                 valid = false;
             }
 
-            // Confirm
+            // Confirm password
             if (confirm.value && confirm.value === password.value) {
                 setFieldState(confirm, 'Input.ConfirmPassword', 'valid');
                 document.querySelector('.confirm-success').style.display = 'block';
@@ -1875,6 +2359,7 @@
                 valid = false;
             } else {
                 setFieldState(gender, 'Input.Gender', 'neutral');
+                valid = false;
             }
 
             // Address
@@ -1900,23 +2385,25 @@
             }
 
             // Terms
+            const termsErr = document.getElementById('termsError');
             if (terms.checked) {
-                terms.classList.add('is-valid');
-                terms.classList.remove('is-invalid');
+                termsErr.classList.remove('show');
             } else if (terms.dataset.touched === 'true') {
-                terms.classList.remove('is-valid');
-                terms.classList.add('is-invalid');
+                termsErr.classList.add('show');
                 valid = false;
             } else {
-                terms.classList.remove('is-valid', 'is-invalid');
+                valid = false;
             }
 
-            submitBtn.disabled = !valid;
+            document.getElementById('registerSubmit').disabled = !valid;
             updateProgress();
+            updateTabStepStates();
             return valid;
         }
 
-        // ===== PROGRESS INDICATOR =====
+        // ============================================
+        // 9. PROGRESS INDICATOR
+        // ============================================
         function updateProgress() {
             const fields = [
                 document.getElementById('Input_Username').classList.contains('is-valid'),
@@ -1933,314 +2420,390 @@
             const total = fields.length;
             const pct = (done / total) * 100;
 
-            const fill = document.getElementById('progressFill');
-            const count = document.getElementById('progressCount');
-            const track = document.getElementById('progressTrack');
-
-            fill.style.width = pct + '%';
-            fill.classList.toggle('complete', done === total);
-            count.textContent = `${done} / ${total}`;
-            track.setAttribute('aria-valuenow', pct);
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressFill').classList.toggle('complete', done === total);
+            document.getElementById('progressCount').textContent = `${done} / ${total}`;
+            document.getElementById('progressTrack').setAttribute('aria-valuenow', pct);
         }
 
-        // ===== SHAKE A FIELD WRAPPER =====
-        function shakeField(inputEl) {
-            const wrapper = inputEl.closest('.form-floating');
-            if (!wrapper) return;
-            wrapper.classList.remove('field-shake');
-            inputEl.classList.remove('field-flash');
-            void wrapper.offsetWidth;
-            wrapper.classList.add('field-shake');
-            inputEl.classList.add('field-flash');
-            setTimeout(() => {
-                wrapper.classList.remove('field-shake');
-                inputEl.classList.remove('field-flash');
-            }, 1500);
+        // ============================================
+        // 10. TAB SWITCHING (with per-tab validation gating)
+        // ============================================
+        function tabFields(tabId) {
+            return {
+                'personal-tab': ['Input_Username', 'Input_Email', 'Input_PhoneNumber'],
+                'security-tab': ['Input_Password', 'Input_ConfirmPassword', 'Input_Gender', 'Input_Address', 'Input_Age']
+            }[tabId] || [];
         }
 
-        // ===== SHOW THE INLINE ERROR SUMMARY =====
-        function showErrorSummary(message, focusFieldId) {
-            const errDiv = document.getElementById('errorSummary');
-            const errDetail = document.getElementById('errorDetail');
+        function markTabTouched(tabId) {
+            tabFields(tabId).forEach(id => { document.getElementById(id).dataset.touched = 'true'; });
+            if (tabId === 'security-tab') document.getElementById('termsCheckbox').dataset.touched = 'true';
+        }
 
-            errDiv.classList.remove('show');
-            void errDiv.offsetWidth;
-            errDetail.innerHTML = message;
-            errDiv.classList.add('show');
+        function tabIsValid(tabId) {
+            markTabTouched(tabId);
+            validateAll();
+            const invalidField = tabFields(tabId).some(id => !document.getElementById(id).classList.contains('is-valid'));
+            if (tabId === 'security-tab' && !document.getElementById('termsCheckbox').checked) return false;
+            return !invalidField;
+        }
 
-            errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        function updateTabStepStates() {
+            const personalDone = tabFields('personal-tab').every(id => document.getElementById(id).classList.contains('is-valid'));
+            const securityDone = tabFields('security-tab').every(id => document.getElementById(id).classList.contains('is-valid')) && document.getElementById('termsCheckbox').checked;
 
-            if (focusFieldId) {
-                const field = document.getElementById(focusFieldId);
-                if (field) {
-                    shakeField(field);
-                    setTimeout(() => field.focus({ preventScroll: true }), 350);
+            const map = { personal: personalDone, security: securityDone, review: false };
+            document.querySelectorAll('.tab').forEach(t => {
+                const key = t.getAttribute('data-tab');
+                const done = map[key];
+                t.classList.toggle('done', !!done && !t.classList.contains('active'));
+                const badge = t.querySelector('.step-num');
+                if (done && !t.classList.contains('active')) {
+                    badge.innerHTML = '<i class="fas fa-check"></i>';
+                } else {
+                    badge.textContent = key === 'personal' ? '1' : key === 'security' ? '2' : '3';
                 }
-            }
+            });
+
+            const continuePersonal = document.getElementById('continuePersonal');
+            const continueSecurity = document.getElementById('continueSecurity');
+            if (continuePersonal) continuePersonal.disabled = !personalDone;
+            if (continueSecurity) continueSecurity.disabled = !securityDone;
         }
 
-        function hideErrorSummary() {
-            const errDiv = document.getElementById('errorSummary');
-            errDiv.classList.remove('show');
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+                if (t.getAttribute('data-tab') === tabId) t.classList.add('active');
+            });
+            updateTabStepStates();
+
+            const chip = document.getElementById('headerStepChip');
+            const chipText = {
+                personal: 'Step 1 of 3 &mdash; Personal Info (~15s)',
+                security: 'Step 2 of 3 &mdash; Security &amp; Details (~25s)',
+                review: 'Step 3 of 3 &mdash; Review &amp; Submit (~10s)'
+            };
+            chip.innerHTML = `<i class="fas fa-route"></i> ${chipText[tabId]}`;
+
+            if (tabId === 'review') updateReview();
         }
 
-        // ===== FOCUS THE FIRST INVALID FIELD =====
-        function focusFirstInvalidField() {
-            const order = ['Input_Username', 'Input_Email', 'Input_PhoneNumber', 'Input_Password', 'Input_ConfirmPassword', 'Input_Gender', 'Input_Address', 'Input_Age'];
-            for (const id of order) {
-                const el = document.getElementById(id);
-                if (el && !el.classList.contains('is-valid')) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    shakeField(el);
-                    setTimeout(() => el.focus({ preventScroll: true }), 350);
-                    return;
-                }
-            }
-            const terms = document.getElementById('termsCheckbox');
-            if (terms && !terms.checked) {
-                terms.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                terms.focus({ preventScroll: true });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const gender = document.getElementById('Input_Gender');
-            const terms = document.getElementById('termsCheckbox');
-
-            gender.addEventListener('blur', function() {
-                this.dataset.touched = 'true';
-                validateForm();
-            });
-
-            gender.addEventListener('change', function() {
-                this.dataset.touched = 'true';
-                validateForm();
-            });
-
-            terms.addEventListener('change', function() {
-                this.dataset.touched = 'true';
-                validateForm();
-            });
-
-            // Phone: only allow digits to be typed, cap at 11 chars
-            const phone = document.getElementById('Input_PhoneNumber');
-            phone.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '').slice(0, 11);
-                validateForm();
-            });
-
-            // Username: live availability check as the user types
-            const username = document.getElementById('Input_Username');
-            username.addEventListener('input', function() {
-                scheduleUsernameCheck(this.value);
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                switchTab(this.getAttribute('data-tab'));
             });
         });
 
-        // ===== RIPPLE EFFECT =====
-        function createRipple(e, btn) {
-            const rect = btn.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
+        document.querySelectorAll('.next-tab').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const current = document.querySelector('.tab-content.active');
+                const next = this.getAttribute('data-next');
+                if (tabIsValid(current.id)) {
+                    switchTab(next);
+                } else {
+                    showToast('Please fix the errors before continuing.');
+                }
+            });
+        });
+
+        document.querySelectorAll('.prev-tab').forEach(btn => {
+            btn.addEventListener('click', function () {
+                switchTab(this.getAttribute('data-prev'));
+            });
+        });
+
+        // ============================================
+        // 11. REVIEW SUMMARY
+        // ============================================
+        function updateReview() {
+            const summary = document.getElementById('reviewSummary');
+            const fields = {
+                'Username': document.getElementById('Input_Username').value || 'Not provided',
+                'Email': document.getElementById('Input_Email').value || 'Not provided',
+                'Phone': document.getElementById('Input_PhoneNumber').value || 'Not provided',
+                'Gender': document.getElementById('Input_Gender').value || 'Not provided',
+                'Age': document.getElementById('Input_Age').value || 'Not provided',
+                'Address': document.getElementById('Input_Address').value || 'Not provided'
+            };
+            const icons = {
+                'Username': 'fa-user', 'Email': 'fa-envelope', 'Phone': 'fa-phone',
+                'Gender': 'fa-venus-mars', 'Age': 'fa-calendar-days', 'Address': 'fa-map-pin'
+            };
+            let html = '<div class="review-grid">';
+            for (const [label, value] of Object.entries(fields)) {
+                html += `<div class="review-item"><strong><i class="fas ${icons[label]}"></i> ${label}</strong><span>${value}</span></div>`;
+            }
+            html += `</div><div class="review-note"><i class="fas fa-info-circle"></i><span><strong>Important:</strong> Please review all information before submission.</span></div>`;
+            summary.innerHTML = html;
+            validateAll();
+        }
+
+        // ============================================
+        // 12. CHECKBOX RIPPLE
+        // ============================================
+        document.getElementById('termsGroup').addEventListener('click', function (e) {
+            const rect = this.getBoundingClientRect();
             const ripple = document.createElement('span');
             ripple.className = 'ripple';
-            ripple.style.cssText = `
-                width: ${size}px;
-                height: ${size}px;
-                top: ${e.clientY - rect.top - size/2}px;
-                left: ${e.clientX - rect.left - size/2}px;
-            `;
-            btn.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 700);
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+
+        // ============================================
+        // 13. TOAST / MESSAGE BOX
+        // ============================================
+        function showToast(message) {
+            const messageContainer = document.getElementById('messageContainer');
+            const errorBox = document.createElement('div');
+            errorBox.className = 'message-box errors';
+            errorBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i><span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
+            messageContainer.prepend(errorBox);
+            setTimeout(() => errorBox.remove(), 6000);
         }
 
-        // ===== SHOW TOAST =====
-        function showToast(message, type = 'danger') {
-            const toastEl = document.getElementById('errorToast');
-            const messageEl = document.getElementById('toastMessage');
-            messageEl.textContent = message;
-            toastEl.className = `toast toast-custom align-items-center text-white border-0 bg-${type}`;
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
+        // ============================================
+        // 14. CONFETTI
+        // ============================================
+        function createConfetti(count = 60) {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#88d200', '#6fa800', '#d4f09b', '#4caf50', '#f0fae6', '#557f00'];
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                const size = Math.random() * 10 + 4;
+                el.style.width = size + 'px';
+                el.style.height = (Math.random() > 0.5 ? size : size * 0.4) + 'px';
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.borderRadius = Math.random() > 0.5 ? '2px' : '50%';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.transform = `rotate(${Math.random() * 360}deg)`;
+                el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                el.style.animationDelay = (Math.random() * 1.5) + 's';
+                container.appendChild(el);
+                setTimeout(() => el.remove(), 6000);
+            }
         }
 
-        // ===== DOM READY =====
-        document.addEventListener('DOMContentLoaded', function() {
-            // Live validation
-            const inputs = document.querySelectorAll('#registerForm .form-control');
-            inputs.forEach(inp => {
-                inp.addEventListener('input', validateForm);
-                inp.addEventListener('blur', function() {
+        // ============================================
+        // 15. DOM READY: bind live validation + submit
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function () {
+            // ===== DRAFT PERSISTENCE (sessionStorage, passwords excluded) =====
+            const DRAFT_KEY = 'registerFormDraft';
+            const persistableIds = ['Input_Username', 'Input_Email', 'Input_PhoneNumber', 'Input_Gender', 'Input_Address', 'Input_Age'];
+
+            function saveDraft() {
+                try {
+                    const draft = {};
+                    persistableIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) draft[id] = el.value;
+                    });
+                    draft.terms = document.getElementById('termsCheckbox').checked;
+                    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                } catch (e) { /* storage unavailable — ignore */ }
+            }
+
+            function restoreDraft() {
+                try {
+                    const raw = sessionStorage.getItem(DRAFT_KEY);
+                    if (!raw) return;
+                    const draft = JSON.parse(raw);
+                    persistableIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el && draft[id]) {
+                            el.value = draft[id];
+                            if (id === 'Input_Gender') el.classList.toggle('has-value', !!draft[id]);
+                        }
+                    });
+                    if (draft.terms) document.getElementById('termsCheckbox').checked = true;
+                } catch (e) { /* corrupt draft — ignore */ }
+            }
+
+            restoreDraft();
+
+            document.querySelectorAll('#registerForm .form-input').forEach(inp => {
+                inp.addEventListener('input', validateAll);
+                inp.addEventListener('blur', function () {
                     this.dataset.touched = 'true';
-                    validateForm();
+                    validateAll();
                 });
             });
 
-            // Password strength on input
-            document.getElementById('Input_Password').addEventListener('input', function() {
-                checkStrength(this.value);
-                validateForm();
+            persistableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', saveDraft);
             });
 
-            // Terms checkbox
-            document.getElementById('termsCheckbox').addEventListener('change', function() {
+            document.getElementById('Input_Username').addEventListener('input', function () {
+                scheduleUsernameCheck(this.value);
+            });
+
+            document.getElementById('Input_Email').addEventListener('input', function () {
+                scheduleEmailCheck(this.value);
+            });
+
+            document.getElementById('Input_PhoneNumber').addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '').slice(0, 11);
+                validateAll();
+            });
+
+            const genderSelect = document.getElementById('Input_Gender');
+            genderSelect.addEventListener('change', function () {
                 this.dataset.touched = 'true';
-                if (this.checked) {
-                    this.classList.remove('pulse-check');
-                    void this.offsetWidth;
-                    this.classList.add('pulse-check');
-                }
-                validateForm();
+                this.classList.toggle('has-value', !!this.value);
+                validateAll();
+                saveDraft();
+            });
+            genderSelect.classList.toggle('has-value', !!genderSelect.value);
+
+            document.getElementById('termsCheckbox').addEventListener('change', function () {
+                this.dataset.touched = 'true';
+                validateAll();
+                saveDraft();
             });
 
-            // Initial validation
-            validateForm();
+            // ===== AGE STEPPER =====
+            const ageInput = document.getElementById('Input_Age');
+            document.getElementById('ageIncrement').addEventListener('click', function () {
+                let val = parseInt(ageInput.value, 10);
+                val = isNaN(val) ? 18 : Math.min(120, val + 1);
+                ageInput.value = val;
+                ageInput.dataset.touched = 'true';
+                validateAll();
+                saveDraft();
+            });
+            document.getElementById('ageDecrement').addEventListener('click', function () {
+                let val = parseInt(ageInput.value, 10);
+                val = isNaN(val) ? 18 : Math.max(1, val - 1);
+                ageInput.value = val;
+                ageInput.dataset.touched = 'true';
+                validateAll();
+                saveDraft();
+            });
 
-            // Dismiss the inline error summary
-            document.getElementById('errorClose').addEventListener('click', hideErrorSummary);
+            // ===== SHOW BOTH PASSWORDS =====
+            document.getElementById('showBothPasswords').addEventListener('change', function () {
+                const type = this.checked ? 'text' : 'password';
+                ['Input_Password', 'Input_ConfirmPassword'].forEach(id => {
+                    const inp = document.getElementById(id);
+                    inp.type = type;
+                    const icon = inp.closest('.floating-label-wrapper').querySelector('.password-toggle i');
+                    if (icon) icon.className = this.checked ? 'fas fa-eye-slash' : 'fas fa-eye';
+                });
+            });
+
+            // ===== ENTER KEY ADVANCES TABS =====
+            document.getElementById('registerForm').addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                if (e.target.tagName === 'TEXTAREA') return;
+                const activeTab = document.querySelector('.tab-content.active');
+                if (!activeTab) return;
+                if (activeTab.id === 'personal-tab') {
+                    e.preventDefault();
+                    document.getElementById('continuePersonal').click();
+                } else if (activeTab.id === 'security-tab') {
+                    e.preventDefault();
+                    document.getElementById('continueSecurity').click();
+                }
+                // On the review tab, Enter falls through to the submit button as normal.
+            });
+
+            validateAll();
 
             // ===== FORM SUBMIT =====
             const form = document.getElementById('registerForm');
             const submitBtn = document.getElementById('registerSubmit');
+            const redirectingOverlay = document.getElementById('redirectingOverlay');
+            const messageContainer = document.getElementById('messageContainer');
             let submitting = false;
 
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
+                messageContainer.innerHTML = '';
 
-                // Mark all fields as touched for validation
-                document.querySelectorAll('#registerForm .form-control').forEach(el => {
-                    el.dataset.touched = 'true';
-                });
-                document.getElementById('termsCheckbox').dataset.touched = 'true';
+                markTabTouched('personal-tab');
+                markTabTouched('security-tab');
+                const allValid = validateAll();
 
-                // Validate terms
-                const terms = document.getElementById('termsCheckbox');
-                if (!terms.checked) {
-                    terms.classList.add('is-invalid');
-                    showErrorSummary('Please accept the Terms of Service and Privacy Policy to continue.');
-                    terms.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    showToast('Please accept the Terms of Service and Privacy Policy.', 'warning');
+                if (!allValid) {
+                    const order = ['Input_Username', 'Input_Email', 'Input_PhoneNumber', 'Input_Password', 'Input_ConfirmPassword', 'Input_Gender', 'Input_Address', 'Input_Age'];
+                    for (const id of order) {
+                        const el = document.getElementById(id);
+                        if (!el.classList.contains('is-valid')) {
+                            const tabId = tabFields('personal-tab').includes(id) ? 'personal' : 'security';
+                            switchTab(tabId);
+                            setTimeout(() => el.focus({ preventScroll: false }), 200);
+                            break;
+                        }
+                    }
+                    showToast('Please fix the errors before submitting.');
                     return;
                 }
-
-                if (!validateForm()) {
-                    form.classList.add('was-validated');
-                    showErrorSummary('A few fields still need your attention before we can create your account.');
-                    focusFirstInvalidField();
-                    showToast('Please fix the errors before submitting.', 'warning');
-                    return;
-                }
-
-                hideErrorSummary();
 
                 if (submitting) return;
-
-                // Ripple
-                createRipple(e, submitBtn);
-
-                // Loading state
+                submitting = true;
                 submitBtn.classList.add('loading');
                 submitBtn.disabled = true;
-                submitting = true;
 
                 const formData = new FormData(form);
 
-                fetch(form.action, {
+                fetch(form.action || window.location.href, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '',
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(async res => {
-                    const text = await res.text();
+                    .then(async res => {
+                        let data = null;
+                        try {
+                            data = await res.json();
+                        } catch (parseErr) {
+                            data = null;
+                        }
 
-                    const wasRedirected = res.redirected && !/\/Register(\?|$)/i.test(res.url);
+                        if (res.ok && data && data.success) {
+                            try { sessionStorage.removeItem('registerFormDraft'); } catch (e) { /* ignore */ }
+                            redirectingOverlay.classList.add('active');
+                            if (!prefersReducedMotion) setTimeout(() => createConfetti(30), 150);
+                            setTimeout(() => {
+                                window.location.href = data.redirectUrl || '/';
+                            }, 1100);
+                            return;
+                        }
 
-                    const errorMatch = text.match(/<div class="validation-summary-errors"[^>]*>([\s\S]*?)<\/div>/i);
-                    const errorText = errorMatch ? errorMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-                    const hasServerErrors = errorText.length > 0;
-
-                    // Identity's default duplicate-username error looks like: "Username 'x' is already taken."
-                    // Identity's default duplicate-email error (when unique email is enforced) mentions email.
-                    const usernameDuplicate = /username.{0,40}(already taken|duplicate)/i.test(text);
-                    const emailDuplicate = !usernameDuplicate && /email.{0,40}(already taken|already registered|duplicate)/i.test(text);
-
-                    const isRealSuccess = res.ok && wasRedirected && !hasServerErrors && !usernameDuplicate && !emailDuplicate;
-
-                    if (isRealSuccess) {
-                        hideErrorSummary();
-                        document.getElementById('successOverlay').classList.add('active');
-                        form.style.display = 'none';
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 2200);
-                    } else {
                         submitBtn.classList.remove('loading');
                         submitBtn.disabled = false;
                         submitting = false;
 
-                        if (usernameDuplicate) {
-                            const usernameField = document.getElementById('Input_Username');
-                            usernameField.classList.add('is-invalid');
-                            usernameField.classList.remove('is-valid');
-                            document.querySelector('.username-success').style.display = 'none';
-                            usernameServerState = { value: usernameField.value.trim(), available: false };
-
-                            showErrorSummary(
-                                'The username <strong>' + (usernameField.value || '') + '</strong> is already taken. Please choose another.',
-                                'Input_Username'
-                            );
-                            showToast('That username is already taken.', 'danger');
-                        } else if (emailDuplicate) {
-                            const emailField = document.getElementById('Input_Email');
-                            emailField.classList.add('is-invalid');
-                            emailField.classList.remove('is-valid');
-                            document.querySelector('.email-success').style.display = 'none';
-
-                            showErrorSummary(
-                                'The email address <strong>' + (emailField.value || '') + '</strong> is already registered. ' +
-                                'Try <a href="/Login">signing in</a> instead, or use a different email.',
-                                'Input_Email'
-                            );
-                            showToast('This email is already registered.', 'danger');
-                        } else if (hasServerErrors) {
-                            showErrorSummary(errorText, null);
-                            showToast('Registration failed. Please check your input.', 'danger');
+                        if (data && data.errors) {
+                            applyServerErrors(data.errors);
                         } else {
-                            showErrorSummary('Something went wrong while creating your account. Please try again.', null);
-                            showToast('Registration failed. Please try again.', 'danger');
+                            showToast('Something went wrong while creating your account. Please try again.');
                         }
-                    }
-                })
-                .catch(() => {
-                    submitBtn.classList.remove('loading');
-                    submitBtn.disabled = false;
-                    submitting = false;
-                    showErrorSummary('We couldn\'t reach the server. Please check your connection and try again.', null);
-                    showToast('Network error. Please check your connection.', 'danger');
-                });
+                    })
+                    .catch(() => {
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                        submitting = false;
+                        showToast('Network error. Please check your connection and try again.');
+                    });
             });
 
-            // ===== CLOSE SUCCESS OVERLAY =====
-            document.getElementById('successOverlay').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                    window.location.href = '/';
-                }
-            });
-
-            // ===== KEYBOARD SHORTCUT =====
-            document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    if (!submitBtn.disabled) {
-                        form.dispatchEvent(new Event('submit'));
-                    }
-                }
+            // Escape closes the overlay (no-op redirect already scheduled)
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
-                    const overlay = document.getElementById('successOverlay');
-                    if (overlay.classList.contains('active')) {
-                        overlay.classList.remove('active');
-                        window.location.href = '/';
-                    }
+                    redirectingOverlay.classList.remove('active');
                 }
             });
         });

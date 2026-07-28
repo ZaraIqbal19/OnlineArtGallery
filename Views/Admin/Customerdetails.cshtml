@@ -1,0 +1,957 @@
+﻿@model Art_Gallery.Areas.Identity.Data.Art_GalleryUser
+@{
+    ViewData["Title"] = "Customer Details";
+    bool isSeller = ViewBag.IsSeller;
+
+    int totalOrdersForBar = ViewBag.TotalOrders > 0 ? ViewBag.TotalOrders : 1;
+    int totalSalesForBar = isSeller && ViewBag.TotalSales > 0 ? ViewBag.TotalSales : 1;
+}
+
+<style>
+    :root {
+        --primary-green: #88d200;
+        --dark-green: #6fa800;
+        --light-green: #d4f09b;
+        --ink: #24312a;
+        --muted: #7c8a80;
+        --bg-soft: #f6faf0;
+    }
+
+    body {
+        background: var(--bg-soft);
+    }
+
+    /* ---------- HEADER ---------- */
+    .cd-header {
+        position: relative;
+        background: linear-gradient(120deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        border-radius: 18px;
+        color: #fff;
+        padding: 30px 32px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(111,168,0,0.25);
+    }
+
+        .cd-header::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+    .cd-avatar-ring {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 3px solid rgba(255,255,255,0.55);
+    }
+
+    .cd-avatar {
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--dark-green);
+        font-size: 28px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cd-badge {
+        background: rgba(255,255,255,0.22);
+        color: #fff;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: 12px;
+        margin-left: 8px;
+        letter-spacing: .2px;
+    }
+
+        .cd-badge.solid {
+            background: #fff;
+            color: var(--dark-green);
+        }
+
+    .cd-header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        font-size: 13.5px;
+        opacity: .95;
+        margin-top: 6px;
+    }
+
+    .cd-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-green);
+        border: 1.5px solid var(--dark-green);
+        border-radius: 8px;
+        padding: 6px 14px;
+        text-decoration: none;
+        transition: all .15s ease;
+    }
+
+        .cd-back-link:hover {
+            background: var(--dark-green);
+            color: #fff;
+        }
+
+    /* ---------- SECTION HEADING (Buyer / Seller banners) ---------- */
+    .cd-history-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fff;
+        border-left: 6px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 14px 20px;
+        margin: 10px 0 20px;
+        box-shadow: 0 2px 8px rgba(30,60,10,0.05);
+    }
+
+        .cd-history-banner h4 {
+            margin: 0;
+            font-weight: 800;
+            color: var(--ink);
+            font-size: 19px;
+        }
+
+        .cd-history-banner .cd-banner-sub {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-left: auto;
+        }
+
+    .cd-divider {
+        border: none;
+        border-top: 2px dashed var(--light-green);
+        margin: 40px 0 26px;
+    }
+
+    /* ---------- SECTION TITLES ---------- */
+    .cd-section-title {
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 16px;
+        border-left: 5px solid var(--primary-green);
+        padding-left: 12px;
+        margin: 32px 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .cd-section-title .cd-count {
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--light-green);
+            color: var(--dark-green);
+            border-radius: 20px;
+            padding: 2px 10px;
+        }
+
+    /* ---------- STAT CARDS ---------- */
+    .cd-stat-card {
+        background: #fff;
+        border: 1px solid #eef4e6;
+        border-radius: 14px;
+        padding: 16px 18px;
+        height: 100%;
+        box-shadow: 0 2px 8px rgba(30,60,10,0.05);
+        transition: transform .15s ease, box-shadow .15s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .cd-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(30,60,10,0.10);
+        }
+
+        .cd-stat-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-green);
+        }
+
+        .cd-stat-card h6 {
+            color: var(--muted);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: .5px;
+            font-weight: 700;
+        }
+
+        .cd-stat-card .cd-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+
+        .cd-stat-card .cd-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+    /* ---------- CARDS / TABLES ---------- */
+    .cd-card {
+        background: #fff;
+        border: 1px solid #eef4e6;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 8px rgba(30,60,10,0.04);
+    }
+
+    .table thead th {
+        background: var(--light-green);
+        color: var(--dark-green);
+        border: none;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        font-weight: 700;
+        padding: 10px 12px;
+    }
+
+    .table tbody tr {
+        transition: background .12s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background: #f4faec;
+    }
+
+    .table td {
+        vertical-align: middle;
+        font-size: 13.5px;
+        padding: 10px 12px;
+    }
+
+    .status-pill {
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 700;
+        background: var(--light-green);
+        color: var(--dark-green);
+        white-space: nowrap;
+    }
+
+        .status-pill.status-Rejected, .status-pill.status-Cancelled {
+            background: #fde2e2;
+            color: #b3261e;
+        }
+
+        .status-pill.status-Pending {
+            background: #fff3cd;
+            color: #8a6d00;
+        }
+
+        .status-pill.status-Delivered, .status-pill.status-Available {
+            background: var(--light-green);
+            color: var(--dark-green);
+        }
+
+        .status-pill.status-Processing, .status-pill.status-Dispatched {
+            background: #dbeeff;
+            color: #2563a8;
+        }
+
+    .cd-empty {
+        text-align: center;
+        color: #9aa5a0;
+        padding: 26px 0;
+        font-size: 13.5px;
+        font-style: italic;
+    }
+
+    /* ---------- PROGRESS BREAKDOWN ---------- */
+    .cd-progress-row {
+        margin-bottom: 10px;
+    }
+
+        .cd-progress-row .cd-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--ink);
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+    .cd-progress-track {
+        background: #eef4e6;
+        border-radius: 20px;
+        height: 8px;
+        overflow: hidden;
+    }
+
+    .cd-progress-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, var(--dark-green), var(--primary-green));
+    }
+
+    /* ---------- ACTIVITY FEED ---------- */
+    .cd-activity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f4ea;
+        gap: 10px;
+    }
+
+        .cd-activity-item:last-child {
+            border-bottom: none;
+        }
+
+    .cd-activity-tag {
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--light-green);
+        color: var(--dark-green);
+        margin-right: 6px;
+        text-transform: uppercase;
+    }
+
+        .cd-activity-tag.Bid {
+            background: #dbeeff;
+            color: #2563a8;
+        }
+
+    /* ---------- MINI PROFILE LIST (payments/reviews) ---------- */
+    .cd-mini-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f4ea;
+    }
+
+        .cd-mini-item:last-child {
+            border-bottom: none;
+        }
+</style>
+
+<div class="container-fluid py-3">
+
+    <a asp-action="AllCustomers" class="cd-back-link mb-3">&larr; Back to All Customers</a>
+
+    <!-- ================= HEADER ================= -->
+    <div class="cd-header">
+        <div class="cd-avatar-ring">
+            <div class="cd-avatar">@(string.IsNullOrEmpty(Model.UserName) ? "?" : Model.UserName.Substring(0, 1).ToUpper())</div>
+        </div>
+        <div>
+            <h3 class="mb-1 fw-bold">
+                @Model.UserName
+                @if (isSeller)
+                {
+                    <span class="cd-badge solid">Seller</span>
+                }
+                <span class="cd-badge">@Model.Role</span>
+            </h3>
+            <div class="cd-header-meta">
+                <span>✉ @Model.Email</span>
+                <span>📞 @Model.PhoneNumber</span>
+                @if (!string.IsNullOrEmpty(Model.address))
+                {
+                    <span>📍 @Model.address</span>
+                }
+                @if (Model.age > 0)
+                {
+                    <span>🎂 @Model.age yrs</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.gender))
+                {
+                    <span>@Model.gender</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- ===================== BUYER HISTORY ==================== -->
+    <!-- ======================================================= -->
+    <div class="cd-history-banner">
+        <h4>🛒 Buyer History</h4>
+        <span class="cd-banner-sub">Everything this user has purchased, wishlisted, bid on, and reviewed</span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Total Orders</h6><div class="cd-value">@ViewBag.TotalOrders</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Total Spent</h6><div class="cd-value">Rs. @ViewBag.TotalMoneySpent</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Items Purchased</h6><div class="cd-value">@ViewBag.TotalItemsPurchased</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Avg Order Value</h6><div class="cd-value">Rs. @(((decimal)ViewBag.AverageOrderValue).ToString("0.##"))</div></div></div>
+
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Wishlist Items</h6><div class="cd-value">@ViewBag.TotalWishlist</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Bids Placed</h6><div class="cd-value">@ViewBag.TotalBidsPlaced</div><div class="cd-sub">@ViewBag.WonBidsCount won</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Highest Bid</h6><div class="cd-value">Rs. @ViewBag.HighestBidPlaced</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Avg Rating Given</h6><div class="cd-value">@ViewBag.AverageRatingGiven ★</div></div></div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Unique Products</h6><div class="cd-value">@ViewBag.UniqueProductsPurchased</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Card Orders</h6><div class="cd-value">@ViewBag.CardOrders</div></div></div>
+        <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>COD Orders</h6><div class="cd-value">@ViewBag.CODOrders</div></div></div>
+        <div class="col-6 col-md-3">
+            <div class="cd-stat-card">
+                <h6>Active Since</h6>
+                <div class="cd-value" style="font-size:15px;">
+                    @(ViewBag.FirstOrderDate != null ? ((DateTime)ViewBag.FirstOrderDate).ToString("dd MMM yyyy") : "—")
+                </div>
+                <div class="cd-sub">Last order: @(ViewBag.LastOrderDate != null ? ((DateTime)ViewBag.LastOrderDate).ToString("dd MMM yyyy") : "—")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER STATUS PROGRESS + TOP PRODUCTS CHART -->
+    <div class="row g-3 mt-3">
+        <div class="col-md-6">
+            <div class="cd-card">
+                <h6 class="cd-section-title" style="margin:0 0 14px;">Order Status Breakdown</h6>
+                @{
+                    var buyerStatuses = new (string Label, int Count)[]
+                    {
+                                ("Pending", (int)ViewBag.PendingOrders),
+                                ("Processing", (int)ViewBag.ProcessingOrders),
+                                ("Dispatched", (int)ViewBag.DispatchedOrders),
+                                ("Delivered", (int)ViewBag.DeliveredOrders),
+                                ("Cancelled", (int)ViewBag.CancelledOrders),
+                                ("Rejected", (int)ViewBag.RejectedOrders),
+                    };
+                }
+                @foreach (var s in buyerStatuses)
+                {
+                    <div class="cd-progress-row">
+                        <div class="cd-progress-label"><span>@s.Label</span><span>@s.Count</span></div>
+                        <div class="cd-progress-track">
+                            <div class="cd-progress-fill" style="width:@((s.Count * 100) / totalOrdersForBar)%;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="cd-card">
+                <h6 class="cd-section-title" style="margin:0 0 10px;">Top Products Purchased</h6>
+                <canvas id="topProductsChart" height="140"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="cd-card">
+        <h6 class="cd-section-title" style="margin:0 0 10px;">Spending Trend (6 months)</h6>
+        <canvas id="spendingChart" height="90"></canvas>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <h5 class="cd-section-title">Order History <span class="cd-count">@ViewBag.TotalOrders</span></h5>
+    <div class="cd-card table-responsive">
+        @if (((List<Art_Gallery.Models.Order>)ViewBag.Orders).Any())
+        {
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Product</th><th>Category</th><th>Qty</th><th>Paid</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody>
+                    @foreach (var o in (List<Art_Gallery.Models.Order>)ViewBag.Orders)
+                    {
+                        <tr>
+                            <td>@(o.Product?.Name ?? "Deleted product")</td>
+                            <td>@(o.Product?.SubCategory?.category?.Name ?? "-")</td>
+                            <td>@o.Quantity</td>
+                            <td>Rs. @o.PricePaid</td>
+                            <td>@(o.Payment?.ModeofPayment ?? "N/A")</td>
+                            <td><span class="status-pill status-@o.Status">@o.Status</span></td>
+                            <td>@o.OrderDate.ToString("dd MMM yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+
+            <div class="cd-empty">No orders placed yet.</div>
+        }
+    </div>
+
+    <!-- WISHLIST -->
+    <h5 class="cd-section-title">Wishlist <span class="cd-count">@ViewBag.TotalWishlist</span></h5>
+    <div class="cd-card table-responsive">
+        @if (((List<Art_Gallery.Models.Wishlist>)ViewBag.Wishlist).Any())
+        {
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Product</th><th>Quantity</th></tr></thead>
+                <tbody>
+                    @foreach (var w in (List<Art_Gallery.Models.Wishlist>)ViewBag.Wishlist)
+                    {
+                        <tr><td>@(w.Product?.Name ?? "Deleted product")</td><td>@w.Quantity</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+
+            <div class="cd-empty">Wishlist is empty.</div>
+        }
+    </div>
+
+    <!-- BIDS PLACED -->
+    <h5 class="cd-section-title">Bids Placed <span class="cd-count">@ViewBag.TotalBidsPlaced</span></h5>
+    <div class="cd-card table-responsive">
+        @if (((List<Art_Gallery.Models.AuctionDetails>)ViewBag.BidsPlaced).Any())
+        {
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Product</th><th>Bid Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var b in (List<Art_Gallery.Models.AuctionDetails>)ViewBag.BidsPlaced)
+                    {
+                        <tr><td>@(b.Product?.Name ?? "Deleted product")</td><td>Rs. @b.bidamount</td><td><span class="status-pill status-@b.bidstatus">@b.bidstatus</span></td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+
+            <div class="cd-empty">No bids placed.</div>
+        }
+    </div>
+
+    <div class="row">
+        <!-- PAYMENT METHODS -->
+        <div class="col-md-4">
+            <h5 class="cd-section-title">Payment Methods</h5>
+            <div class="cd-card">
+                @if (((List<Art_Gallery.Models.Payment_Details>)ViewBag.PaymentMethods).Any())
+                {
+                    foreach (var p in (List<Art_Gallery.Models.Payment_Details>)ViewBag.PaymentMethods)
+                    {
+                        <div class="cd-mini-item">
+                            <div class="fw-semibold">@p.CardTitle</div>
+                            <div class="small text-muted">**** **** **** @p.CardNumber.ToString().Substring(Math.Max(0, p.CardNumber.ToString().Length - 4))</div>
+                        </div>
+                    }
+                }
+                else
+                {
+
+                    <div class="cd-empty">No payment methods saved.</div>
+                }
+            </div>
+        </div>
+
+        <!-- REVIEWS GIVEN -->
+        <div class="col-md-4">
+            <h5 class="cd-section-title">Reviews Given</h5>
+            <div class="cd-card">
+                @if (((List<Art_Gallery.Models.ProductReview>)ViewBag.ReviewsGiven).Any())
+                {
+                    foreach (var r in (List<Art_Gallery.Models.ProductReview>)ViewBag.ReviewsGiven)
+                    {
+                        <div class="cd-mini-item">
+                            <div><strong>@(r.Product?.Name ?? "Deleted product")</strong> — @r.Ratings ★</div>
+                            <div class="small text-muted">@r.ReviewMessage</div>
+                        </div>
+                    }
+                }
+                else
+                {
+
+                    <div class="cd-empty">No reviews given.</div>
+                }
+            </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div class="col-md-4">
+            <h5 class="cd-section-title">Feedback</h5>
+            <div class="cd-card">
+                @if (((List<Art_Gallery.Models.Feedback>)ViewBag.FeedbacksGiven).Any())
+                {
+                    foreach (var f in (List<Art_Gallery.Models.Feedback>)ViewBag.FeedbacksGiven)
+                    {
+                        <div class="cd-mini-item small">@f.message</div>
+                    }
+                }
+                else
+                {
+
+                    <div class="cd-empty">No feedback submitted.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- ===================== SELLER HISTORY =================== -->
+    <!-- ======================================================= -->
+    @if (isSeller)
+    {
+        <hr class="cd-divider" />
+
+        <div class="cd-history-banner">
+            <h4>🏷️ Seller History</h4>
+            <span class="cd-banner-sub">Everything this user has listed, sold, and received as a seller</span>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Products Listed</h6><div class="cd-value">@ViewBag.TotalProductsListed</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Total Revenue</h6><div class="cd-value">Rs. @ViewBag.TotalRevenue</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Total Sales</h6><div class="cd-value">@ViewBag.TotalSales</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Items Sold</h6><div class="cd-value">@ViewBag.TotalItemsSold</div></div></div>
+
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Available</h6><div class="cd-value">@ViewBag.AvailableProducts</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Pending Approval</h6><div class="cd-value">@ViewBag.PendingProducts</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Rejected</h6><div class="cd-value">@ViewBag.RejectedProducts</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Out of Stock</h6><div class="cd-value">@ViewBag.OutOfStockProducts</div></div></div>
+
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Customers Served</h6><div class="cd-value">@ViewBag.TotalCustomersServed</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Repeat Customers</h6><div class="cd-value">@ViewBag.RepeatCustomers</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Bids Received</h6><div class="cd-value">@ViewBag.TotalBidsReceived</div><div class="cd-sub">@ViewBag.UniqueBidders unique bidders</div></div></div>
+            <div class="col-6 col-md-3"><div class="cd-stat-card"><h6>Avg Rating</h6><div class="cd-value">@ViewBag.AverageRatingReceived ★</div><div class="cd-sub">@ViewBag.TotalReviewsReceived reviews</div></div></div>
+        </div>
+
+        <div class="row g-3 mt-3">
+            <div class="col-md-6">
+                <div class="cd-card">
+                    <h6 class="cd-section-title" style="margin:0 0 14px;">Sales Status Breakdown</h6>
+                    @{
+                        var sellerStatuses = new (string Label, int Count)[]
+                        {
+                                ("Pending", (int)ViewBag.PendingSales),
+                                ("Processing", (int)ViewBag.ProcessingSales),
+                                ("Dispatched", (int)ViewBag.DispatchedSales),
+                                ("Delivered", (int)ViewBag.DeliveredSales),
+                                ("Cancelled", (int)ViewBag.CancelledSales),
+                        };
+                    }
+                    @foreach (var s in sellerStatuses)
+                    {
+                        <div class="cd-progress-row">
+                            <div class="cd-progress-label"><span>@s.Label</span><span>@s.Count</span></div>
+                            <div class="cd-progress-track">
+                                <div class="cd-progress-fill" style="width:@((s.Count * 100) / totalSalesForBar)%;"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="cd-card">
+                    <h6 class="cd-section-title" style="margin:0 0 10px;">Revenue by Category</h6>
+                    <canvas id="sellerCategoryChart" height="140"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="cd-card">
+            <h6 class="cd-section-title" style="margin:0 0 10px;">Revenue Trend (6 months)</h6>
+            <canvas id="revenueChart" height="90"></canvas>
+        </div>
+
+        <!-- PER-PRODUCT PERFORMANCE -->
+        <h5 class="cd-section-title">Product Performance <span class="cd-count">@ViewBag.TotalProductsListed</span></h5>
+        <div class="cd-card table-responsive">
+            @{
+                var perProduct = (IEnumerable<dynamic>)ViewBag.PerProductStats;
+            }
+            @if (perProduct != null && perProduct.Any())
+            {
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Status</th>
+                            <th>Stock</th>
+                            <th>Units Sold</th>
+                            <th>Orders</th>
+                            <th>Revenue</th>
+                            <th>Bids</th>
+                            <th>Highest Bid</th>
+                            <th>Avg Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in perProduct)
+                        {
+                            <tr>
+                                <td>@row.Product.Name</td>
+                                <td><span class="status-pill status-@row.Product.Status">@row.Product.Status</span></td>
+                                <td>@row.Product.quantity</td>
+                                <td>@row.UnitsSold</td>
+                                <td>@row.OrdersCount</td>
+                                <td>Rs. @row.Revenue</td>
+                                <td>@row.BidsCount</td>
+                                <td>Rs. @row.HighestBid</td>
+                                <td>@(row.AvgRating > 0 ? row.AvgRating + " ★" : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+
+                <div class="cd-empty">No products listed.</div>
+            }
+        </div>
+
+        <div class="row">
+            <!-- TOP BUYERS -->
+            <div class="col-md-6">
+                <h5 class="cd-section-title">Top Buyers</h5>
+                <div class="cd-card">
+                    @{
+                        var buyers = (IEnumerable<dynamic>)ViewBag.TopBuyers;
+                    }
+                    @if (buyers != null && buyers.Any())
+                    {
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Buyer</th><th>Orders</th><th>Revenue</th></tr></thead>
+                            <tbody>
+                                @foreach (var b in buyers)
+                                {
+                                    <tr><td>@b.UserName</td><td>@b.OrdersCount</td><td>Rs. @b.Revenue</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+
+                        <div class="cd-empty">No buyers yet.</div>
+                    }
+                </div>
+            </div>
+
+            <!-- RECENT ACTIVITY -->
+            <div class="col-md-6">
+                <h5 class="cd-section-title">Recent Activity</h5>
+                <div class="cd-card">
+                    @{
+                        var activity = (IEnumerable<dynamic>)ViewBag.RecentActivity;
+                    }
+                    @if (activity != null && activity.Any())
+                    {
+                        foreach (var a in activity)
+                        {
+                            <div class="cd-activity-item">
+                                <div>
+                                    <span class="cd-activity-tag @a.Type">@a.Type</span>
+                                    <span class="small">@a.Description</span>
+                                </div>
+                                <div class="small fw-bold text-nowrap">Rs. @a.Amount</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+
+                        <div class="cd-empty">No recent activity.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL SALES -->
+        <h5 class="cd-section-title">All Sales <span class="cd-count">@ViewBag.TotalSales</span></h5>
+        <div class="cd-card table-responsive">
+            @if (((List<Art_Gallery.Models.Order>)ViewBag.Sales).Any())
+            {
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Buyer</th><th>Product</th><th>Qty</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in (List<Art_Gallery.Models.Order>)ViewBag.Sales)
+                        {
+                            <tr>
+                                <td>@(s.User?.UserName ?? "N/A")</td>
+                                <td>@(s.Product?.Name ?? "Deleted product")</td>
+                                <td>@s.Quantity</td>
+                                <td>Rs. @s.PricePaid</td>
+                                <td><span class="status-pill status-@s.Status">@s.Status</span></td>
+                                <td>@s.OrderDate.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+
+                <div class="cd-empty">No sales yet.</div>
+            }
+        </div>
+
+        <!-- BIDS RECEIVED -->
+        <h5 class="cd-section-title">Bids Received <span class="cd-count">@ViewBag.TotalBidsReceived</span></h5>
+        <div class="cd-card table-responsive">
+            @if (((List<Art_Gallery.Models.AuctionDetails>)ViewBag.BidsReceived).Any())
+            {
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Bidder</th><th>Product</th><th>Bid Amount</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach (var b in (List<Art_Gallery.Models.AuctionDetails>)ViewBag.BidsReceived)
+                        {
+                            <tr>
+                                <td>@(b.User?.UserName ?? "N/A")</td>
+                                <td>@(b.Product?.Name ?? "Deleted product")</td>
+                                <td>Rs. @b.bidamount</td>
+                                <td><span class="status-pill status-@b.bidstatus">@b.bidstatus</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+
+                <div class="cd-empty">No bids received.</div>
+            }
+        </div>
+
+        <!-- REVIEWS RECEIVED -->
+        <h5 class="cd-section-title">Reviews Received <span class="cd-count">@ViewBag.TotalReviewsReceived</span></h5>
+        <div class="cd-card">
+            @if (((List<Art_Gallery.Models.ProductReview>)ViewBag.ReviewsReceived).Any())
+            {
+                foreach (var r in (List<Art_Gallery.Models.ProductReview>)ViewBag.ReviewsReceived)
+                {
+                    <div class="cd-mini-item">
+                        <div><strong>@(r.User?.UserName ?? "N/A")</strong> on <strong>@(r.Product?.Name ?? "Deleted product")</strong> — @r.Ratings ★</div>
+                        <div class="small text-muted">@r.ReviewMessage</div>
+                    </div>
+                }
+            }
+            else
+            {
+
+                <div class="cd-empty">No reviews received.</div>
+            }
+        </div>
+    }
+    else
+    {
+        <hr class="cd-divider" />
+        <div class="cd-card text-center">
+            <div class="cd-empty mb-0">This user has not listed any products, so there's no seller history to show.</div>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+        const greenPrimary = '#88d200';
+        const greenDark = '#6fa800';
+        const greenLight = '#d4f09b';
+        const greenPalette = ['#88d200', '#6fa800', '#d4f09b', '#a3d977', '#4f7a00', '#c2e88a'];
+
+        new Chart(document.getElementById('spendingChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(ViewBag.MonthlySpendingLabelsJson),
+                datasets: [{
+                    label: 'Spending',
+                    data: @Html.Raw(ViewBag.MonthlySpendingValuesJson),
+                    borderColor: greenDark,
+                    backgroundColor: 'rgba(136,210,0,0.15)',
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: greenDark
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        new Chart(document.getElementById('topProductsChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(ViewBag.TopProductNamesJson),
+                datasets: [{
+                    label: 'Qty Purchased',
+                    data: @Html.Raw(ViewBag.TopProductQtyJson),
+                    backgroundColor: greenPrimary,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+
+        @if (isSeller)
+        {
+                <text>
+                new Chart(document.getElementById('revenueChart'), {
+                    type: 'line',
+                    data: {
+                        labels: @Html.Raw(ViewBag.MonthlyRevenueLabelsJson),
+                        datasets: [{
+                            label: 'Revenue',
+                            data: @Html.Raw(ViewBag.MonthlyRevenueValuesJson),
+                            borderColor: greenDark,
+                            backgroundColor: 'rgba(111,168,0,0.15)',
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: greenDark
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+
+                new Chart(document.getElementById('sellerCategoryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: @Html.Raw(ViewBag.SellerCategoryNamesJson),
+                        datasets: [{
+                            data: @Html.Raw(ViewBag.SellerCategoryRevenueJson),
+                            backgroundColor: greenPalette
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                    }
+                });
+                </text>
+        }
+    </script>
+}

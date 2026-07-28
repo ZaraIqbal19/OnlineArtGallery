@@ -350,7 +350,7 @@
 
                             <div class="shop-content">
                                 <h3>@category.Name<br>Collection</h3>
-                                <a href="#" class="cta-btn">
+                                <a href="@Url.Action("Allproducts", "user", new { categoryId = category.Id })" class="cta-btn">
                                     Shop Now <i class="fa fa-arrow-circle-right"></i>
                                 </a>
                             </div>

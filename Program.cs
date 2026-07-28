@@ -1,17 +1,26 @@
 using Art_Gallery.Areas.Identity.Data;
 using Art_Gallery.Data;
+using Art_Gallery.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("connection") ?? throw new InvalidOperationException("Connection string 'Art_GalleryContextConnection' not found.");;
 
 builder.Services.AddDbContext<Art_GalleryContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddDefaultIdentity<Art_GalleryUser>(options =>
-    options.SignIn.RequireConfirmedAccount = false)
+{
+    options.SignIn.RequireConfirmedAccount = true;
+    options.User.RequireUniqueEmail = true; 
+})
+
+  
     .AddEntityFrameworkStores<Art_GalleryContext>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<IEmailSender, EmailService>();
 
 var app = builder.Build();
 

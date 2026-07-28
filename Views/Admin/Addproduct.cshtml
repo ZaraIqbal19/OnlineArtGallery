@@ -755,128 +755,47 @@
         margin-bottom: 14px;
     }
 
-    /* ---------- Image upload (3 individual slots) ---------- */
-    .image-slot-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-    }
-
-    @@media (max-width: 560px) {
-        .image-slot-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .image-slot {
+    /* ---------- Image upload (single drag-and-drop box, multi-file) ---------- */
+    .image-upload-box {
         border: 2px dashed var(--light-green);
         border-radius: 12px;
-        padding: 16px 10px;
+        padding: 26px;
         text-align: center;
         background-color: var(--ultra-light-green);
         transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
         cursor: pointer;
-        position: relative;
-        min-height: 150px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
     }
 
-        .image-slot:hover {
+        .image-upload-box:hover {
             border-color: var(--primary-green);
         }
 
-        .image-slot.drag-over {
+        .image-upload-box.drag-over {
             border-color: var(--dark-green);
             background-color: var(--light-green);
-            transform: scale(1.02);
+            transform: scale(1.01);
         }
 
-        .image-slot.is-invalid {
+        .image-upload-box.is-invalid {
             border-color: var(--danger-red);
             background-color: var(--danger-light);
             animation: shake 0.35s ease;
         }
 
-        .image-slot.is-valid {
+        .image-upload-box.is-valid {
             border-color: var(--primary-green);
-            background-color: #ffffff;
+            background-color: var(--light-green);
         }
 
-        .image-slot .upload-icon {
-            font-size: 1.6rem;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .image-slot .slot-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--dark-green);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 4px;
-        }
-
-        .image-slot .slot-hint {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-        }
-
-        .image-slot img.slot-preview {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid var(--primary-green);
-            animation: popIn 0.3s ease;
-        }
-
-    @@keyframes popIn {
-        from {
-            transform: scale(0.5);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
+    .upload-icon {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        display: block;
     }
-
-    .slot-remove {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: var(--danger-red);
-        color: #fff;
-        border: 2px solid #fff;
-        font-size: 12px;
-        font-weight: 800;
-        line-height: 1;
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.15s ease;
-    }
-
-        .slot-remove.show {
-            display: flex;
-        }
-
-        .slot-remove:hover {
-            transform: scale(1.15);
-        }
 
     .image-count-badge {
         display: inline-block;
-        margin-top: 14px;
+        margin-top: 12px;
         padding: 5px 14px;
         border-radius: 20px;
         font-size: 0.78rem;
@@ -890,6 +809,65 @@
         .image-count-badge.complete {
             background: var(--primary-green);
             color: #fff;
+        }
+
+    .preview-strip {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .preview-thumb-wrap {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        animation: popIn 0.3s ease;
+    }
+
+    @@keyframes popIn {
+        from {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .preview-thumb {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid var(--primary-green);
+    }
+
+    .preview-remove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--danger-red);
+        color: #fff;
+        border: 2px solid #fff;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease;
+    }
+
+        .preview-remove:hover {
+            transform: scale(1.15);
         }
 
     /* ---------- Submit button ---------- */
@@ -1335,25 +1313,13 @@
                     </div>
                     <div class="section-body">
                         <div class="form-group">
-                            <label>Upload exactly 3 images</label>
-                            <div class="image-slot-grid">
-                                @{
-                                    var imageSlots = new[] { "Image1", "Image2", "Image3" };
-                                }
-                                @for (int i = 0; i < imageSlots.Length; i++)
-                                {
-                                    var slotName = imageSlots[i];
-                                    var slotNumber = i + 1;
-                                    <div class="image-slot" id="slot-@slotName" data-slot="@slotName" tabindex="0" role="button" aria-label="Upload @slotName">
-                                        <span class="upload-icon"><i class="fa-solid fa-image"></i></span>
-                                        <span class="slot-label">Image @slotNumber</span>
-                                        <span class="slot-hint">Click or drop</span>
-                                        <input type="file" id="@(slotName)Input" name="@slotName" class="form-control" accept="image/*" style="display:none;" />
-                                        <span class="slot-remove" id="remove-@slotName">×</span>
-                                    </div>
-                                }
+                            <div class="image-upload-box" id="imageUploadBox" tabindex="0" role="button" aria-label="Upload exactly 3 product images">
+                                <span class="upload-icon"><i class="fa-solid fa-image"></i></span>
+                                <label style="margin-bottom:6px; cursor:pointer;">Drag &amp; drop or click to upload exactly 3 images</label>
+                                <input type="file" id="ImagesInput" name="Images" class="form-control" accept="image/*" multiple style="display:none;" />
+                                <div class="image-count-badge" id="imageCountBadge">0 / 3 selected</div>
+                                <div class="preview-strip" id="previewStrip"></div>
                             </div>
-                            <div class="image-count-badge" id="imageCountBadge">0 / 3 selected</div>
                             <span id="imageError" class="field-feedback invalid"></span>
                         </div>
                     </div>
@@ -1395,7 +1361,10 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <!-- Quantity: only applies to Fixed Price (Buy Now) listings.
+                             Hidden + non-required automatically when Auction is selected
+                             via toggleSaleType() below. -->
+                        <div class="form-group" id="quantityGroup">
                             <label asp-for="quantity" class="control-label"></label>
                             <div class="input-wrap">
                                 <input asp-for="quantity" class="form-control" data-group="pricing" data-label="Quantity" type="number" min="1" step="1" required />
@@ -1680,6 +1649,8 @@
         const auctionSection = document.getElementById("auctionSection");
         const priceInput = priceSection.querySelector("input[name='price']");
         const bidPriceInput = auctionSection.querySelector("input[name='BidPrice']");
+        const quantityGroup = document.getElementById("quantityGroup");
+        const quantityInput = quantityGroup.querySelector("input[name='quantity']");
 
         function setSaleType(value) {
             saleTypeSelect.value = value;
@@ -1707,6 +1678,14 @@
                 bidStartInput.setAttribute("required", "required");
                 bidEndInput.setAttribute("required", "required");
                 bidPriceInput.setAttribute("required", "required");
+
+                // Quantity doesn't apply to an auction listing (single item, no
+                // "how many available" concept) — hide it and drop it from validation,
+                // same as the user-facing Add/Edit Product forms.
+                quantityGroup.style.display = "none";
+                quantityInput.removeAttribute("required");
+                quantityInput.value = "";
+                clearFieldValidation(quantityInput);
             } else {
                 priceSection.style.display = "block";
                 auctionSection.style.display = "none";
@@ -1719,6 +1698,10 @@
                 bidPriceInput.value = "";
                 [bidStartInput, bidEndInput, bidPriceInput].forEach(clearFieldValidation);
                 updateCountdown();
+
+                // Buy Now (Fixed Price) — quantity applies again.
+                quantityGroup.style.display = "block";
+                quantityInput.setAttribute("required", "required");
             }
         }
         toggleSaleType();
@@ -1821,136 +1804,122 @@
             input.addEventListener("blur", () => { input.dataset.touched = "true"; validateField(input); updateProgress(); updatePreview(); });
         });
 
-        // ---------- Images: 3 individual slots (Image1, Image2, Image3) ----------
+        // ---------- Images: drag & drop, previews, remove, validation (single box, up to 3 files at once) ----------
+        const imagesInput = document.getElementById("ImagesInput");
         const imageError = document.getElementById("imageError");
+        const imageUploadBox = document.getElementById("imageUploadBox");
         const imageCountBadge = document.getElementById("imageCountBadge");
+        const previewStrip = document.getElementById("previewStrip");
         const MAX_FILE_MB = 8;
-        const slotNames = ["Image1", "Image2", "Image3"];
-        const slotFiles = {};
+        let currentFiles = [];
 
-        function countFilledSlots() {
-            return slotNames.filter(n => slotFiles[n]).length;
+        function filesToDataTransfer(files) {
+            const dt = new DataTransfer();
+            files.forEach(f => dt.items.add(f));
+            return dt;
         }
 
-        function renderSlotPreview(slotName, file) {
-            const slotEl = document.getElementById(`slot-${slotName}`);
-            const removeBtn = document.getElementById(`remove-${slotName}`);
-            const reader = new FileReader();
-            reader.onload = e => {
-                slotEl.querySelectorAll(".upload-icon, .slot-label, .slot-hint, img.slot-preview").forEach(el => el.remove());
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.className = "slot-preview";
-                slotEl.insertBefore(img, slotEl.firstChild);
-                removeBtn.classList.add("show");
-                updatePreview();
-            };
-            reader.readAsDataURL(file);
+        function renderPreviews() {
+            previewStrip.innerHTML = "";
+            currentFiles.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const wrap = document.createElement("div");
+                    wrap.className = "preview-thumb-wrap";
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "preview-thumb";
+                    const removeBtn = document.createElement("span");
+                    removeBtn.className = "preview-remove";
+                    removeBtn.textContent = "×";
+                    removeBtn.setAttribute("aria-label", "Remove image");
+                    removeBtn.onclick = (ev) => {
+                        ev.stopPropagation();
+                        currentFiles.splice(idx, 1);
+                        imagesInput.files = filesToDataTransfer(currentFiles).files;
+                        handleImagesChanged();
+                    };
+                    wrap.appendChild(img);
+                    wrap.appendChild(removeBtn);
+                    previewStrip.appendChild(wrap);
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
-        function resetSlotUI(slotName) {
-            const slotEl = document.getElementById(`slot-${slotName}`);
-            const removeBtn = document.getElementById(`remove-${slotName}`);
-            const slotNumber = slotNames.indexOf(slotName) + 1;
-            slotEl.querySelectorAll("img.slot-preview").forEach(el => el.remove());
-            if (!slotEl.querySelector(".upload-icon")) {
-                slotEl.innerHTML = `<span class="upload-icon"><i class="fa-solid fa-image"></i></span><span class="slot-label">Image ${slotNumber}</span><span class="slot-hint">Click or drop</span>` + slotEl.innerHTML;
-            }
-            removeBtn.classList.remove("show");
-        }
+        function handleImagesChanged() {
+            currentFiles = Array.from(imagesInput.files);
+            const count = currentFiles.length;
+            imageCountBadge.textContent = `${count} / 3 selected`;
+            imageCountBadge.classList.toggle("complete", count === 3);
+            renderPreviews();
 
-        function validateSlotFile(slotName, file) {
-            const slotEl = document.getElementById(`slot-${slotName}`);
-            if (file.size > MAX_FILE_MB * 1024 * 1024) {
-                slotEl.classList.add("is-invalid");
-                slotEl.classList.remove("is-valid");
-                imageError.textContent = `"${file.name}" is larger than ${MAX_FILE_MB}MB — please choose a smaller photo.`;
+            const oversized = currentFiles.find(f => f.size > MAX_FILE_MB * 1024 * 1024);
+            const invalidType = currentFiles.find(f => !f.type.startsWith("image/"));
+
+            if (oversized) {
+                imageUploadBox.classList.add("is-invalid");
+                imageUploadBox.classList.remove("is-valid");
+                imageError.textContent = `"${oversized.name}" is larger than ${MAX_FILE_MB}MB — please choose a smaller photo.`;
                 imageError.classList.add("visible");
-                showToast(`Image too large: ${file.name}`);
+                showToast(`Image too large: ${oversized.name}`);
+                updateProgress();
                 return false;
             }
-            if (!file.type.startsWith("image/")) {
-                slotEl.classList.add("is-invalid");
-                slotEl.classList.remove("is-valid");
+            if (invalidType) {
+                imageUploadBox.classList.add("is-invalid");
+                imageUploadBox.classList.remove("is-valid");
                 imageError.textContent = "Please upload image files only (JPG, PNG, etc.).";
                 imageError.classList.add("visible");
                 showToast("Only image files are allowed.");
+                updateProgress();
                 return false;
             }
-            slotEl.classList.add("is-valid");
-            slotEl.classList.remove("is-invalid");
-            imageError.textContent = "";
-            imageError.classList.remove("visible");
-            return true;
-        }
 
-        function setSlotFile(slotName, file) {
-            const inputEl = document.getElementById(`${slotName}Input`);
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            inputEl.files = dt.files;
-            slotFiles[slotName] = file;
-            const ok = validateSlotFile(slotName, file);
-            if (ok) renderSlotPreview(slotName, file);
-            updateImageCount();
-            updateProgress();
-        }
-
-        function clearSlotFile(slotName) {
-            const inputEl = document.getElementById(`${slotName}Input`);
-            inputEl.value = "";
-            delete slotFiles[slotName];
-            const slotEl = document.getElementById(`slot-${slotName}`);
-            slotEl.classList.remove("is-valid", "is-invalid");
-            resetSlotUI(slotName);
-            updateImageCount();
-            updateProgress();
-            updatePreview();
-        }
-
-        function updateImageCount() {
-            const count = countFilledSlots();
-            imageCountBadge.textContent = `${count} / 3 selected`;
-            imageCountBadge.classList.toggle("complete", count === 3);
-            if (count === 3) {
+            if (count === 0) {
+                imageUploadBox.classList.remove("is-valid", "is-invalid");
                 imageError.textContent = "";
                 imageError.classList.remove("visible");
+            } else if (count === 3) {
+                imageUploadBox.classList.add("is-valid");
+                imageUploadBox.classList.remove("is-invalid");
+                imageError.textContent = "";
+                imageError.classList.remove("visible");
+            } else {
+                imageUploadBox.classList.add("is-invalid");
+                imageUploadBox.classList.remove("is-valid");
+                imageError.textContent = `You've added ${count} photo${count === 1 ? "" : "s"} — please select exactly 3.`;
+                imageError.classList.add("visible");
             }
+            updateProgress();
+            updatePreview();
+            return count === 3;
         }
 
-        slotNames.forEach(slotName => {
-            const slotEl = document.getElementById(`slot-${slotName}`);
-            const inputEl = document.getElementById(`${slotName}Input`);
-            const removeBtn = document.getElementById(`remove-${slotName}`);
+        imagesInput.addEventListener("change", handleImagesChanged);
+        imageUploadBox.addEventListener("click", () => imagesInput.click());
+        imageUploadBox.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); imagesInput.click(); } });
 
-            slotEl.addEventListener("click", () => inputEl.click());
-            slotEl.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputEl.click(); } });
-            inputEl.addEventListener("change", () => {
-                if (inputEl.files && inputEl.files[0]) setSlotFile(slotName, inputEl.files[0]);
-            });
-            removeBtn.addEventListener("click", (e) => { e.stopPropagation(); clearSlotFile(slotName); });
-
-            ["dragenter", "dragover"].forEach(evt => {
-                slotEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); slotEl.classList.add("drag-over"); });
-            });
-            ["dragleave", "drop"].forEach(evt => {
-                slotEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); slotEl.classList.remove("drag-over"); });
-            });
-            slotEl.addEventListener("drop", e => {
-                const dropped = Array.from(e.dataTransfer.files).find(f => f.type.startsWith("image/"));
-                if (dropped) setSlotFile(slotName, dropped);
+        ["dragenter", "dragover"].forEach(evt => {
+            imageUploadBox.addEventListener(evt, e => {
+                e.preventDefault(); e.stopPropagation();
+                imageUploadBox.classList.add("drag-over");
             });
         });
+        ["dragleave", "drop"].forEach(evt => {
+            imageUploadBox.addEventListener(evt, e => {
+                e.preventDefault(); e.stopPropagation();
+                imageUploadBox.classList.remove("drag-over");
+            });
+        });
+        imageUploadBox.addEventListener("drop", e => {
+            const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+            const combined = [...currentFiles, ...dropped].slice(0, 3);
+            imagesInput.files = filesToDataTransfer(combined).files;
+            handleImagesChanged();
+        });
 
-        function validateImages() {
-            const count = countFilledSlots();
-            if (count < 3) {
-                imageError.textContent = `You've added ${count} photo${count === 1 ? "" : "s"} — please select all 3.`;
-                imageError.classList.add("visible");
-                return false;
-            }
-            return true;
-        }
+        function validateImages() { return handleImagesChanged(); }
 
         // ---------- Cascading Category -> SubCategory ----------
         const categorySelect = document.getElementById("CategorySelect");
@@ -2007,9 +1976,7 @@
 
             const thumbsWrap = document.getElementById("previewThumbs");
             thumbsWrap.innerHTML = "";
-            slotNames.forEach(slotName => {
-                const file = slotFiles[slotName];
-                if (!file) return;
+            currentFiles.slice(0, 3).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = e => {
                     const img = document.createElement("img");
@@ -2020,11 +1987,10 @@
             });
 
             const mainImage = document.getElementById("previewImage");
-            const firstFile = slotFiles["Image1"] || slotFiles["Image2"] || slotFiles["Image3"];
-            if (firstFile) {
+            if (currentFiles[0]) {
                 const reader = new FileReader();
                 reader.onload = e => { mainImage.style.backgroundImage = `url(${e.target.result})`; mainImage.style.backgroundSize = "cover"; };
-                reader.readAsDataURL(firstFile);
+                reader.readAsDataURL(currentFiles[0]);
             }
         }
         nameInput.addEventListener("input", debounce(updatePreview, 200));
@@ -2067,7 +2033,7 @@
         }
 
         function groupComplete(groupName) {
-            if (groupName === "images") return countFilledSlots() === 3;
+            if (groupName === "images") return imagesInput.files.length === 3;
             const requiredInputs = Array.from(document.querySelectorAll(`[data-group='${groupName}'][required]`))
                 .filter(el => el.offsetParent !== null && !el.disabled);
             if (requiredInputs.length === 0) return true;
@@ -2075,7 +2041,7 @@
         }
 
         function groupHasError(groupName) {
-            if (groupName === "images") return countFilledSlots() > 0 && countFilledSlots() < 3;
+            if (groupName === "images") return imageUploadBox.classList.contains("is-invalid");
             return Array.from(document.querySelectorAll(`[data-group='${groupName}']`))
                 .filter(el => el.offsetParent !== null && !el.disabled && el.dataset.touched === "true")
                 .some(el => !isFieldFilled(el));
@@ -2176,7 +2142,7 @@
                 li.addEventListener("click", () => {
                     const sectionEl = document.getElementById("section-images");
                     if (sectionEl.classList.contains("collapsed")) toggleSection("section-images");
-                    document.getElementById("slot-Image1").scrollIntoView({ behavior: "smooth", block: "center" });
+                    imageUploadBox.scrollIntoView({ behavior: "smooth", block: "center" });
                 });
                 list.appendChild(li);
             }

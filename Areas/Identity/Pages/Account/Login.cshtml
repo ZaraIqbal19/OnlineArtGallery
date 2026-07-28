@@ -37,7 +37,7 @@
             overflow-x: hidden;
         }
 
-        /* ── Animated Background Orbs ── */
+        /* ── Animated Background Orbs (paused for reduced-motion users by default) ── */
         .bg-orb {
             position: fixed;
             border-radius: 50%;
@@ -50,7 +50,7 @@
         .bg-orb-1 {
             width: 600px;
             height: 600px;
-            background: rgba(136, 210, 0, 0.07);
+            background: rgba(136, 210, 0, 0.06);
             top: -200px;
             right: -200px;
             animation-delay: 0s;
@@ -59,7 +59,7 @@
         .bg-orb-2 {
             width: 500px;
             height: 500px;
-            background: rgba(106, 168, 0, 0.05);
+            background: rgba(106, 168, 0, 0.04);
             bottom: -150px;
             left: -150px;
             animation-delay: -10s;
@@ -68,7 +68,7 @@
         .bg-orb-3 {
             width: 350px;
             height: 350px;
-            background: rgba(212, 240, 155, 0.08);
+            background: rgba(212, 240, 155, 0.06);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -76,24 +76,21 @@
         }
 
         @@keyframes floatOrb {
-            0%
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
 
-        {
-            transform: translate(0, 0) scale(1);
-        }
+            33% {
+                transform: translate(50px, -60px) scale(1.2);
+            }
 
-        33% {
-            transform: translate(50px, -60px) scale(1.2);
-        }
+            66% {
+                transform: translate(-40px, 50px) scale(0.8);
+            }
 
-        66% {
-            transform: translate(-40px, 50px) scale(0.8);
-        }
-
-        100% {
-            transform: translate(30px, -40px) scale(1.1);
-        }
-
+            100% {
+                transform: translate(30px, -40px) scale(1.1);
+            }
         }
 
         /* ── Floating Particles ── */
@@ -109,7 +106,7 @@
             position: absolute;
             border-radius: 50%;
             background: #88d200;
-            opacity: 0.04;
+            opacity: 0.03;
             animation: floatParticle 30s infinite alternate ease-in-out;
         }
 
@@ -193,22 +190,19 @@
             }
 
         @@keyframes floatParticle {
-            0%
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
 
-        {
-            transform: translateY(0) rotate(0deg) scale(1);
-        }
+            50% {
+                transform: translateY(-200px) rotate(180deg) scale(2);
+                opacity: 0.08;
+            }
 
-        50% {
-            transform: translateY(-200px) rotate(180deg) scale(2);
-            opacity: 0.10;
-        }
-
-        100% {
-            transform: translateY(-80px) rotate(360deg) scale(0.7);
-            opacity: 0.02;
-        }
-
+            100% {
+                transform: translateY(-80px) rotate(360deg) scale(0.7);
+                opacity: 0.02;
+            }
         }
 
         /* ── Main Card ── */
@@ -223,13 +217,52 @@
         }
 
         @@keyframes slideUp {
-            to
-
-        {
-            opacity: 1;
-            transform: translateY(0);
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        @@keyframes fadeInStagger {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .brand-header {
+            animation: fadeInStagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+        }
+
+        #account {
+            animation: fadeInStagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        @@keyframes shakeError {
+            10%, 90% {
+                transform: translateX(-1px);
+            }
+
+            20%, 80% {
+                transform: translateX(2px);
+            }
+
+            30%, 50%, 70% {
+                transform: translateX(-5px);
+            }
+
+            40%, 60% {
+                transform: translateX(5px);
+            }
+        }
+
+        .login-card.shake {
+            animation: shakeError 0.55s cubic-bezier(.36,.07,.19,.97) both;
         }
 
         .login-card {
@@ -237,13 +270,26 @@
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
             border-radius: 40px;
-            padding: 2rem 2rem 2.2rem;
+            padding: 1.7rem 2rem 1.9rem;
             border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.06), 0 30px 60px -20px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            /* Two-layer shadow: a tight dark layer for definition, a soft green-tinted
+                       glow further out for warmth — gives the card more physical "lift" */
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05), 0 18px 40px -12px rgba(15, 23, 42, 0.10), 0 60px 120px -40px rgba(106, 168, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.95);
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             overflow: hidden;
         }
+
+            /* Subtle grain overlay — removes the slightly sterile flat-blur look */
+            .login-card .grain-overlay {
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+                pointer-events: none;
+                opacity: 0.025;
+                mix-blend-mode: multiply;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            }
 
             .login-card::before {
                 content: '';
@@ -259,16 +305,13 @@
             }
 
         @@keyframes gradientMove {
-            0%
+            0% {
+                background-position: 0% 50%;
+            }
 
-        {
-            background-position: 0% 50%;
-        }
-
-        100% {
-            background-position: 400% 50%;
-        }
-
+            100% {
+                background-position: 400% 50%;
+            }
         }
 
         .login-card::after {
@@ -280,7 +323,7 @@
         }
 
         .login-card:hover {
-            box-shadow: 0 80px 140px -45px rgba(106, 168, 0, 0.10), 0 40px 70px -25px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06), 0 24px 50px -14px rgba(15, 23, 42, 0.12), 0 80px 140px -45px rgba(106, 168, 0, 0.14);
             transform: translateY(-6px);
             border-color: rgba(136, 210, 0, 0.10);
         }
@@ -311,24 +354,21 @@
         }
 
         @@keyframes pulseCorner {
-            0%, 100%
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
 
-        {
-            transform: scale(1);
-            opacity: 0.3;
-        }
-
-        50% {
-            transform: scale(1.3);
-            opacity: 0.6;
-        }
-
+            50% {
+                transform: scale(1.3);
+                opacity: 0.6;
+            }
         }
 
         /* ── Brand Header ── */
         .brand-header {
             text-align: center;
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.3rem;
             position: relative;
             z-index: 1;
         }
@@ -336,18 +376,18 @@
         .brand-logo-wrapper {
             position: relative;
             display: inline-block;
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.4rem;
         }
 
         .brand-icon {
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(145deg, #88d200, #3a6a00);
-            border-radius: 22px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: white;
             box-shadow: 0 16px 40px -10px rgba(136, 210, 0, 0.40), inset 0 2px 0 rgba(255,255,255,0.25);
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -366,18 +406,15 @@
             }
 
         @@keyframes pulseRing {
-            0%, 100%
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
 
-        {
-            transform: scale(1);
-            opacity: 0.3;
-        }
-
-        50% {
-            transform: scale(1.3);
-            opacity: 0.08;
-        }
-
+            50% {
+                transform: scale(1.3);
+                opacity: 0.08;
+            }
         }
 
         .brand-icon:hover {
@@ -414,16 +451,13 @@
         }
 
         @@keyframes pulseBadge {
-            0%, 100%
+            0%, 100% {
+                transform: scale(1);
+            }
 
-        {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.10);
-        }
-
+            50% {
+                transform: scale(1.10);
+            }
         }
 
         .brand-header .brand-name {
@@ -432,7 +466,7 @@
             color: #6fa800;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            margin-top: 0.2rem;
+            margin-top: 0.25rem;
             opacity: 0.7;
         }
 
@@ -443,12 +477,12 @@
             }
 
         .brand-header h1 {
-            font-size: 1.6rem;
+            font-size: 1.95rem;
             font-weight: 800;
             color: #0f172a;
-            letter-spacing: -0.03em;
-            margin: 0.1rem 0 0.05rem;
-            line-height: 1.1;
+            letter-spacing: -0.045em;
+            margin: 0.15rem 0 0.1rem;
+            line-height: 1.08;
         }
 
             .brand-header h1 .highlight {
@@ -473,9 +507,9 @@
 
         .brand-header .subtitle {
             color: #94a3b8;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 400;
-            margin-top: 0.2rem;
+            margin-top: 0.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -497,7 +531,7 @@
 
         /* ── Form Fields ── */
         .form-group {
-            margin-bottom: 1.1rem;
+            margin-bottom: 0.9rem;
             position: relative;
         }
 
@@ -522,9 +556,27 @@
                 pointer-events: none;
             }
 
+            .form-group .status-icon {
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%) scale(0.5);
+                color: #6fa800;
+                font-size: 0.9rem;
+                z-index: 2;
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                pointer-events: none;
+            }
+
+                .form-group .status-icon.show {
+                    opacity: 1;
+                    transform: translateY(-50%) scale(1);
+                }
+
             .form-group .form-control {
-                padding: 0.65rem 3rem 0.65rem 3rem;
-                border-radius: 16px;
+                padding: 0.55rem 3rem 0.55rem 3rem;
+                border-radius: 14px;
                 border: 2px solid #e9edf4;
                 background: rgba(255, 255, 255, 0.6);
                 font-size: 0.88rem;
@@ -532,7 +584,7 @@
                 color: #0f172a;
                 transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 height: auto;
-                min-height: 48px;
+                min-height: 44px;
                 width: 100%;
                 backdrop-filter: blur(4px);
             }
@@ -544,15 +596,35 @@
                     outline: none;
                 }
 
-                    .form-group .form-control:focus ~ .input-icon {
-                        color: #6fa800;
-                        transform: translateY(-50%) scale(1.12);
-                    }
+                .form-group .form-control:focus-visible {
+                    outline: 2px solid #64748b;
+                    outline-offset: 2px;
+                }
+
+                .form-group .form-control:focus ~ .input-icon {
+                    color: #6fa800;
+                    transform: translateY(-50%) scale(1.12);
+                }
 
                 .form-group .form-control::placeholder {
                     color: #94a3b8;
                     font-weight: 400;
                     opacity: 0.5;
+                }
+
+                .form-group .form-control:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+
+                /* Neutralize browser/autofill styling so saved credentials don't visually
+                           "jump" into the field with yellow/blue highlighting */
+                .form-group .form-control:-webkit-autofill,
+                .form-group .form-control:-webkit-autofill:hover,
+                .form-group .form-control:-webkit-autofill:focus {
+                    -webkit-text-fill-color: #0f172a;
+                    -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.9) inset;
+                    transition: background-color 5000s ease-in-out 0s;
                 }
 
             .form-group .floating-label {
@@ -572,7 +644,7 @@
             .form-group .form-control:focus ~ .floating-label,
             .form-group .form-control:not(:placeholder-shown) ~ .floating-label {
                 top: 0;
-                transform: translateY(-50%) scale(0.78);
+                transform: translateY(-50%) scale(0.72);
                 color: #6fa800;
                 background: white;
                 padding: 0 0.5rem;
@@ -617,17 +689,62 @@
                 transform: translateY(-50%) scale(0.92);
             }
 
+            .password-toggle:focus-visible {
+                outline: 2px solid #64748b;
+                outline-offset: 2px;
+            }
+
+        /* ── Caps Lock Warning ── */
+        .capslock-warning {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #b45309;
+            margin-top: 0.35rem;
+            display: none;
+            align-items: center;
+            gap: 0.35rem;
+            background: #fffbeb;
+            padding: 0.25rem 0.9rem;
+            border-radius: 40px;
+            border-left: 3px solid #f59e0b;
+        }
+
+            .capslock-warning.show {
+                display: flex;
+                animation: slideDown 0.3s ease;
+            }
+
+            .capslock-warning::before {
+                content: '\f2bd';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 0.75rem;
+                color: #f59e0b;
+                flex-shrink: 0;
+            }
+
+        /* ── Decoy autofill traps (invisible, off-canvas) ── */
+        .autofill-decoy {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         /* ── Validation Messages ── */
         .form-group .validation-message {
             font-size: 0.72rem;
             font-weight: 500;
             color: #ef4444;
-            margin-top: 0.3rem;
+            margin-top: 0.35rem;
             display: none;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.35rem;
             background: #fef2f2;
-            padding: 0.2rem 0.9rem;
+            padding: 0.25rem 0.9rem;
             border-radius: 40px;
             border-left: 3px solid #ef4444;
             transition: all 0.3s ease;
@@ -638,38 +755,43 @@
                 animation: slideDown 0.35s ease;
             }
 
-        .validation-message i {
-            font-size: 0.75rem;
-            color: #ef4444;
-        }
+            .form-group .validation-message::before {
+                content: '\f06a';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 0.75rem;
+                color: #ef4444;
+                flex-shrink: 0;
+            }
+
+            .form-group .validation-message span {
+                line-height: 1.3;
+            }
 
         @@keyframes slideDown {
-            0%
+            0% {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
 
-        {
-            opacity: 0;
-            transform: translateY(-8px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ── Validation Summary ── */
         .validation-summary-errors {
             background: #fef2f2;
             border-radius: 16px;
-            padding: 0.7rem 1.1rem;
+            padding: 0.75rem 1.1rem;
             border-left: 4px solid #ef4444;
-            margin-bottom: 1.1rem;
+            margin-bottom: 1.2rem;
             font-size: 0.8rem;
             color: #991b1b;
             display: none;
             align-items: flex-start;
-            gap: 0.5rem;
+            gap: 0.6rem;
         }
 
             .validation-summary-errors.show {
@@ -677,7 +799,10 @@
                 animation: slideDown 0.4s ease;
             }
 
-            .validation-summary-errors i {
+            .validation-summary-errors::before {
+                content: '\f06a';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
                 color: #ef4444;
                 font-size: 1rem;
                 margin-top: 0.05rem;
@@ -689,12 +814,40 @@
                 padding-left: 1.2rem;
             }
 
+        /* ── Session Row: Remember Me + Forgot Password on one line ── */
+        .session-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0.8rem 0 1.1rem;
+            gap: 0.75rem;
+        }
+
+        .forgot-link {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: color 0.25s ease;
+            flex-shrink: 0;
+        }
+
+            .forgot-link:hover {
+                color: #6fa800;
+                text-decoration: underline;
+            }
+
+            .forgot-link:focus-visible {
+                outline: 2px solid #64748b;
+                outline-offset: 3px;
+                border-radius: 6px;
+            }
+
         /* ── Remember Me ── */
         .remember-me {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin: 1.1rem 0 1.3rem;
             cursor: pointer;
             padding: 0.15rem 0;
         }
@@ -730,8 +883,9 @@
                         font-weight: 700;
                     }
 
-                .remember-me input[type="checkbox"]:focus {
-                    box-shadow: 0 0 0 5px rgba(136, 210, 0, 0.06);
+                .remember-me input[type="checkbox"]:focus-visible {
+                    outline: 2px solid #64748b;
+                    outline-offset: 2px;
                 }
 
             .remember-me label {
@@ -750,12 +904,12 @@
         /* ── Login Button ── */
         .btn-login {
             width: 100%;
-            padding: 0.8rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 50px;
             background: linear-gradient(145deg, #88d200, #3a6a00);
             color: white;
-            font-size: 0.95rem;
+            font-size: 0.96rem;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -766,7 +920,7 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.05em;
         }
 
             .btn-login::before {
@@ -774,16 +928,6 @@
                 position: absolute;
                 inset: 0;
                 background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-                opacity: 0;
-                transition: opacity 0.4s ease;
-                border-radius: 50px;
-            }
-
-            .btn-login::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background: linear-gradient(145deg, #6fa800, #2a5200);
                 opacity: 0;
                 transition: opacity 0.4s ease;
                 border-radius: 50px;
@@ -803,6 +947,16 @@
                 box-shadow: 0 6px 16px -8px rgba(106, 168, 0, 0.30);
             }
 
+            .btn-login:focus-visible {
+                outline: 2px solid #475569;
+                outline-offset: 3px;
+            }
+
+            .btn-login:disabled {
+                cursor: not-allowed;
+                transform: none !important;
+            }
+
             .btn-login .btn-content {
                 position: relative;
                 z-index: 1;
@@ -816,7 +970,8 @@
                 font-size: 1.05rem;
             }
 
-            .btn-login:hover .btn-icon {
+            .btn-login:hover .btn-icon,
+            .btn-login:focus-visible .btn-icon {
                 transform: translateX(6px) rotate(-3deg);
             }
 
@@ -831,35 +986,60 @@
             }
 
         @@keyframes spin {
-            to
-
-        {
-            transform: rotate(360deg);
+            to {
+                transform: rotate(360deg);
+            }
         }
 
+        @@keyframes popIn {
+            0% {
+                transform: scale(0.4);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn-login .btn-success-icon {
+            display: none;
+            font-size: 1.05rem;
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* ── Links ── */
         .auth-links {
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             justify-content: center;
-            gap: 0.3rem 1.2rem;
-            margin-top: 1.3rem;
-            padding-top: 1.2rem;
-            border-top: 2px solid rgba(233, 237, 244, 0.3);
+            gap: 0.4rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(233, 237, 244, 0.5);
         }
+
+            .auth-links span {
+                color: #94a3b8;
+                font-size: 0.83rem;
+                font-weight: 450;
+            }
 
             .auth-links a {
                 color: #64748b;
                 text-decoration: none;
-                font-size: 0.8rem;
-                font-weight: 450;
+                font-size: 0.83rem;
+                font-weight: 500;
                 transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 display: inline-flex;
                 align-items: center;
-                gap: 0.3rem;
-                padding: 0.15rem 0.4rem;
+                gap: 0.35rem;
+                padding: 0.2rem 0.4rem;
                 border-radius: 40px;
                 position: relative;
             }
@@ -886,9 +1066,15 @@
                         width: 80%;
                     }
 
+                .auth-links a:focus-visible {
+                    outline: 2px solid #64748b;
+                    outline-offset: 3px;
+                    border-radius: 8px;
+                }
+
                 .auth-links a i {
                     color: #88d200;
-                    font-size: 0.82rem;
+                    font-size: 0.85rem;
                     transition: transform 0.3s ease;
                 }
 
@@ -896,104 +1082,12 @@
                     transform: scale(1.15) rotate(-4deg);
                 }
 
-        /* ── External Providers ── */
-        .external-section {
-            margin-top: 1.6rem;
-            padding-top: 1.2rem;
-            border-top: 2px dashed rgba(203, 213, 225, 0.25);
-            position: relative;
-        }
-
-            .external-section .divider-text {
-                position: absolute;
-                top: -0.7rem;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(255,255,255,0.95);
-                backdrop-filter: blur(8px);
-                padding: 0 1rem;
-                color: #94a3b8;
-                font-size: 0.65rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                border-radius: 40px;
-            }
-
-            .external-section h3 {
-                font-size: 0.8rem;
-                font-weight: 500;
-                color: #475569;
-                text-align: center;
-                margin-bottom: 0.6rem;
-            }
-
-        .external-providers {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-            .external-providers .btn-provider {
-                padding: 0.4rem 1.2rem;
-                border-radius: 50px;
-                border: 2px solid #e9edf4;
-                background: rgba(255,255,255,0.4);
-                backdrop-filter: blur(4px);
-                font-weight: 500;
-                font-size: 0.8rem;
-                color: #475569;
-                transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-                cursor: pointer;
-            }
-
-                .external-providers .btn-provider:hover {
-                    border-color: #88d200;
-                    background: rgba(136, 210, 0, 0.06);
-                    transform: translateY(-3px) scale(1.04);
-                    box-shadow: 0 10px 28px -10px rgba(136, 210, 0, 0.14);
-                }
-
-                .external-providers .btn-provider:active {
-                    transform: scale(0.94);
-                }
-
-                .external-providers .btn-provider i {
-                    font-size: 1rem;
-                    color: #6fa800;
-                }
-
-        /* ── No external message ── */
-        .no-external {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.78rem;
-            padding: 0.5rem 1rem;
-            background: rgba(240, 250, 230, 0.3);
-            border-radius: 40px;
-            border: 1.5px solid #d4f09b;
-        }
-
-            .no-external a {
-                color: #6fa800;
-                text-decoration: none;
-                font-weight: 500;
-            }
-
-                .no-external a:hover {
-                    text-decoration: underline;
-                }
-
         /* ── Footer ── */
         .login-footer {
             text-align: center;
-            margin-top: 1.3rem;
-            padding-top: 1.1rem;
-            border-top: 1px solid rgba(233, 237, 244, 0.25);
+            margin-top: 1rem;
+            padding-top: 0.9rem;
+            border-top: 1px solid rgba(233, 237, 244, 0.4);
         }
 
             .login-footer p {
@@ -1035,116 +1129,92 @@
 
         /* ── Responsive ── */
         @@media (max-width: 480px) {
-            .login-wrapper
-
-        {
-            max-width: 100%;
-        }
-
-        .login-card {
-            padding: 1.4rem 1.1rem 1.6rem;
-            border-radius: 28px;
-        }
-
-        .brand-header h1 {
-            font-size: 1.4rem;
-        }
-
-        .brand-icon {
-            width: 54px;
-            height: 54px;
-            font-size: 1.6rem;
-            border-radius: 18px;
-        }
-
-        .form-group .form-control {
-            min-height: 44px;
-            padding: 0.55rem 2.8rem 0.55rem 2.8rem;
-            font-size: 0.85rem;
-            border-radius: 13px;
-        }
-
-        .form-group .input-icon {
-            left: 13px;
-            font-size: 0.88rem;
-        }
-
-        .form-group .floating-label {
-            left: 2.8rem;
-            font-size: 0.8rem;
-        }
-
-        .password-toggle {
-            right: 11px;
-            font-size: 0.88rem;
-            width: 30px;
-            height: 30px;
-        }
-
-        .auth-links {
-            gap: 0.2rem 0.8rem;
-        }
-
-            .auth-links a {
-                font-size: 0.75rem;
+            .login-wrapper {
+                max-width: 100%;
             }
 
-        .external-providers .btn-provider {
-            padding: 0.35rem 0.9rem;
-            font-size: 0.75rem;
-        }
+            .login-card {
+                padding: 1.2rem 1.15rem 1.4rem;
+                border-radius: 28px;
+            }
 
-        .btn-login {
-            padding: 0.65rem 1.2rem;
-            font-size: 0.88rem;
-        }
+            .brand-header h1 {
+                font-size: 1.45rem;
+            }
 
+            .brand-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                border-radius: 18px;
+            }
+
+            .form-group .form-control {
+                min-height: 42px;
+                padding: 0.5rem 2.8rem 0.5rem 2.8rem;
+                font-size: 0.86rem;
+                border-radius: 13px;
+            }
+
+            .form-group .input-icon {
+                left: 13px;
+                font-size: 0.88rem;
+            }
+
+            .form-group .floating-label {
+                left: 2.8rem;
+                font-size: 0.8rem;
+            }
+
+            .password-toggle {
+                right: 11px;
+                font-size: 0.88rem;
+                width: 30px;
+                height: 30px;
+            }
+
+            .auth-links {
+                gap: 1rem;
+            }
+
+                .auth-links a {
+                    font-size: 0.78rem;
+                }
+
+            .btn-login {
+                padding: 0.75rem 1.2rem;
+                font-size: 0.9rem;
+            }
         }
 
         @@media (max-width: 380px) {
-            .login-card
-
-        {
-            padding: 1rem 0.8rem 1.2rem;
-            border-radius: 24px;
-        }
-
-        .auth-links {
-            flex-direction: column;
-            align-items: center;
-            gap: 0.15rem;
-        }
-
-        .external-providers {
-            flex-direction: column;
-            align-items: center;
-        }
-
-            .external-providers .btn-provider {
-                width: 100%;
-                justify-content: center;
+            .login-card {
+                padding: 1.1rem 0.85rem 1.3rem;
+                border-radius: 24px;
             }
 
+            .auth-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
         }
 
         /* ── Reduced Motion ── */
         @@media (prefers-reduced-motion: reduce) {
-            *
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
 
-        {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
+            .login-card:hover {
+                transform: none !important;
+            }
 
-        .login-card:hover {
-            transform: none !important;
-        }
-
-        .btn-login:hover {
-            transform: none !important;
-        }
-
+            .btn-login:hover {
+                transform: none !important;
+            }
         }
     </style>
 </head>
@@ -1183,7 +1253,8 @@
     </div>
 
     <div class="login-wrapper">
-        <div class="login-card">
+        <div class="login-card" id="loginCard">
+            <div class="grain-overlay" aria-hidden="true"></div>
             <!-- Decorative Corner Accents -->
             <div class="corner-accent corner-accent-1"></div>
             <div class="corner-accent corner-accent-2"></div>
@@ -1210,41 +1281,46 @@
             </div>
 
             <!-- Login Form -->
-            <form id="account" method="post" novalidate>
+            <form id="account" method="post" novalidate autocomplete="off">
 
                 <!-- Validation Summary -->
-                <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert" id="validationSummary">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
-                        <strong>Please fix the errors below</strong>
-                        <span style="display:block; font-weight:400; font-size:0.7rem; color:#991b1b; margin-top:0.05rem;">Check your credentials and try again</span>
-                    </div>
-                </div>
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert" aria-live="polite" id="validationSummary"></div>
+
+                <!-- Decoy fields: absorb the browser's saved-credential autofill so it
+                     doesn't populate the real Email/Password inputs below -->
+                <input type="text" name="fake-username" class="autofill-decoy" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                <input type="password" name="fake-password" class="autofill-decoy" tabindex="-1" autocomplete="new-password" aria-hidden="true" />
 
                 <!-- Email -->
                 <div class="form-group">
                     <div class="input-wrapper">
                         <input asp-for="Input.Email" class="form-control"
-                               autocomplete="username"
+                               autocomplete="off"
                                aria-required="true"
                                placeholder=" "
+                               readonly
+                               autofocus
+                               onfocus="this.removeAttribute('readonly');"
                                id="Input_Email" />
                         <i class="fas fa-envelope input-icon"></i>
+                        <i class="fas fa-check-circle status-icon" id="emailStatusIcon"></i>
                         <span class="floating-label">Email Address</span>
                     </div>
-                    <span asp-validation-for="Input.Email" class="validation-message" id="emailValidation">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </span>
+                    <div class="validation-message" id="emailValidationWrap" aria-live="polite">
+                        <span asp-validation-for="Input.Email" id="emailValidation"></span>
+                    </div>
                 </div>
 
                 <!-- Password -->
                 <div class="form-group">
                     <div class="input-wrapper">
                         <input asp-for="Input.Password" class="form-control"
-                               autocomplete="current-password"
+                               autocomplete="new-password"
                                aria-required="true"
                                placeholder=" "
                                type="password"
+                               readonly
+                               onfocus="this.removeAttribute('readonly');"
                                id="Input_Password" />
                         <i class="fas fa-lock input-icon"></i>
                         <span class="floating-label">Password</span>
@@ -1252,18 +1328,23 @@
                             <i class="fas fa-eye" id="passwordToggleIcon"></i>
                         </button>
                     </div>
-                    <span asp-validation-for="Input.Password" class="validation-message" id="passwordValidation">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </span>
+                    <div class="capslock-warning" id="capsLockWarning" aria-live="polite">Caps Lock is on</div>
+                    <div class="validation-message" id="passwordValidationWrap" aria-live="polite">
+                        <span asp-validation-for="Input.Password" id="passwordValidation"></span>
+                    </div>
                 </div>
 
-                <!-- Remember Me -->
-                <div class="remember-me">
-                    <input asp-for="Input.RememberMe" id="Input_RememberMe" />
-                    <label asp-for="Input.RememberMe">
-                        <i class="fas fa-check-circle" style="color:#88d200; margin-right:0.15rem;"></i>
-                        @Html.DisplayNameFor(m => m.Input.RememberMe)
-                    </label>
+                <!-- Session Row: Remember Me + Forgot Password share one line -->
+                <div class="session-row">
+                    <div class="remember-me">
+                        <input asp-for="Input.RememberMe" id="Input_RememberMe" />
+                        <label asp-for="Input.RememberMe">
+                            @Html.DisplayNameFor(m => m.Input.RememberMe)
+                        </label>
+                    </div>
+                    <a id="forgot-password" class="forgot-link" asp-page="./ForgotPassword" data-prefetch="true">
+                        Forgot password?
+                    </a>
                 </div>
 
                 <!-- Login Button -->
@@ -1271,57 +1352,19 @@
                     <span class="btn-content">
                         <span class="btn-icon"><i class="fas fa-sign-in-alt"></i></span>
                         <span>Log In</span>
+                        <i class="fas fa-check btn-success-icon" id="btnSuccessIcon"></i>
                         <span class="btn-spinner"></span>
                     </span>
                 </button>
 
                 <!-- Auth Links -->
                 <div class="auth-links">
-                    <a id="forgot-password" asp-page="./ForgotPassword">
-                        <i class="fas fa-question-circle"></i> Forgot password?
-                    </a>
-                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">
+                    <span>New here?</span>
+                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" data-prefetch="true">
                         <i class="fas fa-user-plus"></i> Create account
-                    </a>
-                    <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">
-                        <i class="fas fa-envelope"></i> Resend confirmation
                     </a>
                 </div>
             </form>
-
-            <!-- External Login -->
-            <div class="external-section">
-                <span class="divider-text">or continue with</span>
-                <h3><i class="fas fa-users" style="color:#88d200; margin-right:0.3rem;"></i>Use another service</h3>
-                @{
-                    if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                    {
-                        <div class="no-external">
-                            <i class="fas fa-info-circle"></i>
-                            No external services configured.
-                            <a href="https://go.microsoft.com/fwlink/?LinkID=532715" target="_blank">Learn more</a>
-                        </div>
-                    }
-                    else
-                    {
-                        <form id="external-account" asp-page="./ExternalLogin"
-                              asp-route-returnUrl="@Model.ReturnUrl"
-                              method="post">
-                            <div class="external-providers">
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn-provider"
-                                            name="provider" value="@provider.Name"
-                                            title="Log in using your @provider.DisplayName account">
-                                        <i class="fab fa-@provider.Name.ToLowerInvariant()"></i>
-                                        @provider.DisplayName
-                                    </button>
-                                }
-                            </div>
-                        </form>
-                    }
-                }
-            </div>
 
             <!-- Footer -->
             <div class="login-footer">
@@ -1359,116 +1402,148 @@
             }
         }
 
-        // ── Loading State for Login Button ──
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('account');
+            const loginCard = document.getElementById('loginCard');
             const submitBtn = document.getElementById('login-submit');
             const btnContent = submitBtn.querySelector('.btn-content');
-            const btnText = btnContent.querySelector('span:not(.btn-icon):not(.btn-spinner)');
+            const btnText = btnContent.querySelector('span:not(.btn-icon):not(.btn-spinner):not(.btn-success-icon)');
             const btnIcon = btnContent.querySelector('.btn-icon');
             const btnSpinner = btnContent.querySelector('.btn-spinner');
+            const btnSuccessIcon = document.getElementById('btnSuccessIcon');
             const toastEl = document.getElementById('errorToast');
             const toastMessage = document.getElementById('toastMessage');
+            const emailInput = document.getElementById('Input_Email');
+            const passwordInput = document.getElementById('Input_Password');
+            const emailStatusIcon = document.getElementById('emailStatusIcon');
+            const emailValidationWrap = document.getElementById('emailValidationWrap');
+            const passwordValidationWrap = document.getElementById('passwordValidationWrap');
+            const capsLockWarning = document.getElementById('capsLockWarning');
+            const summary = document.getElementById('validationSummary');
 
             // Initialize toast
             const toast = new bootstrap.Toast(toastEl);
 
-            // ── Hide validation messages on load ──
-            document.querySelectorAll('.validation-message').forEach(el => {
+            // ── Block the saved-password autofill from populating the real fields ──
+            // Browsers fill autofill values asynchronously, shortly after the page
+            // paints, so a same-tick check isn't enough — clear a moment later too.
+            function clearAutofilledValues() {
+                if (emailInput.value && !emailInput.dataset.userEdited) emailInput.value = '';
+                if (passwordInput.value && !passwordInput.dataset.userEdited) passwordInput.value = '';
+            }
+            [0, 50, 150, 400].forEach(delay => setTimeout(clearAutofilledValues, delay));
+
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('input', () => { input.dataset.userEdited = 'true'; });
+            });
+
+            // ── Hide validation messages/summary/caps-lock on load ──
+            [emailValidationWrap, passwordValidationWrap, summary, capsLockWarning].forEach(el => {
                 el.classList.remove('show');
                 el.style.display = 'none';
             });
 
-            // ── Validation summary on load ──
-            const summary = document.getElementById('validationSummary');
-            if (summary) {
-                summary.classList.remove('show');
-                summary.style.display = 'none';
-            }
-
-            // ── Show validation messages only when there's an error ──
-            const emailInput = document.getElementById('Input_Email');
-            const passwordInput = document.getElementById('Input_Password');
-            const emailValidation = document.getElementById('emailValidation');
-            const passwordValidation = document.getElementById('passwordValidation');
-
             function checkAndShowValidation() {
-                // Email validation
-                const emailError = emailInput.closest('.form-group').querySelector('.field-validation-error');
+                const emailError = document.getElementById('emailValidation');
                 if (emailError && emailError.textContent.trim()) {
-                    emailValidation.textContent = emailError.textContent.trim();
-                    emailValidation.classList.add('show');
-                    emailValidation.style.display = 'flex';
+                    emailValidationWrap.classList.add('show');
+                    emailValidationWrap.style.display = 'flex';
+                    emailInput.setAttribute('aria-invalid', 'true');
                 } else {
-                    emailValidation.classList.remove('show');
-                    emailValidation.style.display = 'none';
+                    emailValidationWrap.classList.remove('show');
+                    emailValidationWrap.style.display = 'none';
+                    emailInput.removeAttribute('aria-invalid');
                 }
 
-                // Password validation
-                const passwordError = passwordInput.closest('.form-group').querySelector('.field-validation-error');
+                const passwordError = document.getElementById('passwordValidation');
                 if (passwordError && passwordError.textContent.trim()) {
-                    passwordValidation.textContent = passwordError.textContent.trim();
-                    passwordValidation.classList.add('show');
-                    passwordValidation.style.display = 'flex';
+                    passwordValidationWrap.classList.add('show');
+                    passwordValidationWrap.style.display = 'flex';
+                    passwordInput.setAttribute('aria-invalid', 'true');
                 } else {
-                    passwordValidation.classList.remove('show');
-                    passwordValidation.style.display = 'none';
+                    passwordValidationWrap.classList.remove('show');
+                    passwordValidationWrap.style.display = 'none';
+                    passwordInput.removeAttribute('aria-invalid');
                 }
 
-                // Summary
-                const summaryErrors = document.querySelector('.validation-summary-errors ul');
-                if (summaryErrors && summaryErrors.children.length > 0) {
+                const summaryErrors = summary.querySelectorAll('li');
+                if (summaryErrors.length > 0) {
                     summary.classList.add('show');
                     summary.style.display = 'flex';
+                    return true;
                 } else {
                     summary.classList.remove('show');
                     summary.style.display = 'none';
+                    return false;
                 }
             }
 
-            // Run initial check after a small delay
-            setTimeout(checkAndShowValidation, 100);
+            // Run initial check after a small delay (after unobtrusive validation wires up)
+            setTimeout(function () {
+                const hasErrorsOnLoad = checkAndShowValidation();
+                if (hasErrorsOnLoad) triggerShake();
+            }, 150);
 
-            // ── Clear validation on input ──
-            emailInput.addEventListener('input', function() {
+            // ── Shake the card + toast when a server-side error is present ──
+            function triggerShake() {
+                loginCard.classList.remove('shake');
+                // Force reflow so the animation can restart if triggered twice
+                void loginCard.offsetWidth;
+                loginCard.classList.add('shake');
+                showToast('Please check your credentials and try again.');
+            }
+
+            // ── Real-time email format check ──
+            const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            emailInput.addEventListener('input', function () {
+                const looksValid = emailPattern.test(this.value.trim());
+                emailStatusIcon.classList.toggle('show', looksValid);
+            });
+
+            // ── Caps Lock detection on the password field ──
+            passwordInput.addEventListener('keyup', function (e) {
+                if (typeof e.getModifierState === 'function') {
+                    const isCapsOn = e.getModifierState('CapsLock');
+                    capsLockWarning.classList.toggle('show', isCapsOn);
+                    capsLockWarning.style.display = isCapsOn ? 'flex' : 'none';
+                }
+            });
+            passwordInput.addEventListener('blur', function () {
+                capsLockWarning.classList.remove('show');
+                capsLockWarning.style.display = 'none';
+            });
+
+            // ── Clear validation as the user edits ──
+            emailInput.addEventListener('input', function () {
                 this.classList.remove('is-invalid');
-                const error = this.closest('.form-group').querySelector('.field-validation-error');
-                if (error) error.textContent = '';
-                emailValidation.classList.remove('show');
-                emailValidation.style.display = 'none';
                 checkAndShowValidation();
             });
 
-            passwordInput.addEventListener('input', function() {
+            passwordInput.addEventListener('input', function () {
                 this.classList.remove('is-invalid');
-                const error = this.closest('.form-group').querySelector('.field-validation-error');
-                if (error) error.textContent = '';
-                passwordValidation.classList.remove('show');
-                passwordValidation.style.display = 'none';
                 checkAndShowValidation();
             });
 
             // ── Form submit handler ──
             form.addEventListener('submit', function (e) {
-                // Show loading state only if form is valid
                 if (form.checkValidity()) {
                     btnText.textContent = 'Logging in...';
                     btnIcon.style.display = 'none';
                     btnSpinner.style.display = 'inline-block';
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.85';
+                    emailInput.disabled = true;
+                    passwordInput.disabled = true;
                 } else {
                     e.preventDefault();
-                    // Show validation messages
                     checkAndShowValidation();
-                    // Focus first invalid field
+                    triggerShake();
                     const firstInvalid = form.querySelector('.form-control.is-invalid');
                     if (firstInvalid) {
                         firstInvalid.focus();
-                        firstInvalid.closest('.input-wrapper').style.transform = 'scale(1.01)';
-                        setTimeout(() => {
-                            firstInvalid.closest('.input-wrapper').style.transform = 'scale(1)';
-                        }, 300);
+                        const wrapper = firstInvalid.closest('.input-wrapper');
+                        wrapper.style.transform = 'scale(1.01)';
+                        setTimeout(() => { wrapper.style.transform = 'scale(1)'; }, 300);
                     }
                 }
             });
@@ -1477,78 +1552,46 @@
             document.querySelectorAll('.form-control').forEach(input => {
                 input.addEventListener('focus', function () {
                     const wrapper = this.closest('.input-wrapper');
-                    if (wrapper) {
-                        wrapper.style.transform = 'scale(1.015)';
-                    }
+                    if (wrapper) wrapper.style.transform = 'scale(1.015)';
                 });
                 input.addEventListener('blur', function () {
                     const wrapper = this.closest('.input-wrapper');
-                    if (wrapper) {
-                        wrapper.style.transform = 'scale(1)';
-                    }
+                    if (wrapper) wrapper.style.transform = 'scale(1)';
                 });
             });
 
-            // ── Hide validation summary when user starts typing ──
-            document.querySelectorAll('.form-control').forEach(input => {
-                input.addEventListener('input', function () {
-                    const summary = document.getElementById('validationSummary');
-                    if (summary && summary.classList.contains('show')) {
-                        summary.classList.remove('show');
-                        summary.style.display = 'none';
-                    }
-                    // Also hide individual validation messages if they're showing
-                    const validationMsg = this.closest('.form-group').querySelector('.validation-message');
-                    if (validationMsg && validationMsg.classList.contains('show')) {
-                        validationMsg.classList.remove('show');
-                        validationMsg.style.display = 'none';
-                    }
+            // ── Prefetch Forgot-password / Register on hover for snappier navigation ──
+            document.querySelectorAll('a[data-prefetch="true"]').forEach(link => {
+                let prefetched = false;
+                link.addEventListener('mouseenter', function () {
+                    if (prefetched) return;
+                    prefetched = true;
+                    const preload = document.createElement('link');
+                    preload.rel = 'prefetch';
+                    preload.href = this.href;
+                    document.head.appendChild(preload);
                 });
             });
 
             // ── Show toast function ──
-            window.showToast = function(message, type = 'danger') {
+            window.showToast = function (message, type = 'danger') {
                 toastMessage.textContent = message;
                 toastEl.className = `toast toast-custom align-items-center text-white border-0 bg-${type}`;
                 toast.show();
             };
 
             // ── Keyboard shortcut: Ctrl+Enter to submit ──
-            document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    if (!submitBtn.disabled) {
-                        form.dispatchEvent(new Event('submit'));
-                    }
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !submitBtn.disabled) {
+                    form.dispatchEvent(new Event('submit'));
                 }
             });
 
-            // ── Handle server-side validation errors from redirect ──
-            const serverErrors = document.querySelectorAll('.field-validation-error');
-            if (serverErrors.length > 0) {
-                serverErrors.forEach(error => {
-                    if (error.textContent.trim()) {
-                        const parentGroup = error.closest('.form-group');
-                        if (parentGroup) {
-                            const validationMsg = parentGroup.querySelector('.validation-message');
-                            if (validationMsg) {
-                                validationMsg.textContent = error.textContent.trim();
-                                validationMsg.classList.add('show');
-                                validationMsg.style.display = 'flex';
-                            }
-                            const input = parentGroup.querySelector('.form-control');
-                            if (input) {
-                                input.classList.add('is-invalid');
-                            }
-                        }
-                    }
-                });
-                // Show summary if there are server errors
-                const summary = document.getElementById('validationSummary');
-                if (summary) {
-                    summary.classList.add('show');
-                    summary.style.display = 'flex';
-                }
-            }
+            // ── Handle server-side validation errors present on page load (post-back) ──
+            const hasErrors = checkAndShowValidation();
+            if (emailValidationWrap.classList.contains('show')) emailInput.classList.add('is-invalid');
+            if (passwordValidationWrap.classList.contains('show')) passwordInput.classList.add('is-invalid');
+            if (hasErrors) triggerShake();
         });
     </script>
 </body>

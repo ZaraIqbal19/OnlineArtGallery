@@ -130,291 +130,313 @@
                 margin-right: 6px;
             }
 
-        .customers-page .btn-add-customer {
-            background: linear-gradient(135deg, #88d200, #6fa800);
-            color: white;
-            border: none;
-            border-radius: 60px;
-            padding: 0.55rem 1.4rem;
-            font-weight: 600;
-            font-size: 0.82rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.3);
-            transition: all 0.25s;
-            white-space: nowrap;
-        }
-
-            .customers-page .btn-add-customer:hover {
-                transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 12px 24px rgba(111, 168, 0, 0.4);
-                color: white;
-            }
-
-        .customers-page .btn-export {
+        .customers-page .btn-header-action {
             background: white;
             color: #6fa800;
-            border: 1.5px solid #88d200;
+            border: 1.5px solid #d4f09b;
             border-radius: 60px;
-            padding: 0.5rem 1.3rem;
+            padding: 0.55rem 1.3rem;
             font-weight: 600;
             font-size: 0.8rem;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
-            text-decoration: none;
             transition: all 0.25s;
+            cursor: pointer;
             white-space: nowrap;
         }
 
-            .customers-page .btn-export:hover {
-                background: #88d200;
-                color: white;
-                transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 10px 20px rgba(136, 210, 0, 0.28);
+            .customers-page .btn-header-action:hover {
+                background: #f0fae6;
+                border-color: #88d200;
+                color: #4c7800;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(136, 210, 0, 0.18);
             }
 
-        /* ----- stat cards ----- */
-        .customers-page .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-bottom: 1.4rem;
-        }
-
-        .customers-page .stat-card {
-            background: #f0fae6;
-            border: 1px solid #d4f09b;
-            border-radius: 16px;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: all 0.25s;
-        }
-
-            .customers-page .stat-card:hover {
-                background: #d4f09b;
-                transform: translateY(-3px);
-                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
+            .customers-page .btn-header-action.spinning i {
+                animation: spinRefreshCust 0.6s linear;
             }
 
-        .customers-page .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+    @@keyframes spinRefreshCust {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .customers-page .btn-export {
+        background: white;
+        color: #6fa800;
+        border: 1.5px solid #88d200;
+        border-radius: 60px;
+        padding: 0.5rem 1.3rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.25s;
+        white-space: nowrap;
+    }
+
+        .customers-page .btn-export:hover {
             background: #88d200;
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.05rem;
-            flex-shrink: 0;
-            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(136, 210, 0, 0.28);
         }
 
-        .customers-page .stat-value {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #1a1a1a;
-            line-height: 1.1;
+    /* ----- stat cards ----- */
+    .customers-page .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 1.4rem;
+    }
+
+    .customers-page .stat-card {
+        background: #f0fae6;
+        border: 1px solid #d4f09b;
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.25s;
+    }
+
+        .customers-page .stat-card:hover {
+            background: #d4f09b;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
         }
 
-        .customers-page .stat-label {
-            font-size: 0.76rem;
-            color: #5c7a2e;
-            font-weight: 600;
-            margin-top: 2px;
+    .customers-page .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #88d200;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
+    }
+
+    .customers-page .stat-value {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #1a1a1a;
+        line-height: 1.1;
+    }
+
+    .customers-page .stat-label {
+        font-size: 0.76rem;
+        color: #5c7a2e;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    /* ----- toolbar / search ----- */
+    .customers-page .toolbar-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 1.1rem;
+    }
+
+    .customers-page .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f0fae6;
+        border: 1.5px solid #d4f09b;
+        border-radius: 60px;
+        padding: 9px 20px;
+        flex: 1;
+        max-width: 340px;
+        transition: all 0.2s;
+    }
+
+        .customers-page .search-box:focus-within {
+            border-color: #88d200;
+            background: white;
+            box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
         }
 
-        /* ----- toolbar / search ----- */
-        .customers-page .toolbar-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 1.1rem;
-        }
-
-        .customers-page .search-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f0fae6;
-            border: 1.5px solid #d4f09b;
-            border-radius: 60px;
-            padding: 9px 20px;
-            flex: 1;
-            max-width: 340px;
-            transition: all 0.2s;
-        }
-
-            .customers-page .search-box:focus-within {
-                border-color: #88d200;
-                background: white;
-                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
-            }
-
-            .customers-page .search-box i {
-                color: #6fa800;
-            }
-
-            .customers-page .search-box input {
-                border: none;
-                outline: none;
-                background: transparent;
-                font-size: 0.88rem;
-                width: 100%;
-                color: #1a1a1a;
-            }
-
-        .customers-page .toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .customers-page .result-count {
-            font-size: 0.8rem;
-            color: #5c7a2e;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .customers-page .scroll-hint {
-            font-size: 0.78rem;
+        .customers-page .search-box i {
             color: #6fa800;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
         }
 
-        /* ----- table ----- */
-        .customers-page .table-responsive-cust {
-            border-radius: 1.6rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 6px;
-            scrollbar-width: thin;
-            scrollbar-color: #88d200 #eef6de;
-        }
-
-            .customers-page .table-responsive-cust::-webkit-scrollbar {
-                height: 10px;
-            }
-
-            .customers-page .table-responsive-cust::-webkit-scrollbar-track {
-                background: #eef6de;
-                border-radius: 20px;
-            }
-
-            .customers-page .table-responsive-cust::-webkit-scrollbar-thumb {
-                background: linear-gradient(90deg, #88d200, #6fa800);
-                border-radius: 20px;
-                border: 2px solid #eef6de;
-            }
-
-                .customers-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
-                    background: #6fa800;
-                }
-
-        .customers-page .table-green-white {
-            border-collapse: separate;
-            border-spacing: 0 10px;
+        .customers-page .search-box input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.88rem;
             width: 100%;
-            min-width: 950px;
-            margin-bottom: 0;
+            color: #1a1a1a;
         }
 
-            .customers-page .table-green-white thead th {
-                background: #88d200;
-                color: white;
-                font-weight: 600;
-                font-size: 0.76rem;
-                text-transform: uppercase;
-                letter-spacing: 0.6px;
-                padding: 15px 18px;
-                border: none;
-                transition: background 0.2s;
+    .customers-page .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .customers-page .result-count {
+        font-size: 0.8rem;
+        color: #5c7a2e;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .customers-page .scroll-hint {
+        font-size: 0.78rem;
+        color: #6fa800;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    /* ----- table (visible scrollbar + drag-to-scroll) ----- */
+    .customers-page .table-responsive-cust {
+        border-radius: 1.6rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 6px;
+        scrollbar-width: thin;
+        scrollbar-color: #88d200 #eef6de;
+        cursor: grab;
+        user-select: none;
+    }
+
+        .customers-page .table-responsive-cust::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .customers-page .table-responsive-cust::-webkit-scrollbar-track {
+            background: #eef6de;
+            border-radius: 20px;
+        }
+
+        .customers-page .table-responsive-cust::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #88d200, #6fa800);
+            border-radius: 20px;
+            border: 2px solid #eef6de;
+        }
+
+            .customers-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
+                background: #6fa800;
             }
 
-                .customers-page .table-green-white thead th:first-child {
-                    border-radius: 20px 0 0 20px;
-                    padding-left: 26px;
+        .customers-page .table-responsive-cust.dragging {
+            cursor: grabbing;
+        }
+
+    .customers-page .table-green-white {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        width: 100%;
+        min-width: 950px;
+        margin-bottom: 0;
+    }
+
+        .customers-page .table-green-white thead th {
+            background: #88d200;
+            color: white;
+            font-weight: 600;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 15px 18px;
+            border: none;
+            transition: background 0.2s;
+        }
+
+            .customers-page .table-green-white thead th:first-child {
+                border-radius: 20px 0 0 20px;
+                padding-left: 26px;
+            }
+
+            .customers-page .table-green-white thead th:last-child {
+                border-radius: 0 20px 20px 0;
+                padding-right: 26px;
+            }
+
+            .customers-page .table-green-white thead th:hover {
+                background: #6fa800;
+            }
+
+            .customers-page .table-green-white thead th i.fa-fw-lead {
+                margin-right: 6px;
+                opacity: 0.9;
+            }
+
+            .customers-page .table-green-white thead th.sortable {
+                cursor: pointer;
+                user-select: none;
+            }
+
+                .customers-page .table-green-white thead th.sortable .sort-icon {
+                    margin-left: 6px;
+                    font-size: 0.63rem;
+                    opacity: 0.6;
+                    transition: opacity 0.2s, transform 0.2s;
                 }
 
-                .customers-page .table-green-white thead th:last-child {
-                    border-radius: 0 20px 20px 0;
-                    padding-right: 26px;
-                }
-
-                .customers-page .table-green-white thead th:hover {
-                    background: #6fa800;
-                }
-
-                .customers-page .table-green-white thead th i.fa-fw-lead {
-                    margin-right: 6px;
-                    opacity: 0.9;
-                }
-
-                .customers-page .table-green-white thead th.sortable {
-                    cursor: pointer;
-                    user-select: none;
-                }
-
-                    .customers-page .table-green-white thead th.sortable .sort-icon {
-                        margin-left: 6px;
-                        font-size: 0.63rem;
-                        opacity: 0.6;
-                        transition: opacity 0.2s, transform 0.2s;
-                    }
-
-                    .customers-page .table-green-white thead th.sortable:hover .sort-icon {
-                        opacity: 1;
-                    }
-
-                .customers-page .table-green-white thead th.sort-asc .sort-icon,
-                .customers-page .table-green-white thead th.sort-desc .sort-icon {
+                .customers-page .table-green-white thead th.sortable:hover .sort-icon {
                     opacity: 1;
                 }
 
-                .customers-page .table-green-white thead th.sort-desc .sort-icon {
-                    transform: rotate(180deg);
-                }
+            .customers-page .table-green-white thead th.sort-asc .sort-icon,
+            .customers-page .table-green-white thead th.sort-desc .sort-icon {
+                opacity: 1;
+            }
 
-        .customers-page .empty-state-row td {
-            text-align: center;
-            padding: 40px 20px !important;
-            color: #8a9a6e;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 20px !important;
-        }
+            .customers-page .table-green-white thead th.sort-desc .sort-icon {
+                transform: rotate(180deg);
+            }
 
-        .customers-page .empty-state-row i {
-            display: block;
-            font-size: 2rem;
-            color: #d4f09b;
-            margin-bottom: 10px;
-        }
+    .customers-page .empty-state-row td {
+        text-align: center;
+        padding: 40px 20px !important;
+        color: #8a9a6e;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border-radius: 20px !important;
+    }
 
-        .customers-page .table-green-white tbody tr {
-            background: white;
-            border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-            border: 1px solid rgba(136, 210, 0, 0.06);
-            opacity: 0;
-            animation: fadeSlideCust 0.45s forwards;
-            animation-delay: calc(0.05s * var(--i, 1));
-        }
+    .customers-page .empty-state-row i {
+        display: block;
+        font-size: 2rem;
+        color: #d4f09b;
+        margin-bottom: 10px;
+    }
+
+    .customers-page .table-green-white tbody tr {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
+        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        border: 1px solid rgba(136, 210, 0, 0.06);
+        opacity: 0;
+        animation: fadeSlideCust 0.45s forwards;
+        animation-delay: calc(0.05s * var(--i, 1));
+    }
 
     @@keyframes fadeSlideCust {
         0% {
@@ -618,20 +640,6 @@
             color: white;
             transform: translateY(-3px) scale(1.04);
             box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
-        }
-
-    .customers-page .btn-edit {
-        background: white;
-        color: #6fa800;
-        border: 1.5px solid #88d200;
-    }
-
-        .customers-page .btn-edit:hover {
-            background: #88d200;
-            color: white;
-            transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.22);
-            border-color: #88d200;
         }
 
     .customers-page .btn-delete {
@@ -1007,6 +1015,11 @@
         .customers-page .toolbar-right {
             justify-content: space-between;
         }
+
+        .customers-page .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
     }
 
     @@media (max-width: 576px) {
@@ -1018,7 +1031,8 @@
 
         .customers-page .header-actions {
             width: 100%;
-            justify-content: space-between;
+            justify-content: flex-start;
+            flex-wrap: wrap;
         }
     }
 </style>
@@ -1043,12 +1057,11 @@
                     <div class="status-badge">
                         <i class="fas fa-circle" style="font-size: 0.5rem;"></i> active
                     </div>
+                    <button type="button" class="btn-header-action" id="refreshCustomersBtn" onclick="refreshCustomers(this)">
+                        <i class="fas fa-rotate"></i> Refresh
+                    </button>
                     <a asp-action="ExportCustomersToExcel" asp-controller="Admin" class="btn-export">
                         <i class="fas fa-file-excel"></i> Export to Excel
-                    </a>
-                    @* Remove this if there's no Create action on your controller *@
-                    <a asp-action="Create" class="btn-add-customer">
-                        <i class="fas fa-plus"></i> Add Customer
                     </a>
                 </div>
             </div>
@@ -1087,13 +1100,13 @@
                 <div class="toolbar-right">
                     <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
                     <span class="scroll-hint">
-                        <i class="fas fa-arrows-left-right"></i> scroll table for more
+                        <i class="fas fa-arrows-left-right"></i> click &amp; drag or scroll
                     </span>
                 </div>
             </div>
 
             <!-- table -->
-            <div class="table-responsive-cust">
+            <div class="table-responsive-cust" id="customerTableScroll">
                 <table class="table table-green-white">
                     <thead>
                         <tr>
@@ -1138,11 +1151,8 @@
                                 <td><span class="info-pill">@Html.DisplayFor(modelItem => item.age)</span></td>
                                 <td style="text-align: right;">
                                     <div class="actions-wrap" style="justify-content: flex-end;">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-action btn-details">
+                                        <a asp-action="Customerdetails" asp-route-id="@item.Id" class="btn btn-action btn-details">
                                             <i class="fas fa-eye"></i> Details
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-action btn-edit">
-                                            <i class="fas fa-pen"></i> Edit
                                         </a>
                                         <button type="button" class="btn btn-action btn-delete"
                                                 onclick="openDeleteModal('@item.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(item.UserName))')">
@@ -1279,6 +1289,14 @@
         });
     }
 
+    // Spin the refresh icon briefly, then reload the page
+    function refreshCustomers(btn) {
+        btn.classList.add('spinning');
+        setTimeout(() => {
+            window.location.reload();
+        }, 400);
+    }
+
     function openDeleteModal(userId, userName) {
         deleteUserId = userId;
         document.getElementById('modalUserName').textContent = userName;
@@ -1345,4 +1363,54 @@
             setTimeout(() => { toast.style.display = 'none'; }, 500);
         }, 4000);
     }
+
+    // ===== Click & drag horizontal scrolling for the table (scrollbar stays visible) =====
+    (function () {
+        const scroller = document.getElementById('customerTableScroll');
+        if (!scroller) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeftStart;
+
+        scroller.addEventListener('mousedown', (e) => {
+            // avoid hijacking drags that start on interactive elements (buttons/links/inputs)
+            if (e.target.closest('button, a, input')) return;
+            isDown = true;
+            scroller.classList.add('dragging');
+            startX = e.pageX - scroller.offsetLeft;
+            scrollLeftStart = scroller.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mouseleave', () => {
+            isDown = false;
+            scroller.classList.remove('dragging');
+        });
+
+        scroller.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scroller.offsetLeft;
+            const walk = (x - startX);
+            scroller.scrollLeft = scrollLeftStart - walk;
+        });
+
+        // touch support
+        let touchStartX = 0;
+        let touchScrollStart = 0;
+        scroller.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX;
+            touchScrollStart = scroller.scrollLeft;
+        }, { passive: true });
+
+        scroller.addEventListener('touchmove', (e) => {
+            const dx = e.touches[0].pageX - touchStartX;
+            scroller.scrollLeft = touchScrollStart - dx;
+        }, { passive: true });
+    })();
 </script>

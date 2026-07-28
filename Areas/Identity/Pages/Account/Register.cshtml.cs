@@ -148,10 +148,27 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             return new JsonResult(new { valid = true, available = existingUser == null });
         }
 
+        /// <summary>
+        ///     AJAX handler used by the registration form to check, in real time, whether an
+        ///     email is already registered. Invoked as GET .../Register?handler=CheckEmail&amp;email=...
+        /// </summary>
+        public async Task<JsonResult> OnGetCheckEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
+            {
+                return new JsonResult(new { valid = false, available = false });
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            return new JsonResult(new { valid = true, available = existingUser == null });
+        }
+
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
@@ -166,7 +183,16 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+                    var body = System.IO.File.ReadAllText("Views/Emails/Welcomeemail.html");
 
+                    body = body.Replace("{{Username}}", Input.Username);
+
+                    body = body.Replace("{{WebsiteUrl}}", "https://localhost:7000");
+
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "🎉 Welcome to ArtGallery!",
+                        body);
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -175,24 +201,67 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
+                    var verifyEmailBody = System.IO.File.ReadAllText("Views/Emails/Verifyemail.html");
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    verifyEmailBody = verifyEmailBody.Replace("{{Username}}", Input.Username);
+
+                    verifyEmailBody = verifyEmailBody.Replace(
+                        "{{ConfirmationLink}}",
+                        HtmlEncoder.Default.Encode(callbackUrl));
+
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "✅ Verify Your ArtGallery Account",
+                        verifyEmailBody);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
+                        if (isAjax)
+                        {
+                            var redirectUrl = Url.Page("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                            return new JsonResult(new { success = true, redirectUrl });
+                        }
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+
+                        if (isAjax)
+                        {
+                            return new JsonResult(new { success = true, redirectUrl = returnUrl });
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }
+
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    if (error.Code == "DuplicateUserName")
+                    {
+                        ModelState.AddModelError("Input.Username", "This username is already taken.");
+                    }
+                    else if (error.Code == "DuplicateEmail")
+                    {
+                        ModelState.AddModelError("Input.Email", "An account with this email already exists.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
+            }
+
+            if (isAjax)
+            {
+                var errors = ModelState
+                    .Where(kvp => kvp.Value.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return new JsonResult(new { success = false, errors }) { StatusCode = 400 };
             }
 
             // If we got this far, something failed, redisplay form

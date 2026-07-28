@@ -2,7 +2,745 @@
 @model ConfirmEmailModel
 @{
     ViewData["Title"] = "Confirm email";
+    bool isSuccess = Model.StatusMessage != null && Model.StatusMessage.Contains("Error") == false;
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+@if (isSuccess)
+{
+    <meta http-equiv="refresh" content="4;url=/" />
+}
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* ---- Ambient blobs (mouse-reactive) ---- */
+    .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(50px);
+        opacity: 0.25;
+        z-index: -1;
+        transition: transform 1.2s ease-out;
+    }
+
+    .blob1 {
+        width: 260px;
+        height: 260px;
+        top: 5%;
+        left: 8%;
+    }
+
+    .blob2 {
+        width: 200px;
+        height: 200px;
+        bottom: 10%;
+        right: 10%;
+    }
+
+    .blob3 {
+        width: 150px;
+        height: 150px;
+        top: 55%;
+        left: 3%;
+    }
+
+    .theme-success .blob1, .theme-success .blob3 {
+        background: #88d200;
+    }
+
+    .theme-success .blob2 {
+        background: #d4f09b;
+    }
+
+    .theme-error .blob1, .theme-error .blob3 {
+        background: #e74c3c;
+    }
+
+    .theme-error .blob2 {
+        background: #f7cac2;
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .blob {
+            animation: drift 14s ease-in-out infinite;
+        }
+
+        .blob1 {
+            animation-duration: 16s;
+        }
+
+        .blob2 {
+            animation-duration: 12s;
+        }
+
+        .blob3 {
+            animation-duration: 18s;
+        }
+    }
+
+    @@keyframes drift {
+        0%, 100% {
+            transform: translate(0,0) scale(1);
+        }
+
+        50% {
+            transform: translate(40px,-30px) scale(1.15);
+        }
+    }
+
+    /* ---- Card ---- */
+    .confirm-container {
+        max-width: 480px;
+        margin: 60px auto;
+        padding: 44px 36px;
+        background: #ffffff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+        border-radius: 20px;
+        text-align: center;
+        opacity: 0;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .confirm-container {
+            transform: translateY(30px) scale(0.97);
+            animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .theme-error .confirm-container {
+            animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards, shake 0.4s ease 0.9s;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .confirm-container {
+            opacity: 1;
+        }
+    }
+
+    .theme-success .confirm-container {
+        box-shadow: 0 25px 60px rgba(111, 168, 0, 0.18);
+    }
+
+    .theme-error .confirm-container {
+        box-shadow: 0 25px 60px rgba(231, 76, 60, 0.15);
+    }
+
+    /* Rotating gradient border, success only */
+    .theme-success .confirm-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 2px;
+        background: conic-gradient(from 0deg, #88d200, #d4f09b, #6fa800, #88d200);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: rotateBorder 4s linear infinite;
+        pointer-events: none;
+    }
+
+    .theme-error .confirm-container {
+        border: 1px solid #f5c6c0;
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .theme-success .confirm-container::before {
+            animation: none;
+        }
+    }
+
+    @@keyframes rotateBorder {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes riseIn {
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-6px);
+        }
+
+        75% {
+            transform: translateX(6px);
+        }
+    }
+
+    /* ---- Icon ---- */
+    .icon-glow {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 24px;
+    }
+
+        .icon-glow::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+        }
+
+    .theme-success .icon-glow::before {
+        background: radial-gradient(circle, rgba(136,210,0,0.35) 0%, rgba(136,210,0,0) 70%);
+    }
+
+    .theme-error .icon-glow::before {
+        background: radial-gradient(circle, rgba(231,76,60,0.3) 0%, rgba(231,76,60,0) 70%);
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .icon-glow::before {
+            animation: glowPulse 2.4s ease-in-out infinite;
+        }
+    }
+
+    @@keyframes glowPulse {
+        0%, 100% {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    }
+
+    .checkmark, .crossmark {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: block;
+        z-index: 1;
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .checkmark, .crossmark {
+            animation: iconBounce 0.4s ease 0.95s both;
+        }
+    }
+
+    @@keyframes iconBounce {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.15);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .checkmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 3;
+        stroke: #88d200;
+        fill: #f0fae6;
+    }
+
+    .checkmark__check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        stroke: #6fa800;
+    }
+
+    .crossmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 3;
+        stroke: #e74c3c;
+        fill: #fdf1ef;
+    }
+
+    .crossmark__line {
+        stroke-width: 3;
+        stroke: #e74c3c;
+        stroke-linecap: round;
+        stroke-dasharray: 30;
+        stroke-dashoffset: 30;
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .checkmark__circle, .crossmark__circle {
+            animation: strokeCircle 0.7s cubic-bezier(0.65,0,0.45,1) forwards;
+        }
+
+        .checkmark__check {
+            animation: strokeCheck 0.35s cubic-bezier(0.65,0,0.45,1) 0.65s forwards;
+        }
+
+        .crossmark__line--1 {
+            animation: strokeLine 0.25s cubic-bezier(0.65,0,0.45,1) 0.65s forwards;
+        }
+
+        .crossmark__line--2 {
+            animation: strokeLine 0.25s cubic-bezier(0.65,0,0.45,1) 0.85s forwards;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .checkmark__circle, .crossmark__circle {
+            stroke-dashoffset: 0;
+        }
+
+        .checkmark__check, .crossmark__line {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @@keyframes strokeCircle {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @@keyframes strokeCheck {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @@keyframes strokeLine {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    /* ---- Text ---- */
+    .confirm-container h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        margin: 4px 0 12px;
+    }
+
+    .theme-success h1 {
+        color: #6fa800;
+    }
+
+    .theme-error h1 {
+        color: #c0392b;
+    }
+
+    .confirm-subtext {
+        color: #5a5a5a;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .confirm-container h1, .confirm-subtext, .confirm-btn-home, .retry-btn,
+        .redirect-note, .progress-track, .account-summary, .social-proof {
+            opacity: 0;
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .confirm-container h1 {
+            animation-delay: 0.9s;
+        }
+
+        .confirm-subtext {
+            animation-delay: 1.05s;
+        }
+
+        .account-summary {
+            animation-delay: 1.15s;
+        }
+
+        .confirm-btn-home, .retry-btn {
+            animation-delay: 1.2s;
+        }
+
+        .social-proof {
+            animation-delay: 1.25s;
+        }
+
+        .redirect-note {
+            animation-delay: 1.35s;
+        }
+
+        .progress-track {
+            animation-delay: 1.4s;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .confirm-container h1, .confirm-subtext, .confirm-btn-home, .retry-btn,
+        .redirect-note, .progress-track, .account-summary, .social-proof {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ---- Account summary card ---- */
+    .account-summary {
+        background: #f0fae6;
+        border: 1px solid #d4f09b;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 22px;
+        text-align: left;
+        font-size: 0.85rem;
+        color: #4a4a4a;
+    }
+
+        .account-summary b {
+            color: #333;
+        }
+
+    /* ---- Social proof (error only) ---- */
+    .social-proof {
+        font-size: 0.8rem;
+        color: #a05a52;
+        background: #fdf1ef;
+        border: 1px solid #f5c6c0;
+        border-radius: 20px;
+        padding: 6px 14px;
+        display: inline-block;
+        margin-bottom: 18px;
+    }
+
+    /* ---- Buttons ---- */
+    .confirm-btn-home, .retry-btn {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 13px 34px;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        letter-spacing: 0.3px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        cursor: pointer;
+    }
+
+    .confirm-btn-home {
+        background: linear-gradient(135deg, #88d200, #6fa800);
+    }
+
+        .confirm-btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(111,168,0,0.35);
+            color: #fff;
+        }
+
+        .confirm-btn-home:active {
+            transform: translateY(0);
+            filter: brightness(0.92);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+    .retry-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        margin-right: 10px;
+    }
+
+        .retry-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(231,76,60,0.3);
+            color: #fff;
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.92);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .confirm-btn-home:focus-visible, .retry-btn:focus-visible {
+            outline: 3px solid #333;
+            outline-offset: 3px;
+        }
+
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.6);
+        transform: scale(0);
+        animation: rippleAnim 0.6s linear;
+        pointer-events: none;
+    }
+
+    @@keyframes rippleAnim {
+        to {
+            transform: scale(3);
+            opacity: 0;
+        }
+    }
+
+    /* ---- Redirect / progress ---- */
+    .redirect-note {
+        font-size: 0.85rem;
+        color: #8a8a8a;
+        margin-top: 22px;
+    }
+
+        .redirect-note span {
+            font-weight: 700;
+        }
+
+    .theme-success .redirect-note span {
+        color: #6fa800;
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 6px;
+        background: #f0fae6;
+        border-radius: 999px;
+        margin-top: 12px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 100%;
+        border-radius: 999px;
+        transform-origin: left;
+    }
+
+    .theme-success .progress-fill {
+        background: linear-gradient(90deg, #88d200, #6fa800);
+    }
+
+    @@media (prefers-reduced-motion: no-preference) {
+        .progress-fill {
+            animation: shrinkBar 3s linear 1.4s forwards;
+        }
+    }
+
+    @@keyframes shrinkBar {
+        from {
+            transform: scaleX(1);
+        }
+
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    canvas#confettiCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 5;
+    }
+</style>
+
+<div class="@(isSuccess ? "theme-success" : "theme-error")" id="pageRoot">
+    <div class="blob blob1" id="blob1"></div>
+    <div class="blob blob2" id="blob2"></div>
+    <div class="blob blob3" id="blob3"></div>
+
+    <div class="confirm-container">
+        <div class="icon-glow">
+            @if (isSuccess)
+            {
+                <svg class="checkmark" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="23" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+            }
+            else
+            {
+                <svg class="crossmark" viewBox="0 0 52 52">
+                    <circle class="crossmark__circle" cx="26" cy="26" r="23" />
+                    <line class="crossmark__line crossmark__line--1" x1="17" y1="17" x2="35" y2="35" />
+                    <line class="crossmark__line crossmark__line--2" x1="35" y1="17" x2="17" y2="35" />
+                </svg>
+            }
+        </div>
+
+        <h1 aria-live="polite">@(isSuccess ? "Email Confirmed!" : "Confirmation Failed")</h1>
+        <p class="confirm-subtext" aria-live="polite">@Model.StatusMessage</p>
+
+        @if (isSuccess)
+        {
+            <div class="account-summary">
+                <b>Account:</b> Verified &amp; active<br />
+                <b>Status:</b> Ready to sign in
+            </div>
+            <a class="confirm-btn-home" href="/">Browse the Gallery</a>
+            <p class="redirect-note">Redirecting in <span id="countdown">3</span> seconds&hellip;</p>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+        }
+        else
+        {
+            <div class="social-proof">This happens sometimes — most users resolve it in under a minute</div>
+            <br />
+            <a class="retry-btn" href="/Identity/Account/ResendEmailConfirmation">Resend Email</a>
+            <a class="confirm-btn-home" href="/">Return to Home</a>
+        }
+    </div>
+</div>
+
+@if (isSuccess)
+{
+    <canvas id="confettiCanvas"></canvas>
+}
+
+<script>
+    var isSuccess = @Html.Raw(isSuccess.ToString().ToLower());
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Countdown + redirect (JS-driven; meta refresh above is the no-JS fallback)
+    if (isSuccess) {
+        let seconds = 3;
+        const countdownEl = document.getElementById('countdown');
+        const timer = setInterval(function () {
+            seconds--;
+            if (countdownEl) countdownEl.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                window.location.href = "/";
+            }
+        }, 1000);
+    }
+
+    // Ripple
+    document.querySelectorAll('.confirm-btn-home, .retry-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            var rect = btn.getBoundingClientRect();
+            var ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            var size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(function () { ripple.remove(); }, 600);
+        });
+    });
+
+    // Mouse-reactive blobs
+    if (!reduceMotion) {
+        document.addEventListener('mousemove', function (e) {
+            var xRatio = (e.clientX / window.innerWidth - 0.5);
+            var yRatio = (e.clientY / window.innerHeight - 0.5);
+            var b1 = document.getElementById('blob1');
+            var b2 = document.getElementById('blob2');
+            var b3 = document.getElementById('blob3');
+            if (b1) b1.style.transform = 'translate(' + (xRatio * 40) + 'px,' + (yRatio * 40) + 'px)';
+            if (b2) b2.style.transform = 'translate(' + (xRatio * -30) + 'px,' + (yRatio * -30) + 'px)';
+            if (b3) b3.style.transform = 'translate(' + (xRatio * 25) + 'px,' + (yRatio * 25) + 'px)';
+        });
+    }
+
+    // Soft success chime (skipped on error, skipped if reduced motion preference implies less sensory noise)
+    if (isSuccess && !reduceMotion) {
+        try {
+            var ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
+            var o = ctxAudio.createOscillator();
+            var g = ctxAudio.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(660, ctxAudio.currentTime);
+            o.frequency.exponentialRampToValueAtTime(880, ctxAudio.currentTime + 0.15);
+            g.gain.setValueAtTime(0.0001, ctxAudio.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.05, ctxAudio.currentTime + 0.05);
+            g.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + 0.5);
+            o.connect(g);
+            g.connect(ctxAudio.destination);
+            o.start(ctxAudio.currentTime + 0.9);
+            o.stop(ctxAudio.currentTime + 1.4);
+        } catch (e) { /* audio not available, ignore silently */ }
+    }
+
+    // Confetti
+    if (isSuccess) {
+        setTimeout(function () {
+            var canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var colors = ['#88d200', '#6fa800', '#d4f09b', '#f0fae6', '#5c8f00'];
+            var pieces = [];
+            var originX = canvas.width / 2;
+            var originY = canvas.height / 2 - 60;
+            var count = reduceMotion ? 0 : 130;
+
+            for (var i = 0; i < count; i++) {
+                pieces.push({
+                    x: originX, y: originY,
+                    vx: (Math.random() - 0.5) * 13,
+                    vy: Math.random() * -11 - 4,
+                    size: Math.random() * 6 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    spin: (Math.random() - 0.5) * 10
+                });
+            }
+
+            var gravity = 0.35;
+            var frame = 0;
+            function animate() {
+                frame++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(function (p) {
+                    p.vy += gravity;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rotation += p.spin;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+                if (frame < 150) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            animate();
+        }, 900);
+    }
+</script>

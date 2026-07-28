@@ -19,7 +19,7 @@
         --text-dark: #374151;
         --text-muted: #9ca3af;
         /* Tune this one value to match your navbar height / desired breathing room */
-        --page-top-offset: 190px;
+        --page-top-offset: 50px;
     }
 
     * {
@@ -1336,7 +1336,10 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <!-- Quantity: only applies to Fixed Price (Buy Now) listings.
+                             Hidden + non-required automatically when Auction is selected
+                             via toggleSaleType() below. -->
+                        <div class="form-group" id="quantityGroup">
                             <label asp-for="quantity" class="control-label"></label>
                             <div class="input-wrap">
                                 <input asp-for="quantity" class="form-control" data-group="pricing" data-label="Quantity" type="number" min="1" step="1" required />
@@ -1597,6 +1600,8 @@
         const auctionSection = document.getElementById("auctionSection");
         const priceInput = priceSection.querySelector("input[name='price']");
         const bidPriceInput = auctionSection.querySelector("input[name='BidPrice']");
+        const quantityGroup = document.getElementById("quantityGroup");
+        const quantityInput = quantityGroup.querySelector("input[name='quantity']");
 
         function setSaleType(value) {
             saleTypeSelect.value = value;
@@ -1624,6 +1629,13 @@
                 bidStartInput.setAttribute("required", "required");
                 bidEndInput.setAttribute("required", "required");
                 bidPriceInput.setAttribute("required", "required");
+
+                // Quantity doesn't apply to an auction listing (single item, no
+                // "how many available" concept) — hide it and drop it from validation.
+                quantityGroup.style.display = "none";
+                quantityInput.removeAttribute("required");
+                quantityInput.value = "";
+                clearFieldValidation(quantityInput);
             } else {
                 priceSection.style.display = "block";
                 auctionSection.style.display = "none";
@@ -1636,6 +1648,10 @@
                 bidPriceInput.value = "";
                 [bidStartInput, bidEndInput, bidPriceInput].forEach(clearFieldValidation);
                 updateCountdown();
+
+                // Buy Now (Fixed Price) — quantity applies again.
+                quantityGroup.style.display = "block";
+                quantityInput.setAttribute("required", "required");
             }
         }
         toggleSaleType();
@@ -2133,3 +2149,4 @@
         });
     </script>
 }
+

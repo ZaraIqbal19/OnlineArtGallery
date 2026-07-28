@@ -1,8 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using System;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -27,22 +23,9 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             _sender = sender;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string Email { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+        public string MaskedEmail { get; set; }
         public bool DisplayConfirmAccountLink { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string EmailConfirmationUrl { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
@@ -51,6 +34,7 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             {
                 return RedirectToPage("/Index");
             }
+
             returnUrl = returnUrl ?? Url.Content("~/");
 
             var user = await _userManager.FindByEmailAsync(email);
@@ -60,8 +44,10 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             }
 
             Email = email;
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = true;
+            MaskedEmail = MaskEmail(email);
+
+            // Once you add a real email sender, keep this false
+            DisplayConfirmAccountLink = false;
             if (DisplayConfirmAccountLink)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
@@ -75,6 +61,25 @@ namespace Art_Gallery.Areas.Identity.Pages.Account
             }
 
             return Page();
+        }
+
+        // Polling handler: GET ?handler=EmailStatus&email=...
+        public async Task<IActionResult> OnGetEmailStatusAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            bool confirmed = user != null && await _userManager.IsEmailConfirmedAsync(user);
+            return new JsonResult(new { confirmed });
+        }
+
+        private string MaskEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email) || !email.Contains("@")) return email;
+            var parts = email.Split('@');
+            var name = parts[0];
+            var masked = name.Length <= 2
+                ? name.Substring(0, 1) + "***"
+                : name.Substring(0, 2) + new string('*', Math.Max(name.Length - 2, 3));
+            return masked + "@" + parts[1];
         }
     }
 }

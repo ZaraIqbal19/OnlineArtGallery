@@ -8,7 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Views\Emails\Accountdeletedemail.html" />
+    <Content Include="Views\Emails\Verifyemail.html" />
+    <Content Include="Views\Emails\Welcomeemail.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.12" />

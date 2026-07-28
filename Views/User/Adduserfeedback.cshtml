@@ -1,1278 +1,1245 @@
-@model IEnumerable<Art_Gallery.Models.Feedback>
+@model Art_Gallery.Models.Feedback
 @{
-    ViewData["Title"] = "All Users Feedback";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Send Feedback";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
 <style>
-    /* ===== everything scoped under .feedback-page so it can't leak into the admin shell ===== */
     .feedback-page {
-        font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
-        padding: 1.5rem 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f0f4f8;
+        background-image: radial-gradient(ellipse at 0% 0%, rgba(136, 210, 0, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(106, 168, 0, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(212, 240, 155, 0.05) 0%, transparent 70%);
+        padding: 3rem 1.5rem 4rem;
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        color: #0f172a;
     }
 
-        .feedback-page *,
-        .feedback-page *::before,
-        .feedback-page *::after {
-            box-sizing: border-box;
+    .fb-bg-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(110px);
+        pointer-events: none;
+        z-index: 0;
+        animation: fbFloatOrb 30s ease-in-out infinite alternate;
+    }
+
+    .fb-bg-orb-1 {
+        width: 520px;
+        height: 520px;
+        background: rgba(136, 210, 0, 0.08);
+        top: -180px;
+        right: -180px;
+    }
+
+    .fb-bg-orb-2 {
+        width: 440px;
+        height: 440px;
+        background: rgba(106, 168, 0, 0.06);
+        bottom: -160px;
+        left: -160px;
+        animation-delay: -12s;
+    }
+
+    @@keyframes fbFloatOrb {
+        0% {
+            transform: translate(0,0) scale(1);
         }
 
-        .feedback-page .container-cust {
-            max-width: 1220px;
-            margin: 0 auto;
+        50% {
+            transform: translate(40px,-40px) scale(1.15);
         }
 
-        .feedback-page .admin-card {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 2rem;
-            padding: 2rem 1.8rem 1.8rem 1.8rem;
-            box-shadow: 0 20px 45px -16px rgba(111, 168, 0, 0.22), 0 4px 18px rgba(136, 210, 0, 0.06);
-            border: 1px solid rgba(136, 210, 0, 0.12);
-            position: relative;
-            overflow: hidden;
+        100% {
+            transform: translate(-30px,30px) scale(0.9);
+        }
+    }
+
+    .fb-container {
+        position: relative;
+        z-index: 1;
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    /* ?? Hero ?? */
+    .fb-hero {
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto 2.6rem;
+        animation: fbSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    @@keyframes fbSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fb-hero-icon {
+        width: 68px;
+        height: 68px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+        color: white;
+        box-shadow: 0 16px 40px -10px rgba(136, 210, 0, 0.40), inset 0 2px 0 rgba(255,255,255,0.25);
+        position: relative;
+    }
+
+        .fb-hero-icon::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 27px;
+            background: linear-gradient(135deg, rgba(136, 210, 0, 0.15), rgba(106, 168, 0, 0.05));
+            z-index: -1;
+            animation: fbPulseRing 4s ease-in-out infinite;
         }
 
-            .feedback-page .admin-card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 6px;
-                background: linear-gradient(90deg, #d4f09b, #88d200, #6fa800);
-            }
-
-        /* header */
-        .feedback-page .header-section {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 1.8rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid rgba(136, 210, 0, 0.18);
+    @@keyframes fbPulseRing {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
         }
 
-        .feedback-page .brand-head {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
+        50% {
+            transform: scale(1.3);
+            opacity: 0.08;
+        }
+    }
+
+    .fb-hero h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 0.5rem;
+    }
+
+        .fb-hero h1 .highlight {
+            background: linear-gradient(145deg, #88d200, #6fa800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .feedback-page .brand-icon {
-            background: #88d200;
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 8px 18px rgba(136, 210, 0, 0.35);
-            transition: all 0.25s;
-            flex-shrink: 0;
+    .fb-hero p {
+        color: #64748b;
+        font-size: 0.98rem;
+        line-height: 1.6;
+    }
+
+    /* ?? Why it matters strip ?? */
+    .fb-why {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2.2rem;
+        animation: fbSlideUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .fb-why-item {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 1.1rem 1rem;
+        text-align: center;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+        .fb-why-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -20px rgba(106, 168, 0, 0.25);
+            border-color: rgba(136, 210, 0, 0.2);
         }
 
-            .feedback-page .brand-icon:hover {
-                transform: rotate(-6deg) scale(1.04);
-                background: #6fa800;
-            }
-
-        .feedback-page .heading-green {
-            font-weight: 700;
-            font-size: 1.85rem;
-            letter-spacing: -0.5px;
-            color: #1a1a1a;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-            .feedback-page .heading-green span {
-                background: #88d200;
-                color: white;
-                font-size: 0.85rem;
-                font-weight: 600;
-                padding: 0.2rem 1rem;
-                border-radius: 60px;
-                letter-spacing: 0.3px;
-            }
-
-        .feedback-page .status-badge {
-            background: white;
-            border: 1.5px solid #88d200;
-            color: #6fa800;
-            border-radius: 60px;
-            padding: 0.4rem 1.2rem;
-            font-weight: 600;
-            font-size: 0.78rem;
-            letter-spacing: 0.4px;
-            white-space: nowrap;
-        }
-
-            .feedback-page .status-badge i {
-                color: #88d200;
-                margin-right: 6px;
-            }
-
-        /* success alert from TempData */
-        .feedback-page .alert-success-cust {
-            background: #f0fae6;
-            border: 1.5px solid #88d200;
-            color: #4c7800;
-            border-radius: 16px;
-            padding: 14px 22px;
-            font-weight: 600;
-            margin-bottom: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-            .feedback-page .alert-success-cust i {
-                color: #88d200;
-                font-size: 1.1rem;
-            }
-
-        .feedback-page .alert-info-cust {
-            background: #f0fae6;
-            border: 1.5px dashed #d4f09b;
-            color: #5c7a2e;
-            border-radius: 16px;
-            padding: 30px 22px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-            .feedback-page .alert-info-cust i {
-                display: block;
-                font-size: 2rem;
-                color: #d4f09b;
-                margin-bottom: 10px;
-            }
-
-        /* stat cards */
-        .feedback-page .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-bottom: 1.4rem;
-        }
-
-        .feedback-page .stat-card {
-            background: #f0fae6;
-            border: 1px solid #d4f09b;
-            border-radius: 16px;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: all 0.25s;
-        }
-
-            .feedback-page .stat-card:hover {
-                background: #d4f09b;
-                transform: translateY(-3px);
-                box-shadow: 0 10px 22px rgba(136, 210, 0, 0.22);
-            }
-
-        .feedback-page .stat-icon {
+        .fb-why-item i {
             width: 40px;
             height: 40px;
-            border-radius: 12px;
-            background: #88d200;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 0.6rem;
+            border-radius: 14px;
+            background: rgba(136, 210, 0, 0.12);
+            color: #6fa800;
             font-size: 1.05rem;
-            flex-shrink: 0;
-            box-shadow: 0 6px 14px rgba(136, 210, 0, 0.3);
         }
 
-        .feedback-page .stat-value {
+        .fb-why-item h4 {
+            font-size: 0.85rem;
             font-weight: 700;
-            font-size: 1.25rem;
-            color: #1a1a1a;
-            line-height: 1.1;
+            margin-bottom: 0.2rem;
         }
 
-        .feedback-page .stat-label {
-            font-size: 0.76rem;
-            color: #5c7a2e;
-            font-weight: 600;
-            margin-top: 2px;
+        .fb-why-item p {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin: 0;
         }
 
-        /* toolbar / search */
-        .feedback-page .toolbar-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 1.1rem;
+    /* ?? Main layout: form + side panel ?? */
+    .fb-layout {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 1.6rem;
+        align-items: start;
+        animation: fbSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .fb-card {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        border-radius: 32px;
+        padding: 2.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.06), 0 30px 60px -20px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .fb-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200, #6fa800);
+            background-size: 400% 100%;
+            animation: fbGradientMove 6s linear infinite;
         }
 
-        .feedback-page .search-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f0fae6;
-            border: 1.5px solid #d4f09b;
-            border-radius: 60px;
-            padding: 9px 20px;
-            flex: 1;
-            max-width: 340px;
-            transition: all 0.2s;
+    @@keyframes fbGradientMove {
+        0% {
+            background-position: 0% 50%;
         }
 
-            .feedback-page .search-box:focus-within {
-                border-color: #88d200;
-                background: white;
-                box-shadow: 0 6px 16px rgba(136, 210, 0, 0.18);
-            }
+        100% {
+            background-position: 400% 50%;
+        }
+    }
 
-            .feedback-page .search-box i {
-                color: #6fa800;
-            }
+    .fb-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
 
-            .feedback-page .search-box input {
-                border: none;
-                outline: none;
-                background: transparent;
-                font-size: 0.88rem;
-                width: 100%;
-                color: #1a1a1a;
-            }
-
-        .feedback-page .toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
+        .fb-section-title i {
+            color: #88d200;
+            font-size: 0.85rem;
         }
 
-        .feedback-page .result-count {
-            font-size: 0.8rem;
-            color: #5c7a2e;
-            font-weight: 600;
-            white-space: nowrap;
+    /* ?? Rating ?? */
+    .fb-rating-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .fb-star {
+        font-size: 1.7rem;
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+        .fb-star:hover, .fb-star.active {
+            color: #88d200;
+            transform: scale(1.15);
         }
 
-        /* table */
-        .feedback-page .table-responsive-cust {
-            border-radius: 1.6rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 6px;
+    .fb-rating-label {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        margin-top: 0.4rem;
+        min-height: 1.1em;
+    }
+
+    /* ?? Category chips ?? */
+    .fb-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .fb-chip {
+        padding: 0.5rem 1rem;
+        border-radius: 40px;
+        border: 2px solid #e9edf4;
+        background: rgba(255,255,255,0.5);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+        .fb-chip i {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            transition: color 0.3s ease;
         }
 
-        .feedback-page .table-green-white {
-            border-collapse: separate;
-            border-spacing: 0 10px;
-            width: 100%;
-            min-width: 900px;
-            table-layout: fixed;
-            margin-bottom: 0;
+        .fb-chip:hover {
+            border-color: #88d200;
+            transform: translateY(-2px);
         }
 
-            /* ----- column widths so header + body line up and the actions
-                         column always has room for all 3 buttons on one row ----- */
-            .feedback-page .table-green-white col.col-user {
-                width: 18%;
-            }
+        .fb-chip.active {
+            background: linear-gradient(145deg, #88d200, #6fa800);
+            border-color: #6fa800;
+            color: white;
+            box-shadow: 0 10px 24px -8px rgba(136, 210, 0, 0.40);
+        }
 
-            .feedback-page .table-green-white col.col-email {
-                width: 20%;
-            }
-
-            .feedback-page .table-green-white col.col-message {
-                width: 34%;
-            }
-
-            .feedback-page .table-green-white col.col-actions {
-                width: 28%;
-            }
-
-            .feedback-page .table-green-white thead th {
-                background: #88d200;
+            .fb-chip.active i {
                 color: white;
-                font-weight: 600;
-                font-size: 0.76rem;
-                text-transform: uppercase;
-                letter-spacing: 0.6px;
-                padding: 15px 18px;
-                border: none;
-                text-align: left;
-                vertical-align: middle;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
-                .feedback-page .table-green-white thead th .th-inner {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    width: 100%;
-                }
+    /* ?? Textarea ?? */
+    .fb-form-group {
+        margin-bottom: 1.3rem;
+        position: relative;
+    }
 
-                .feedback-page .table-green-white thead th.text-end {
-                    text-align: right;
-                }
+    .fb-input-wrapper {
+        position: relative;
+        transition: transform 0.3s ease;
+    }
 
-                    .feedback-page .table-green-white thead th.text-end .th-inner {
-                        justify-content: flex-end;
-                    }
-
-                .feedback-page .table-green-white thead th:first-child {
-                    border-radius: 20px 0 0 20px;
-                    padding-left: 26px;
-                }
-
-                .feedback-page .table-green-white thead th:last-child {
-                    border-radius: 0 20px 20px 0;
-                    padding-right: 26px;
-                }
-
-                .feedback-page .table-green-white thead th.sortable {
-                    cursor: pointer;
-                    user-select: none;
-                }
-
-                    .feedback-page .table-green-white thead th.sortable .sort-icon {
-                        margin-left: 6px;
-                        font-size: 0.63rem;
-                        opacity: 0.6;
-                        transition: opacity 0.2s, transform 0.2s;
-                        flex-shrink: 0;
-                    }
-
-                    .feedback-page .table-green-white thead th.sortable:hover .sort-icon {
-                        opacity: 1;
-                    }
-
-                .feedback-page .table-green-white thead th.sort-asc .sort-icon,
-                .feedback-page .table-green-white thead th.sort-desc .sort-icon {
-                    opacity: 1;
-                }
-
-                .feedback-page .table-green-white thead th.sort-desc .sort-icon {
-                    transform: rotate(180deg);
-                }
-
-        .feedback-page .empty-state-row td {
-            text-align: center;
-            padding: 40px 20px !important;
-            color: #8a9a6e;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 20px !important;
+        .fb-input-wrapper:focus-within {
+            transform: scale(1.005);
         }
 
-        .feedback-page .empty-state-row i {
-            display: block;
-            font-size: 2rem;
-            color: #d4f09b;
-            margin-bottom: 10px;
+    .fb-textarea {
+        width: 100%;
+        padding: 0.9rem 1.1rem;
+        border-radius: 18px;
+        border: 2px solid #e9edf4;
+        background: rgba(255, 255, 255, 0.6);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 450;
+        color: #0f172a;
+        resize: vertical;
+        min-height: 150px;
+        transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(4px);
+    }
+
+        .fb-textarea::placeholder {
+            color: #94a3b8;
+            opacity: 0.6;
         }
 
-        /* ----- row: base state + relative positioning for the hover accent bar ----- */
-        .feedback-page .table-green-white tbody tr {
+        .fb-textarea:focus {
+            border-color: #88d200;
             background: white;
-            border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(111, 168, 0, 0.05);
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-            border: 1px solid rgba(136, 210, 0, 0.06);
-            opacity: 0;
-            position: relative;
-            animation: fadeSlideFb 0.45s forwards;
-            animation-delay: calc(0.05s * var(--i, 1));
+            box-shadow: 0 0 0 8px rgba(136, 210, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.02);
+            outline: none;
         }
 
-    @@keyframes fadeSlideFb {
+        .fb-textarea.is-valid {
+            border-color: #88d200;
+            background: rgba(136, 210, 0, 0.04);
+            box-shadow: 0 0 0 6px rgba(136, 210, 0, 0.06);
+        }
+
+        .fb-textarea.is-invalid {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.03);
+            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.06);
+        }
+
+    .fb-status-icon {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        font-size: 1rem;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+    }
+
+        .fb-status-icon.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .fb-status-icon.valid {
+            color: #6fa800;
+        }
+
+        .fb-status-icon.invalid {
+            color: #ef4444;
+        }
+
+    .fb-char-count {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        text-align: right;
+        margin-top: 0.35rem;
+    }
+
+    .fb-validation-message {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #ef4444;
+        margin-top: 0.4rem;
+        display: none;
+        align-items: center;
+        gap: 0.35rem;
+        background: #fef2f2;
+        padding: 0.3rem 0.9rem;
+        border-radius: 40px;
+        border-left: 3px solid #ef4444;
+    }
+
+        .fb-validation-message.show {
+            display: flex;
+            animation: fbSlideDown 0.35s ease;
+        }
+
+    @@keyframes fbSlideDown {
         0% {
             opacity: 0;
-            transform: translateY(16px) scale(0.98);
+            transform: translateY(-8px);
         }
 
         100% {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
         }
     }
 
-    /* ----- enhanced row hover: lift + glow + left accent bar that grows in ----- */
-    .feedback-page .table-green-white tbody tr td:first-child {
-        position: relative;
+    .fb-validation-summary-errors {
+        background: #fef2f2;
+        border-radius: 16px;
+        padding: 0.7rem 1.1rem;
+        border-left: 4px solid #ef4444;
+        margin-bottom: 1.1rem;
+        font-size: 0.8rem;
+        color: #991b1b;
+        display: none;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 
-        .feedback-page .table-green-white tbody tr td:first-child::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 8px;
-            bottom: 8px;
-            width: 4px;
-            border-radius: 4px;
-            background: #88d200;
-            transform: scaleY(0);
-            transform-origin: center;
-            transition: transform 0.25s ease;
+        .fb-validation-summary-errors.show {
+            display: flex;
+            animation: fbSlideDown 0.4s ease;
         }
 
-    .feedback-page .table-green-white tbody tr:hover {
-        background: #fbffef;
-        border-color: #b8dd7a;
-        transform: scale(1.008) translateY(-3px);
-        box-shadow: 0 16px 32px rgba(111, 168, 0, 0.16);
-    }
-
-        .feedback-page .table-green-white tbody tr:hover td:first-child::before {
-            transform: scaleY(1);
-        }
-
-    .feedback-page .table-green-white tbody td {
-        padding: 14px 18px;
-        vertical-align: middle;
-        border: none;
-        background: transparent;
-        font-size: 0.92rem;
-        overflow: hidden;
-    }
-
-        .feedback-page .table-green-white tbody td:first-child {
-            padding-left: 26px;
-            border-radius: 18px 0 0 18px;
-        }
-
-        .feedback-page .table-green-white tbody td:last-child {
-            padding-right: 26px;
-            border-radius: 0 18px 18px 0;
-        }
-
-    .feedback-page .customer-cell {
+    /* ?? Contact opt-in ?? */
+    .fb-checkbox-row {
         display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
+        align-items: flex-start;
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+        padding: 0.8rem 1rem;
+        background: rgba(240, 250, 230, 0.4);
+        border: 1.5px solid #d4f09b;
+        border-radius: 16px;
     }
 
-    .feedback-page .user-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #88d200, #6fa800);
+        .fb-checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.1rem;
+            border-radius: 6px;
+            border: 2.5px solid #cbd5e1;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+            .fb-checkbox-row input[type="checkbox"]:checked {
+                background: linear-gradient(145deg, #88d200, #6fa800);
+                border-color: #6fa800;
+            }
+
+                .fb-checkbox-row input[type="checkbox"]:checked::after {
+                    content: '?';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-size: 12px;
+                    font-weight: 700;
+                }
+
+        .fb-checkbox-row label {
+            font-size: 0.8rem;
+            color: #475569;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+    /* ?? Buttons ?? */
+    .fb-actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .fb-btn-submit {
+        flex: 1;
+        padding: 0.9rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
         color: white;
+        font-size: 0.92rem;
         font-weight: 700;
-        font-size: 0.82rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
-        box-shadow: 0 4px 10px rgba(136, 210, 0, 0.3);
-        transition: transform 0.2s;
+        gap: 0.6rem;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 12px 32px -10px rgba(136, 210, 0, 0.40);
+        cursor: pointer;
     }
 
-    .feedback-page .table-green-white tbody tr:hover .user-avatar {
-        transform: scale(1.1) rotate(-4deg);
+        .fb-btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 20px 48px -12px rgba(106, 168, 0, 0.45);
+        }
+
+        .fb-btn-submit:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .fb-btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+    .fb-btn-spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2.5px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: fbSpin 0.8s linear infinite;
     }
 
-    .feedback-page .user-name {
-        font-weight: 700;
-        color: #1a1a1a;
-        transition: 0.15s;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    @@keyframes fbSpin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
-    .feedback-page .table-green-white tbody tr:hover .user-name {
-        color: #6fa800;
-    }
-
-    .feedback-page .email-cell {
-        color: #5c7a2e;
+    .fb-btn-back {
+        padding: 0.9rem 1.5rem;
+        border-radius: 50px;
+        border: 2px solid #e9edf4;
+        background: rgba(255,255,255,0.6);
+        color: #475569;
         font-weight: 600;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: block;
+        font-size: 0.92rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.35s ease;
     }
 
-    .feedback-page .message-cell {
-        color: #495057;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        .fb-btn-back:hover {
+            border-color: #88d200;
+            color: #0f172a;
+            background: rgba(136, 210, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+    /* ?? Side panel ?? */
+    .fb-side {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    .fb-side-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 1.4rem;
+    }
+
+        .fb-side-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+            .fb-side-card h4 i {
+                color: #88d200;
+            }
+
+    .fb-timeline-item {
+        display: flex;
+        gap: 0.7rem;
+        padding-bottom: 0.9rem;
+        margin-bottom: 0.9rem;
+        border-bottom: 1px dashed rgba(203, 213, 225, 0.5);
+    }
+
+        .fb-timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+    .fb-timeline-dot {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: rgba(136, 210, 0, 0.12);
+        color: #6fa800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+    }
+
+    .fb-timeline-item h5 {
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin: 0 0 0.15rem;
+    }
+
+    .fb-timeline-item p {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        margin: 0;
         line-height: 1.4;
     }
 
-    /* ===== actions: forced onto a single row, never wraps ===== */
-    .feedback-page .actions-wrap {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        gap: 6px;
-        justify-content: flex-end;
-        white-space: nowrap;
+    .fb-quote-card {
+        background: linear-gradient(150deg, rgba(136, 210, 0, 0.08), rgba(106, 168, 0, 0.03));
+        border: 1px solid rgba(136, 210, 0, 0.15);
     }
 
-    .feedback-page .btn-action {
-        border-radius: 60px;
-        padding: 8px 14px;
-        font-weight: 600;
-        font-size: 0.72rem;
-        letter-spacing: 0.2px;
-        transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-        border: 1px solid transparent;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        line-height: 1;
-        cursor: pointer;
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-
-    .feedback-page .btn-edit-fb {
-        background: #fff6e0;
-        color: #a66a00;
-        border-color: #ffe4a3;
-    }
-
-        .feedback-page .btn-edit-fb:hover {
-            background: #ffc107;
-            color: #1a1a1a;
-            border-color: #ffc107;
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 20px rgba(255, 193, 7, 0.3);
+        .fb-quote-card i.fa-quote-left {
+            font-size: 1.3rem;
+            color: rgba(136, 210, 0, 0.35);
+            margin-bottom: 0.5rem;
         }
 
-    .feedback-page .btn-details {
-        background: #88d200;
-        color: white;
-        border-color: #88d200;
-    }
-
-        .feedback-page .btn-details:hover {
-            background: #6fa800;
-            border-color: #6fa800;
-            color: white;
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 20px rgba(136, 210, 0, 0.32);
+        .fb-quote-card p {
+            font-size: 0.82rem;
+            color: #475569;
+            line-height: 1.55;
+            font-style: italic;
+            margin-bottom: 0.6rem;
         }
 
-    .feedback-page .btn-delete {
-        background: transparent;
-        color: #a51b1b;
-        border: 1.5px solid #f0c8c8;
-    }
-
-        .feedback-page .btn-delete:hover {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
+        .fb-quote-card .fb-quote-author {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-    /* footer */
-    .feedback-page .table-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1.6rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(136, 210, 0, 0.12);
-        color: #6c757d;
-        font-size: 0.84rem;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-        .feedback-page .table-footer i {
-            color: #88d200;
-            margin: 0 4px;
-        }
-
-        .feedback-page .table-footer .pill {
-            background: #f0fae6;
-            padding: 0.2rem 1.2rem;
-            border-radius: 60px;
-            color: #2d2d2d;
-            font-weight: 500;
-            transition: 0.15s;
-        }
-
-            .feedback-page .table-footer .pill:hover {
-                background: #88d200;
-                color: white;
+            .fb-quote-card .fb-quote-author i {
+                font-size: 0.7rem;
+                color: #88d200;
             }
 
-    /* ===== DELETE MODAL ===== */
-    .feedback-page .delete-modal-overlay {
+    /* ?? Thank-you Modal (enhanced) ?? */
+    .fb-modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
         backdrop-filter: blur(8px);
-        z-index: 10000;
         display: none;
         align-items: center;
         justify-content: center;
-        animation: fadeInOverlayFb 0.3s ease;
-    }
-
-    @@keyframes fadeInOverlayFb {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    .feedback-page .delete-modal {
-        background: #ffffff;
-        border-radius: 24px;
-        padding: 2.5rem;
-        max-width: 440px;
-        width: 90%;
-        position: relative;
-        animation: modalSlideUpFb 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-        text-align: center;
-    }
-
-    @@keyframes modalSlideUpFb {
-        from {
-            transform: scale(0.8) translateY(40px);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .feedback-page .delete-modal .modal-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2.5rem;
-        color: #dc3545;
-        animation: pulseIconFb 1.5s ease-in-out infinite;
-    }
-
-    @@keyframes pulseIconFb {
-        0%, 100% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.05);
-        }
-    }
-
-    .feedback-page .delete-modal h3 {
-        color: #1a1a2e;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        font-size: 1.5rem;
-    }
-
-    .feedback-page .delete-modal p {
-        color: #6c757d;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-
-    .feedback-page .delete-modal .modal-user-preview {
-        background: #f9fdf2;
-        border: 1px solid rgba(136, 210, 0, 0.18);
-        border-radius: 14px;
-        padding: 12px 16px;
-        margin-bottom: 1.4rem;
-        text-align: left;
-    }
-
-        .feedback-page .delete-modal .modal-user-preview .mu-name {
-            font-weight: 700;
-            color: #1a1a1a;
-            font-size: 0.92rem;
-        }
-
-        .feedback-page .delete-modal .modal-user-preview .mu-msg {
-            color: #6c757d;
-            font-size: 0.82rem;
-            margin-top: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-    .feedback-page .delete-modal .modal-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-    }
-
-    .feedback-page .delete-modal .btn-cancel {
-        background: #f1f3f5;
-        color: #495057;
-        border: none;
-        border-radius: 50px;
-        padding: 0.7rem 2rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        flex: 1;
-    }
-
-        .feedback-page .delete-modal .btn-cancel:hover {
-            background: #e9ecef;
-            transform: scale(1.02);
-        }
-
-    .feedback-page .delete-modal .btn-confirm-delete {
-        background: linear-gradient(135deg, #dc3545, #b02a37);
-        color: #fff;
-        border: none;
-        border-radius: 50px;
-        padding: 0.7rem 2rem;
-        font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
-        cursor: pointer;
-        flex: 1;
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-        text-decoration: none;
-        display: inline-block;
-    }
-
-        .feedback-page .delete-modal .btn-confirm-delete:hover {
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
-            background: linear-gradient(135deg, #c82333, #a71d2a);
-        }
-
-    /* ===== SUCCESS TOAST ===== */
-    .feedback-page .toast-container-custom {
-        position: fixed;
-        top: 30px;
-        right: 30px;
         z-index: 9999;
-        min-width: 320px;
-        max-width: 450px;
-        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.35s ease;
     }
 
-    .feedback-page .toast-success {
+        .fb-modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+    .fb-confetti-piece {
+        position: absolute;
+        top: -10%;
+        width: 8px;
+        height: 14px;
+        opacity: 0;
+        border-radius: 2px;
+    }
+
+    .fb-modal-overlay.show .fb-confetti-piece {
+        animation: fbConfettiFall 2.4s ease-in forwards;
+    }
+
+    @@keyframes fbConfettiFall {
+        0% {
+            opacity: 1;
+            transform: translateY(0) rotate(0deg);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(420px) rotate(540deg);
+        }
+    }
+
+    .fb-modal {
         background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(10px);
-        border-left: 8px solid #88d200;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(136, 210, 0, 0.12);
-        padding: 20px 28px;
-        color: #1a1a2e;
-        font-weight: 500;
+        border-radius: 32px;
+        padding: 2.6rem 2.2rem 2.2rem;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.28);
+        transform: scale(0.7) translateY(30px);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+    }
+
+    .fb-modal-overlay.show .fb-modal {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    .fb-modal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #88d200, #6fa800, #d4f09b, #88d200);
+        background-size: 400% 100%;
+        animation: fbGradientMove 6s linear infinite;
+    }
+
+    .fb-modal-check {
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 1.2rem;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
         display: flex;
         align-items: center;
-        gap: 16px;
-        opacity: 1;
-        pointer-events: none;
-        animation: slideInRightFb 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        justify-content: center;
+        box-shadow: 0 16px 40px -10px rgba(136, 210, 0, 0.45);
+        position: relative;
     }
 
-    @@keyframes slideInRightFb {
-        from {
-            transform: translateX(120%) scale(0.9);
+        .fb-modal-check i {
+            color: white;
+            font-size: 2.2rem;
             opacity: 0;
+            transform: scale(0.3) rotate(-40deg);
         }
 
+    .fb-modal-overlay.show .fb-modal-check i {
+        animation: fbCheckPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+    }
+
+    @@keyframes fbCheckPop {
         to {
-            transform: translateX(0) scale(1);
             opacity: 1;
+            transform: scale(1) rotate(0deg);
         }
     }
 
-    .feedback-page .toast-success i {
-        font-size: 2rem;
-        color: #88d200;
-        background: linear-gradient(135deg, #f0fae6, #d4f09b);
-        padding: 12px;
+    .fb-modal-check::after, .fb-modal-check::before {
+        content: '';
+        position: absolute;
+        inset: -8px;
         border-radius: 50%;
-        box-shadow: 0 2px 10px rgba(136, 210, 0, 0.15);
-        animation: checkBounceFb 0.6s ease;
+        border: 3px solid rgba(136, 210, 0, 0.25);
+        animation: fbRingPulse 1.8s ease-out infinite;
     }
 
-    @@keyframes checkBounceFb {
+    .fb-modal-check::before {
+        animation-delay: 0.6s;
+    }
+
+    @@keyframes fbRingPulse {
         0% {
-            transform: scale(0);
-        }
-
-        50% {
-            transform: scale(1.2);
-        }
-
-        70% {
             transform: scale(0.9);
+            opacity: 0.8;
         }
 
         100% {
-            transform: scale(1);
+            transform: scale(1.45);
+            opacity: 0;
         }
     }
 
-    .feedback-page .toast-success .toast-content {
-        flex: 1;
-    }
-
-    .feedback-page .toast-success .toast-title {
+    .fb-modal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: rgba(136, 210, 0, 0.1);
+        color: #6fa800;
+        font-size: 0.68rem;
         font-weight: 700;
-        color: #1a1a2e;
-        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.25rem 0.8rem;
+        border-radius: 40px;
+        margin-bottom: 0.7rem;
     }
 
-    .feedback-page .toast-success .toast-message {
-        color: #6c757d;
+    .fb-modal h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .fb-modal p.fb-modal-msg {
+        color: #64748b;
         font-size: 0.9rem;
-        margin-top: 2px;
+        line-height: 1.55;
+        margin-bottom: 1rem;
     }
 
-    .feedback-page .toast-success.hide {
-        animation: slideOutRightFb 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    .fb-modal-stars {
+        display: flex;
+        justify-content: center;
+        gap: 0.3rem;
+        margin-bottom: 1.4rem;
     }
 
-    @@keyframes slideOutRightFb {
-        from {
-            transform: translateX(0) scale(1);
-            opacity: 1;
+        .fb-modal-stars i {
+            color: #d4f09b;
+            font-size: 1rem;
         }
 
-        to {
-            transform: translateX(120%) scale(0.9);
-            opacity: 0;
-        }
-    }
-
-    .feedback-page .fade-out {
-        animation: fadeOutFb 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
-    }
-
-    @@keyframes fadeOutFb {
-        0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-
-        100% {
-            opacity: 0;
-            transform: scale(0.8) translateY(-20px);
-        }
-    }
-
-    /* responsive */
-    @@media (max-width: 768px) {
-        .feedback-page .admin-card {
-            padding: 1.2rem;
-        }
-
-        .feedback-page .heading-green {
-            font-size: 1.45rem;
-        }
-
-        .feedback-page .brand-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.25rem;
-        }
-
-        .feedback-page .table-green-white thead th,
-        .feedback-page .table-green-white tbody td {
-            padding: 10px 10px;
-            font-size: 0.84rem;
-        }
-
-        .feedback-page .btn-action {
-            padding: 6px 10px;
-            font-size: 0.68rem;
-        }
-
-        .feedback-page .actions-wrap {
-            gap: 4px;
-        }
-
-        .feedback-page .table-green-white tbody td:first-child {
-            padding-left: 14px;
-        }
-
-        .feedback-page .table-green-white tbody td:last-child {
-            padding-right: 14px;
-        }
-
-        .feedback-page .toast-container-custom {
-            top: 20px;
-            right: 20px;
-            left: 20px;
-            min-width: unset;
-            max-width: unset;
-        }
-
-        .feedback-page .delete-modal {
-            padding: 2rem 1.5rem;
-        }
-
-            .feedback-page .delete-modal .modal-actions {
-                flex-direction: column;
+            .fb-modal-stars i.filled {
+                color: #88d200;
             }
 
-        .feedback-page .stats-row {
+    .fb-modal-close {
+        padding: 0.75rem 2.2rem;
+        border: none;
+        border-radius: 50px;
+        background: linear-gradient(145deg, #88d200, #3a6a00);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 10px 28px -10px rgba(136, 210, 0, 0.40);
+        width: 100%;
+    }
+
+        .fb-modal-close:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 16px 36px -10px rgba(106, 168, 0, 0.45);
+        }
+
+    @@media (max-width: 860px) {
+        .fb-why {
             grid-template-columns: 1fr;
         }
 
-        .feedback-page .toolbar-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .feedback-page .search-box {
-            max-width: unset;
-        }
-
-        .feedback-page .toolbar-right {
-            justify-content: space-between;
+        .fb-layout {
+            grid-template-columns: 1fr;
         }
     }
 
-    @@media (max-width: 576px) {
-        .feedback-page .header-section {
+    @@media (max-width: 480px) {
+        .fb-card {
+            padding: 1.5rem 1.2rem 1.8rem;
+            border-radius: 24px;
+        }
+
+        .fb-actions {
             flex-direction: column;
-            align-items: start;
-            gap: 0.8rem;
+        }
+
+        .fb-hero h1 {
+            font-size: 1.6rem;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
         }
     }
 </style>
 
 <div class="feedback-page">
-    <div class="container-cust">
-        <div class="admin-card">
+    <div class="fb-bg-orb fb-bg-orb-1"></div>
+    <div class="fb-bg-orb fb-bg-orb-2"></div>
 
-            <!-- header -->
-            <div class="header-section">
-                <div class="brand-head">
-                    <div class="brand-icon">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <h1 class="heading-green">
-                        User Feedback
-                        <span>@Model.Count()</span>
-                    </h1>
-                </div>
-                <div class="header-actions">
-                    <div class="status-badge">
-                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> admin view
-                    </div>
-                </div>
-            </div>
+    <div class="fb-container">
 
-            @if (TempData["Message"] != null)
-            {
-                <div class="alert-success-cust">
-                    <i class="fas fa-check-circle"></i> @TempData["Message"]
-                </div>
-            }
-
-            @if (!Model.Any())
-            {
-                <div class="alert-info-cust">
-                    <i class="fas fa-comment-slash"></i>
-                    No feedback has been submitted yet.
-                </div>
-            }
-            else
-            {
-                <!-- stat cards -->
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
-                        <div>
-                            <div class="stat-value">@Model.Count()</div>
-                            <div class="stat-label">Total Feedback</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div>
-                            <div class="stat-value">@Model.Select(x => x.User?.Id).Distinct().Count()</div>
-                            <div class="stat-label">Unique Users</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
-                        <div>
-                            <div class="stat-value">@Model.Count()</div>
-                            <div class="stat-label">Awaiting Review</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- search / toolbar -->
-                <div class="toolbar-row">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="feedbackSearch" placeholder="Search by name, email or message..." onkeyup="filterFeedback()" />
-                    </div>
-                    <div class="toolbar-right">
-                        <span class="result-count" id="resultCount">@Model.Count() of @Model.Count() shown</span>
-                    </div>
-                </div>
-
-                <!-- table -->
-                <div class="table-responsive-cust">
-                    <table class="table table-green-white">
-                        <colgroup>
-                            <col class="col-user" />
-                            <col class="col-email" />
-                            <col class="col-message" />
-                            <col class="col-actions" />
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="sortable" onclick="sortFeedbackTable(0, this)"><span class="th-inner"><i class="fas fa-user fa-fw-lead"></i> User Name <i class="fas fa-sort sort-icon"></i></span></th>
-                                <th class="sortable" onclick="sortFeedbackTable(1, this)"><span class="th-inner"><i class="fas fa-envelope fa-fw-lead"></i> Email <i class="fas fa-sort sort-icon"></i></span></th>
-                                <th><span class="th-inner"><i class="fas fa-comment fa-fw-lead"></i> Feedback</span></th>
-                                <th class="text-end"><span class="th-inner"><i class="fas fa-bolt fa-fw-lead"></i> Actions</span></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                int rowIndex = 0;
-                            }
-                            @foreach (var item in Model)
-                            {
-                                rowIndex++;
-                                var userName = item.User?.UserName ?? "";
-                                var userEmail = item.User?.Email ?? "";
-                                <tr style="--i: @rowIndex;" data-feedback-id="@item.Id">
-                                    <td>
-                                        <div class="customer-cell">
-                                            <div class="user-avatar">@(string.IsNullOrEmpty(userName) ? "?" : userName.Substring(0, 1).ToUpper())</div>
-                                            <span class="user-name">@userName</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="email-cell">@userEmail</span></td>
-                                    <td><span class="message-cell">@item.message</span></td>
-                                    <td style="text-align: right;">
-                                        <div class="actions-wrap">
-                                            <a asp-action="Edituserfeedback" asp-route-id="@item.Id" class="btn-action btn-edit-fb">
-                                                <i class="fas fa-pen"></i> Edit
-                                            </a>
-                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn-action btn-details">
-                                                <i class="fas fa-eye"></i> Details
-                                            </a>
-                                            <button type="button" class="btn-action btn-delete"
-                                                    onclick="openDeleteModal('@item.Id', '@Html.Raw(Html.Encode(userName).Replace("'", "\\'"))', '@Html.Raw(Html.Encode(item.message).Replace("'", "\\'"))')">
-                                                <i class="fas fa-trash-alt"></i> Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                            <tr class="empty-state-row" id="noResultsRow" style="display: none;">
-                                <td colspan="4">
-                                    <i class="fas fa-inbox"></i>
-                                    No matching feedback found.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- footer -->
-                <div class="table-footer">
-                    <span>
-                        <i class="fas fa-arrow-right"></i> hover rows · click headers to sort · green theme
-                    </span>
-                    <span class="pill">
-                        <i class="fas fa-comment-dots"></i> @Model.Count() feedback entries
-                    </span>
-                </div>
-            }
-
+        <!-- Hero -->
+        <div class="fb-hero">
+            <div class="fb-hero-icon"><i class="fas fa-comment-dots"></i></div>
+            <h1>We'd Love Your <span class="highlight">Feedback</span></h1>
+            <p>Your thoughts help us shape a better ArtGallery experience for every collector and artist on the platform.</p>
         </div>
-    </div>
 
-    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
-    <div id="deleteModal" class="delete-modal-overlay">
-        <div class="delete-modal">
-            <div class="modal-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+        <!-- Why it matters -->
+        <div class="fb-why">
+            <div class="fb-why-item">
+                <i class="fas fa-lightbulb"></i>
+                <h4>Shapes Our Roadmap</h4>
+                <p>Every suggestion is reviewed by the product team.</p>
             </div>
-            <h3>Delete This Feedback?</h3>
-            <p>
-                Are you sure you want to delete this feedback entry?
-                <br>
-                <small style="color: #dc3545; font-weight: 500;">
-                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
-                </small>
-            </p>
-            <div class="modal-user-preview" id="modalUserPreview">
-                <div class="mu-name" id="modalUserName">—</div>
-                <div class="mu-msg" id="modalUserMsg">—</div>
+            <div class="fb-why-item">
+                <i class="fas fa-bug"></i>
+                <h4>Faster Fixes</h4>
+                <p>Reporting issues helps us squash bugs quicker.</p>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeDeleteModal()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <a href="#" class="btn-confirm-delete" id="confirmDeleteBtn">
-                    <i class="fas fa-trash-alt"></i> Yes, Delete
-                </a>
+            <div class="fb-why-item">
+                <i class="fas fa-heart"></i>
+                <h4>Built With You</h4>
+                <p>ArtGallery is shaped by its community, not just us.</p>
             </div>
         </div>
-    </div>
 
-    <!-- ===== SUCCESS TOAST ===== -->
-    <div id="successToast" class="toast-container-custom">
-        <div id="toastMessage" class="toast-success" style="display: none;">
-            <i class="fas fa-check-circle"></i>
-            <div class="toast-content">
-                <div class="toast-title">Deleting...</div>
-                <div class="toast-message" id="toastText">Redirecting to delete confirmation</div>
+        <!-- Layout: form + side -->
+        <div class="fb-layout">
+
+            <!-- Form Card -->
+            <div class="fb-card">
+                <form id="feedbackForm" asp-action="Adduserfeedbacklogic" method="post" novalidate>
+
+                    <div asp-validation-summary="ModelOnly" class="fb-validation-summary-errors" id="fbValidationSummary"></div>
+
+                    <!-- Rating -->
+                    <div class="fb-form-group">
+                        <div class="fb-section-title"><i class="fas fa-star"></i> How would you rate your experience?</div>
+                        <div class="fb-rating-row" id="fbRatingRow">
+                            <i class="fas fa-star fb-star" data-value="1"></i>
+                            <i class="fas fa-star fb-star" data-value="2"></i>
+                            <i class="fas fa-star fb-star" data-value="3"></i>
+                            <i class="fas fa-star fb-star" data-value="4"></i>
+                            <i class="fas fa-star fb-star" data-value="5"></i>
+                        </div>
+                        <div class="fb-rating-label" id="fbRatingLabel"></div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="fb-form-group">
+                        <div class="fb-section-title"><i class="fas fa-tags"></i> What's this about?</div>
+                        <div class="fb-chip-row" id="fbChipRow">
+                            <div class="fb-chip" data-category="Suggestion"><i class="fas fa-lightbulb"></i> Suggestion</div>
+                            <div class="fb-chip" data-category="Bug Report"><i class="fas fa-bug"></i> Bug Report</div>
+                            <div class="fb-chip" data-category="Compliment"><i class="fas fa-heart"></i> Compliment</div>
+                            <div class="fb-chip" data-category="Other"><i class="fas fa-ellipsis"></i> Other</div>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="fb-form-group">
+                        <div class="fb-section-title"><i class="fas fa-pen"></i> Your Feedback</div>
+                        <div class="fb-input-wrapper">
+                            <textarea asp-for="message" id="fbMessage" class="fb-textarea" rows="6"
+                                      placeholder="Share your experience, suggestions, or report any issues..."></textarea>
+                            <i class="fas fa-check-circle fb-status-icon valid" id="fbValidIcon"></i>
+                            <i class="fas fa-exclamation-circle fb-status-icon invalid" id="fbInvalidIcon"></i>
+                        </div>
+                        <div class="fb-char-count"><span id="fbCharCount">0</span> characters</div>
+                        <span asp-validation-for="message" class="fb-validation-message" id="fbMessageValidation"></span>
+                    </div>
+
+                    <!-- Contact opt-in (UI only) -->
+                    <div class="fb-checkbox-row">
+                        <input type="checkbox" id="fbContactOptIn" />
+                        <label for="fbContactOptIn">
+                            It's okay to contact me about this feedback if the team has follow-up questions.
+                        </label>
+                    </div>
+
+                    <div class="fb-actions">
+                        <button type="submit" class="fb-btn-submit" id="fbSubmitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span id="fbBtnText">Submit Feedback</span>
+                            <span class="fb-btn-spinner" id="fbBtnSpinner"></span>
+                        </button>
+                        <a asp-action="Index" class="fb-btn-back">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="fb-side">
+                <div class="fb-side-card">
+                    <h4><i class="fas fa-route"></i> What happens next</h4>
+                    <div class="fb-timeline-item">
+                        <div class="fb-timeline-dot"><i class="fas fa-inbox"></i></div>
+                        <div>
+                            <h5>We receive it</h5>
+                            <p>Your feedback lands directly in our team's queue.</p>
+                        </div>
+                    </div>
+                    <div class="fb-timeline-item">
+                        <div class="fb-timeline-dot"><i class="fas fa-magnifying-glass"></i></div>
+                        <div>
+                            <h5>We review it</h5>
+                            <p>Every entry is read and triaged by category.</p>
+                        </div>
+                    </div>
+                    <div class="fb-timeline-item">
+                        <div class="fb-timeline-dot"><i class="fas fa-rocket"></i></div>
+                        <div>
+                            <h5>We act on it</h5>
+                            <p>Common themes shape upcoming improvements.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-side-card fb-quote-card">
+                    <i class="fas fa-quote-left"></i>
+                    <p>"A quick bug report I sent last month was fixed within the week. It's clear the team actually reads these."</p>
+                    <div class="fb-quote-author"><i class="fas fa-circle-user"></i> ArtGallery Community Member</div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    let deleteFeedbackId = null;
+<!-- Thank You Modal -->
+<div class="fb-modal-overlay" id="fbThankYouModal">
+    <div class="fb-modal">
+        <div class="fb-modal-badge"><i class="fas fa-sparkles"></i> Feedback Received</div>
+        <div class="fb-modal-check"><i class="fas fa-check"></i></div>
+        <h2>Thank You!</h2>
+        <p class="fb-modal-msg" id="fbThankYouMessage">Thanks a lot for giving your feedback.</p>
+        <div class="fb-modal-stars" id="fbModalStars"></div>
+        <button class="fb-modal-close" id="fbModalCloseBtn">Continue Browsing</button>
+    </div>
+</div>
 
-    // Live search filter across username, email and message columns
-    function filterFeedback() {
-        const query = document.getElementById('feedbackSearch').value.trim().toLowerCase();
-        const rows = document.querySelectorAll('.feedback-page .table-green-white tbody tr:not(#noResultsRow)');
-        let visibleCount = 0;
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.getElementById('fbMessage');
+            const validIcon = document.getElementById('fbValidIcon');
+            const invalidIcon = document.getElementById('fbInvalidIcon');
+            const charCount = document.getElementById('fbCharCount');
+            const messageValidation = document.getElementById('fbMessageValidation');
+            const summary = document.getElementById('fbValidationSummary');
+            const form = document.getElementById('feedbackForm');
+            const submitBtn = document.getElementById('fbSubmitBtn');
+            const btnText = document.getElementById('fbBtnText');
+            const btnSpinner = document.getElementById('fbBtnSpinner');
+            const minLength = 5;
 
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            const matches = text.includes(query);
-            row.style.display = matches ? '' : 'none';
-            if (matches) visibleCount++;
+            // ?? Star rating (folded into the message on submit, since the
+            // Feedback model only exposes a single "message" field) ??
+            let selectedRating = 0;
+            const stars = document.querySelectorAll('#fbRatingRow .fb-star');
+            const ratingLabel = document.getElementById('fbRatingLabel');
+            const ratingText = { 1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Great', 5: 'Excellent!' };
+
+            function paintStars(value) {
+                stars.forEach(s => {
+                    s.classList.toggle('active', parseInt(s.dataset.value) <= value);
+                });
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', () => paintStars(parseInt(star.dataset.value)));
+                star.addEventListener('mouseleave', () => paintStars(selectedRating));
+                star.addEventListener('click', () => {
+                    selectedRating = parseInt(star.dataset.value);
+                    paintStars(selectedRating);
+                    ratingLabel.textContent = ratingText[selectedRating] || '';
+                });
+            });
+
+            // ?? Category chips (single-select, folded into message too) ??
+            let selectedCategory = '';
+            const chips = document.querySelectorAll('#fbChipRow .fb-chip');
+            chips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chips.forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    selectedCategory = chip.dataset.category;
+                });
+            });
+
+            function updateCharCount() {
+                charCount.textContent = textarea.value.length;
+            }
+
+            function validateField(showMessage) {
+                const value = textarea.value.trim();
+                const existingError = textarea.closest('.fb-form-group').querySelector('.field-validation-error');
+                const hasServerError = existingError && existingError.textContent.trim().length > 0;
+
+                if (value.length === 0 || hasServerError) {
+                    textarea.classList.remove('is-valid');
+                    if (showMessage) {
+                        textarea.classList.add('is-invalid');
+                        validIcon.classList.remove('show');
+                        invalidIcon.classList.add('show');
+                        messageValidation.textContent = hasServerError ? existingError.textContent.trim() : 'Feedback message is required.';
+                        messageValidation.classList.add('show');
+                    }
+                    return false;
+                } else if (value.length < minLength) {
+                    textarea.classList.remove('is-valid');
+                    textarea.classList.add('is-invalid');
+                    validIcon.classList.remove('show');
+                    invalidIcon.classList.add('show');
+                    messageValidation.textContent = `Please enter at least ${minLength} characters.`;
+                    messageValidation.classList.add('show');
+                    return false;
+                } else {
+                    textarea.classList.remove('is-invalid');
+                    textarea.classList.add('is-valid');
+                    invalidIcon.classList.remove('show');
+                    validIcon.classList.add('show');
+                    messageValidation.classList.remove('show');
+                    return true;
+                }
+            }
+
+            textarea.addEventListener('input', function () {
+                updateCharCount();
+                validateField(textarea.classList.contains('is-invalid'));
+                if (summary) summary.classList.remove('show');
+            });
+
+            textarea.addEventListener('blur', function () { validateField(true); });
+
+            updateCharCount();
+
+            const serverError = textarea.closest('.fb-form-group').querySelector('.field-validation-error');
+            if (serverError && serverError.textContent.trim()) {
+                validateField(true);
+                if (summary) summary.classList.add('show');
+            }
+
+            form.addEventListener('submit', function (e) {
+                const isValid = validateField(true);
+                if (!isValid) {
+                    e.preventDefault();
+                    textarea.focus();
+                    return;
+                }
+
+                // Prepend the optional rating/category context to the message
+                // text itself, since the model only persists "message".
+                let prefix = '';
+                if (selectedCategory) prefix += `[${selectedCategory}] `;
+                if (selectedRating) prefix += `(${selectedRating}/5 stars) `;
+                if (prefix) textarea.value = prefix + textarea.value;
+
+                if (selectedRating) sessionStorage.setItem('fbLastRating', selectedRating);
+
+                btnText.textContent = 'Sending...';
+                btnSpinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+            });
+
+            // ?? Confetti ??
+            function launchConfetti(container) {
+                const colors = ['#88d200', '#6fa800', '#d4f09b', '#4ecdc4'];
+                for (let i = 0; i < 24; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'fb-confetti-piece';
+                    piece.style.left = Math.random() * 100 + '%';
+                    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.animationDelay = (Math.random() * 0.6) + 's';
+                    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    container.appendChild(piece);
+                    setTimeout(() => piece.remove(), 3000);
+                }
+            }
+
+            // ?? Thank You modal (driven by TempData["Message"]) ??
+            const tempMessage = @Html.Raw(Json.Serialize(TempData["Message"]));
+            const modal = document.getElementById('fbThankYouModal');
+            const modalMessage = document.getElementById('fbThankYouMessage');
+            const modalCloseBtn = document.getElementById('fbModalCloseBtn');
+            const modalStars = document.getElementById('fbModalStars');
+
+            function closeModal() { modal.classList.remove('show'); }
+
+            if (tempMessage) {
+                modalMessage.textContent = tempMessage;
+
+                const lastRating = sessionStorage.getItem('fbLastRating');
+                if (lastRating) {
+                    modalStars.innerHTML = '';
+                    for (let i = 1; i <= 5; i++) {
+                        const star = document.createElement('i');
+                        star.className = 'fas fa-star' + (i <= parseInt(lastRating) ? ' filled' : '');
+                        modalStars.appendChild(star);
+                    }
+                    sessionStorage.removeItem('fbLastRating');
+                } else {
+                    modalStars.style.display = 'none';
+                }
+
+                modal.classList.add('show');
+                launchConfetti(modal);
+            }
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeModal();
+            });
         });
-
-        document.getElementById('noResultsRow').style.display = visibleCount === 0 ? '' : 'none';
-
-        const totalRows = rows.length;
-        const countEl = document.getElementById('resultCount');
-        if (countEl) countEl.textContent = `${visibleCount} of ${totalRows} shown`;
-    }
-
-    // Click-to-sort table columns
-    let feedbackSortDirections = {};
-    function sortFeedbackTable(colIndex, headerEl) {
-        const table = headerEl.closest('table');
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
-
-        const asc = !feedbackSortDirections[colIndex];
-        feedbackSortDirections = {};
-        feedbackSortDirections[colIndex] = asc;
-
-        table.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
-        headerEl.classList.add(asc ? 'sort-asc' : 'sort-desc');
-
-        rows.sort((a, b) => {
-            const cellA = a.children[colIndex].textContent.trim().toLowerCase();
-            const cellB = b.children[colIndex].textContent.trim().toLowerCase();
-            const cmp = cellA.localeCompare(cellB);
-            return asc ? cmp : -cmp;
-        });
-
-        rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
-    }
-
-    function openDeleteModal(feedbackId, userName, message) {
-        deleteFeedbackId = feedbackId;
-        document.getElementById('modalUserName').textContent = userName || 'Unknown user';
-        document.getElementById('modalUserMsg').textContent = message || '';
-
-        const confirmBtn = document.getElementById('confirmDeleteBtn');
-        confirmBtn.setAttribute('href', '@Url.Action("Deleteuserfeebacklogic", "Admin")/' + feedbackId);
-
-        const modal = document.getElementById('deleteModal');
-        modal.style.display = 'flex';
-
-        const modalContent = modal.querySelector('.delete-modal');
-        modalContent.style.animation = 'none';
-        setTimeout(() => {
-            modalContent.style.animation = 'modalSlideUpFb 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        }, 10);
-    }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').style.display = 'none';
-        deleteFeedbackId = null;
-    }
-
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function (e) {
-        e.preventDefault();
-        if (!deleteFeedbackId) return;
-
-        const targetUrl = this.getAttribute('href');
-        const row = document.querySelector(`tr[data-feedback-id="${deleteFeedbackId}"]`);
-        closeDeleteModal();
-        showSuccessToast('Deleting...', 'Removing this feedback entry.');
-
-        if (row) row.classList.add('fade-out');
-
-        setTimeout(() => {
-            window.location.href = targetUrl;
-        }, 700);
-    });
-
-    document.getElementById('deleteModal').addEventListener('click', function (e) {
-        if (e.target === this) closeDeleteModal();
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeDeleteModal();
-    });
-
-    function showSuccessToast(title, message) {
-        const toast = document.getElementById('toastMessage');
-        const textSpan = document.getElementById('toastText');
-        const titleEl = toast.querySelector('.toast-title');
-
-        if (titleEl) titleEl.innerText = title;
-        if (textSpan) textSpan.innerText = message;
-
-        toast.style.display = 'flex';
-        toast.classList.remove('hide');
-
-        toast.style.animation = 'none';
-        setTimeout(() => {
-            toast.style.animation = 'slideInRightFb 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        }, 10);
-    }
-</script>
+    </script>
+}

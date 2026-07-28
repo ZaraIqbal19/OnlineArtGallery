@@ -1,0 +1,1309 @@
+@model Art_Gallery.Models.Wishlist
+@{
+    ViewData["Title"] = "Place Order";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+    var product = Model.Product;
+
+    Func<string, string> imgUrl = (img) =>
+    {
+        if (string.IsNullOrWhiteSpace(img))
+        {
+            return Url.Content("~/images/no-image.png");
+        }
+        var clean = img.Replace("\\", "/").TrimStart('/');
+        if (clean.StartsWith("images/products/", StringComparison.OrdinalIgnoreCase))
+        {
+            return Url.Content("~/" + clean);
+        }
+        return Url.Content("~/images/products/" + clean);
+    };
+
+    var images = new List<string>();
+    if (!string.IsNullOrEmpty(product.Image1)) { images.Add(product.Image1); }
+    if (!string.IsNullOrEmpty(product.Image2)) { images.Add(product.Image2); }
+    if (!string.IsNullOrEmpty(product.Image3)) { images.Add(product.Image3); }
+
+    var successMessage = TempData["SuccessMessage"] as string ?? TempData["Orderpaymentmessage"] as string;
+    var infoMessage = TempData["Message"] as string;
+
+    int startQty = Model.Quantity > 0 ? Model.Quantity : 1;
+    if (startQty > product.quantity) startQty = product.quantity > 0 ? product.quantity : 1;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --primary: #88d200;
+        --primary-dark: #6fa800;
+        --primary-light: #d4f09b;
+        --primary-ultralight: #f0fae6;
+        --danger: #dc3545;
+        --warning: #d98c00;
+        --radius-sm: 10px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-pill: 30px;
+    }
+
+    body {
+        background: var(--primary-ultralight);
+    }
+
+    .page-top-spacer {
+        height: 28px;
+    }
+
+    .breadcrumb-premium {
+        max-width: 1140px;
+        margin: 0 auto 18px;
+        padding: 0 12px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+        .breadcrumb-premium a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+            .breadcrumb-premium a:hover {
+                text-decoration: underline;
+            }
+
+    .success-banner, .info-banner {
+        max-width: 1140px;
+        margin: 0 auto 20px;
+        padding: 0 12px;
+    }
+
+    .result-modal-content {
+        border-radius: var(--radius-lg);
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,.25);
+    }
+
+    .result-modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: #fff;
+        font-size: 24px;
+    }
+
+        .result-modal-icon.success {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 8px 24px rgba(136,210,0,.35);
+        }
+
+        .result-modal-icon.warning {
+            background: linear-gradient(135deg, var(--warning), #b97300);
+            box-shadow: 0 8px 24px rgba(217,140,0,.35);
+        }
+
+    .result-modal-btn {
+        font-weight: 700;
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        border: none;
+        color: #fff;
+    }
+
+        .result-modal-btn.success {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+            .result-modal-btn.success:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(136,210,0,.35);
+                color: #fff;
+            }
+
+    .redirect-progress-track {
+        width: 100%;
+        height: 6px;
+        border-radius: var(--radius-pill);
+        background: var(--primary-ultralight);
+        overflow: hidden;
+    }
+
+    .redirect-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--warning), #b97300);
+        border-radius: var(--radius-pill);
+        transition: width 2s linear;
+    }
+
+    .redirect-note {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(136,210,0,.16);
+        border: 1px solid rgba(136,210,0,.10);
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        background: var(--primary-ultralight);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 440px;
+        object-fit: cover;
+        display: block;
+        opacity: 0;
+        transition: opacity .4s ease;
+    }
+
+        .product-image.loaded {
+            opacity: 1;
+        }
+
+    .image-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: var(--primary);
+        color: white;
+        padding: 8px 20px;
+        border-radius: var(--radius-pill);
+        font-weight: 600;
+        font-size: 13px;
+        box-shadow: 0 4px 15px rgba(136,210,0,.35);
+        z-index: 2;
+    }
+
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 32px 26px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.65));
+        color: white;
+        z-index: 2;
+    }
+
+        .image-overlay h3 {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        .image-overlay p {
+            margin: 0;
+            opacity: 0.92;
+            font-size: 14px;
+        }
+
+    .thumbnail-gallery {
+        display: flex;
+        gap: 10px;
+        padding: 14px 22px;
+        background: var(--primary-ultralight);
+        border-top: 1px solid var(--primary-light);
+        flex-wrap: wrap;
+    }
+
+    .thumbnail {
+        width: 82px;
+        height: 82px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        border: 3px solid transparent;
+        opacity: 0;
+        transition: opacity .3s ease;
+    }
+
+        .thumbnail.loaded {
+            opacity: 1;
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(136,210,0,.30);
+        }
+
+    .price {
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--primary-dark);
+        letter-spacing: -0.5px;
+    }
+
+    .tax-note {
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 22px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .info-box {
+        background: var(--primary-ultralight);
+        padding: 14px 16px;
+        border-radius: var(--radius-sm);
+        border-left: 4px solid var(--primary);
+    }
+
+        .info-box .info-label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #5c6b4a;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .info-box .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+    .stock-warning {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        background: #fff6e6;
+        color: var(--warning);
+        border: 1px solid rgba(217,140,0,.3);
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 12.5px;
+        font-weight: 600;
+        margin-bottom: 14px;
+    }
+
+        .stock-warning.show {
+            display: flex;
+        }
+
+    .form-control, .form-select {
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        border: 2px solid var(--primary-light);
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(136,210,0,.15);
+        }
+
+        .form-control.is-valid {
+            border-color: var(--primary);
+            background-color: #fbfff2;
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            background-color: #fff6f6;
+        }
+
+    .field-error-msg {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--danger);
+        font-weight: 500;
+        margin-top: 5px;
+    }
+
+        .field-error-msg.show {
+            display: flex;
+        }
+
+    .field-success-msg {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--primary-dark);
+        font-weight: 500;
+        margin-top: 5px;
+    }
+
+        .field-success-msg.show {
+            display: flex;
+        }
+
+    .qty-stepper {
+        display: flex;
+        align-items: stretch;
+        border: 2px solid var(--primary-light);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+
+        .qty-stepper.is-invalid {
+            border-color: var(--danger);
+        }
+
+        .qty-stepper.is-valid {
+            border-color: var(--primary);
+        }
+
+        .qty-stepper button {
+            background: var(--primary-ultralight);
+            border: none;
+            width: 44px;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary-dark);
+        }
+
+            .qty-stepper button:hover {
+                background: var(--primary);
+                color: #fff;
+            }
+
+        .qty-stepper input {
+            border: none;
+            text-align: center;
+            font-weight: 700;
+            width: 100%;
+            outline: none;
+        }
+
+    .payment-segment {
+        display: flex;
+        gap: 8px;
+    }
+
+    .payment-option {
+        flex: 1;
+        border: 2px solid var(--primary-light);
+        border-radius: var(--radius-sm);
+        padding: 10px 8px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+        .payment-option i {
+            font-size: 18px;
+            color: var(--primary-dark);
+        }
+
+        .payment-option:hover {
+            border-color: var(--primary);
+            background: var(--primary-ultralight);
+        }
+
+        .payment-option.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: #1a1a1a;
+        }
+
+    .payment-note {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 8px;
+        background: var(--primary-ultralight);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        display: none;
+    }
+
+        .payment-note.show {
+            display: block;
+        }
+
+    .delivery-estimate {
+        font-size: 12px;
+        color: var(--primary-dark);
+        font-weight: 600;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .summary-box {
+        background: var(--primary-ultralight);
+        border: 2px dashed var(--primary);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        position: sticky;
+        top: 20px;
+    }
+
+    .subtotal-line {
+        font-size: 13px;
+        color: #4a5942;
+        margin-top: 10px;
+    }
+
+    .pulse {
+        display: inline-block;
+    }
+
+    .terms-box {
+        background: #fff;
+        border-left: 5px solid var(--primary);
+        padding: 20px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(136,210,0,.15);
+    }
+
+    .terms-toggle {
+        background: none;
+        border: none;
+        color: var(--primary-dark);
+        font-weight: 600;
+        font-size: 12.5px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+        .terms-toggle i {
+            transition: transform .25s ease;
+        }
+
+        .terms-toggle.open i {
+            transform: rotate(180deg);
+        }
+
+    .terms-list-wrap {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .35s ease;
+    }
+
+        .terms-list-wrap.open {
+            max-height: 260px;
+        }
+
+    .book-btn {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: var(--radius-sm);
+        color: white;
+        letter-spacing: .3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+        .book-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(136,210,0,.40);
+            color: white;
+        }
+
+        .book-btn:disabled {
+            background: #cfd8c3;
+            cursor: not-allowed;
+            color: #f4f4f4;
+        }
+
+        .book-btn .btn-loader {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+    .form-progress {
+        font-size: 12.5px;
+        color: #6c757d;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+        .form-progress .done {
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+    .notice-box {
+        background: var(--primary-light);
+        color: #3f4a35;
+        padding: 15px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--primary);
+        font-size: 13.5px;
+    }
+
+    .trust-strip {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin: 16px 0 4px;
+        font-size: 12.5px;
+        color: #495057;
+    }
+
+        .trust-strip span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .trust-strip i {
+            color: var(--primary-dark);
+        }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-input.is-invalid {
+        border-color: var(--danger);
+    }
+
+    .invalid-feedback {
+        color: var(--danger);
+        font-weight: 500;
+    }
+
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .text-brand {
+        color: var(--primary-dark) !important;
+    }
+
+    .form-right-col {
+        background: white;
+    }
+
+    .validation-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #fff;
+        border-left: 5px solid var(--primary);
+        padding: 14px 20px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 12px 30px rgba(0,0,0,.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 2100;
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all .35s ease;
+        font-size: 13.5px;
+        color: #1a1a1a;
+        font-weight: 500;
+    }
+
+        .validation-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .validation-toast i {
+            color: var(--primary-dark);
+            font-size: 18px;
+        }
+
+    .mobile-order-bar {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1500;
+        background: rgba(255,255,255,.72);
+        backdrop-filter: blur(14px);
+        padding: 12px 16px;
+        box-shadow: 0 -8px 24px rgba(0,0,0,.10);
+        border-top: 1px solid rgba(136,210,0,.25);
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+        .mobile-order-bar .mob-total-label {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .mobile-order-bar .mob-total-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .mobile-order-bar button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            padding: 12px 26px;
+            border-radius: var(--radius-sm);
+            white-space: nowrap;
+        }
+
+            .mobile-order-bar button:disabled {
+                background: #cfd8c3;
+                color: #f4f4f4;
+                cursor: not-allowed;
+            }
+
+    @@media (max-width: 991.98px) {
+        .summary-box {
+            position: static;
+        }
+
+        .mobile-order-bar {
+            display: flex;
+        }
+
+        body {
+            padding-bottom: 78px;
+        }
+
+        .validation-toast {
+            bottom: 96px;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .product-image {
+            height: 260px;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: .001ms !important;
+            transition-duration: .001ms !important;
+        }
+    }
+</style>
+
+<div class="page-top-spacer"></div>
+
+<div class="breadcrumb-premium">
+    <a asp-controller="Home" asp-action="Index">Home</a>
+    <i class="fa-solid fa-chevron-right mx-2" style="font-size:10px;"></i>
+    <a asp-controller="Wishlist" asp-action="Index">Wishlist</a>
+    <i class="fa-solid fa-chevron-right mx-2" style="font-size:10px;"></i>
+    <span>Place Order</span>
+</div>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content result-modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="result-modal-icon success"><i class="fa-solid fa-check"></i></div>
+                    <h5 class="fw-bold mb-2 text-brand">Order Placed Successfully!</h5>
+                    <p class="text-muted mb-4">@successMessage</p>
+                    <button type="button" class="btn result-modal-btn success w-100" id="orderSuccessOkBtn">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(infoMessage))
+{
+    <div class="modal fade" id="paymentInfoModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content result-modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="result-modal-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h5 class="fw-bold mb-2" style="color:var(--warning);">Action Needed</h5>
+                    <p class="text-muted mb-3">@infoMessage</p>
+                    <div class="redirect-progress-track"><div class="redirect-progress-fill" id="redirectProgressFill"></div></div>
+                    <p class="redirect-note mt-2 mb-0">Redirecting you to add payment details…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container pb-5">
+    <div class="booking-card">
+        <div class="row g-0">
+
+            <!-- LEFT: image -->
+            <div class="col-lg-6 left-column">
+                <div class="product-image-wrapper" id="mainImageWrapper">
+                    <img id="mainImage"
+                         src="@imgUrl(images.Count > 0 ? images[0] : null)"
+                         class="product-image"
+                         alt="@product.Name"
+                         onload="this.classList.add('loaded')">
+
+                    <div class="image-badge">
+                        <i class="fa-regular fa-clock me-1"></i> @(product.Status ?? "Available")
+                    </div>
+
+                    <div class="image-overlay">
+                        <h3><i class="fa-regular fa-star me-2"></i>@product.Name</h3>
+                        <p><i class="fa-regular fa-tag me-2"></i>@(product.SubCategory?.Name ?? "Category") · Qty available: @product.quantity</p>
+                    </div>
+                </div>
+
+                @if (images.Count > 1)
+                {
+                    <div class="thumbnail-gallery">
+                        @for (int i = 0; i < images.Count; i++)
+                        {
+                            <img src="@imgUrl(images[i])"
+                                 class="thumbnail @(i == 0 ? "active" : "")"
+                                 onclick="showImage(@i)"
+                                 onload="this.classList.add('loaded')"
+                                 alt="Thumbnail @(i + 1)">
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- RIGHT: order form -->
+            <div class="col-lg-6 p-4 p-xl-5 form-right-col">
+                <h2 class="fw-bold mb-2 text-brand">@product.Name</h2>
+                <p class="text-muted mb-3">@(product.Description != null && product.Description.Length > 120 ? product.Description.Substring(0, 120) + "..." : product.Description)</p>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-tag me-1"></i>Category</span>
+                        <span class="info-value">@(product.SubCategory?.Name ?? "N/A")</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-user me-1"></i>Seller</span>
+                        <span class="info-value">@(product.User?.UserName ?? "N/A")</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-cubes me-1"></i>Available Qty</span>
+                        <span class="info-value">@product.quantity</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label"><i class="fa-regular fa-heart me-1"></i>From Wishlist</span>
+                        <span class="info-value">Saved qty: @Model.Quantity</span>
+                    </div>
+                </div>
+
+                <div class="stock-warning" id="stockWarning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="stockWarningText"></span>
+                </div>
+
+                <div class="price mb-1">
+                    Rs @product.price <small class="fs-6 text-muted fw-normal">/ unit</small>
+                </div>
+                <div class="tax-note"><i class="fa-regular fa-circle-question me-1"></i>Inclusive of all applicable taxes.</div>
+
+                @if (product.quantity <= 0)
+                {
+                    <div class="alert alert-danger">This product is currently out of stock.</div>
+                }
+                else
+                {
+                    <form asp-controller="User" asp-action="PlaceOrderFromWishlistlogic" method="post" id="orderForm" novalidate>
+                        <input type="hidden" name="WishlistId" value="@Model.Id" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="fw-semibold small text-uppercase text-secondary"><i class="fa-regular fa-cubes me-1"></i>Quantity</label>
+                                <div class="qty-stepper" id="qtyStepper">
+                                    <button type="button" id="qtyMinus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                                    <input type="number" name="Quantity" id="Quantity" value="@startQty" min="1" max="@product.quantity" aria-label="Quantity">
+                                    <button type="button" id="qtyPlus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="field-error-msg" id="qtyError">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>Quantity must be between 1 and @product.quantity.</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="fw-semibold small text-uppercase text-secondary"><i class="fa-regular fa-credit-card me-1"></i>Payment Method</label>
+                                <div class="payment-segment" id="paymentSegment" role="radiogroup" aria-label="Payment method">
+                                    <div class="payment-option active" data-value="Cash on Delivery" tabindex="0" role="radio" aria-checked="true">
+                                        <i class="fa-solid fa-money-bill-wave"></i>Cash on Delivery
+                                    </div>
+                                    <div class="payment-option" data-value="Card" tabindex="0" role="radio" aria-checked="false">
+                                        <i class="fa-regular fa-credit-card"></i>Card
+                                    </div>
+                                </div>
+                                <select name="ModeofPayment" id="Payment" class="d-none">
+                                    <option value="Cash on Delivery" selected>Cash on Delivery</option>
+                                    <option value="Card">Card</option>
+                                </select>
+                                <div class="payment-note" id="codNote"><i class="fa-solid fa-circle-info me-1"></i>Pay the exact amount to the courier upon delivery.</div>
+                                <div class="payment-note" id="cardNote"><i class="fa-solid fa-shield-halved me-1"></i>Your saved card on file will be charged securely at checkout.</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="fw-semibold small text-uppercase text-secondary"><i class="fa-regular fa-location-dot me-1"></i>Shipping Address</label>
+                            <textarea name="ShippingAddress" id="ShippingAddress" class="form-control" rows="2" placeholder="House #, street, area, city"></textarea>
+                            <div class="field-error-msg" id="addressError">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>Please enter a complete address (at least 10 characters).</span>
+                            </div>
+                            <div class="field-success-msg" id="addressSuccess">
+                                <i class="fa-solid fa-circle-check"></i><span>Looks good.</span>
+                            </div>
+                            <div class="delivery-estimate" id="deliveryEstimate">
+                                <i class="fa-solid fa-truck-fast"></i><span id="deliveryEstimateText"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="fw-semibold small text-uppercase text-secondary"><i class="fa-regular fa-phone me-1"></i>Contact Number</label>
+                            <input type="tel" name="ContactPhone" id="ContactPhone" class="form-control" placeholder="0300 1234567" inputmode="numeric" autocomplete="off">
+                            <div class="field-error-msg" id="phoneError">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>Enter an 11-digit number starting with 03 (e.g. 0300 1234567).</span>
+                            </div>
+                            <div class="field-success-msg" id="phoneSuccess">
+                                <i class="fa-solid fa-circle-check"></i><span>Valid phone number.</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-box mt-4">
+                            <h5 class="mb-3 text-brand"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Order Summary</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-1"><span class="fw-semibold">Quantity:</span> <strong id="summaryQty">@startQty</strong></p>
+                                    <p class="mb-0"><span class="fw-semibold">Unit Price:</span> <strong>Rs @product.price</strong></p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-0"><span class="fw-semibold">Payment:</span> <strong id="summaryPayment">Cash on Delivery</strong></p>
+                                </div>
+                            </div>
+                            <div class="subtotal-line">
+                                Rs @product.price &times; <span id="subtotalQtyInline">@startQty</span> = <strong id="subtotalLine">Rs @(product.price* startQty)</strong>
+                            </div>
+                            <hr>
+                            <h4 class="text-brand fw-bold mb-0" aria-live="polite">Total: <span id="total">Rs @(product.price* startQty)</span></h4>
+                        </div>
+
+                        <div class="notice-box mt-3">
+                            <i class="fa-solid fa-circle-info me-2"></i>Please verify your shipping address and contact number before placing the order.
+                        </div>
+
+                        <div class="terms-box mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="text-brand mb-0"><i class="fa-regular fa-circle-check me-2"></i>Terms & Conditions</h5>
+                                <button type="button" class="terms-toggle" id="termsToggle" aria-expanded="false" aria-controls="termsListWrap">
+                                    View full terms <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="terms-list-wrap mt-2" id="termsListWrap">
+                                <ul class="mb-2 ps-3" style="font-size: 13px;">
+                                    <li>Orders once confirmed cannot be modified.</li>
+                                    <li>Cash on Delivery orders require exact payment upon delivery.</li>
+                                    <li>Card payments are processed securely at checkout.</li>
+                                    <li>Product images are for illustration; actual item may vary slightly.</li>
+                                    <li>Returns and exchanges are subject to the seller's policy.</li>
+                                </ul>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" class="form-check-input" id="termsCheck">
+                                <label class="form-check-label fw-medium" for="termsCheck">I agree to all Terms & Conditions</label>
+                            </div>
+                            <div class="field-error-msg" id="termsError">
+                                <i class="fa-solid fa-circle-exclamation"></i><span>You must agree to the terms.</span>
+                            </div>
+                        </div>
+
+                        <div class="trust-strip">
+                            <span><i class="fa-solid fa-shield-halved"></i> Secure Checkout</span>
+                            <span><i class="fa-solid fa-rotate-left"></i> Seller-managed Returns</span>
+                            <span><i class="fa-solid fa-circle-check"></i> Verified Listing</span>
+                        </div>
+
+                        <button type="submit" class="btn book-btn w-100 mt-2" id="submitBtn" disabled>
+                            <span class="btn-text"><i class="fa-regular fa-calendar-check"></i> Place Order</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner"></i> Placing your order...</span>
+                        </button>
+
+                        <div class="form-progress" id="formProgress" aria-live="polite">0 of 4 fields complete</div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="validation-toast" id="validationToast" role="status" aria-live="polite">
+    <i class="fa-solid fa-circle-check"></i>
+    <span>Order details validated — ready to place your order.</span>
+</div>
+
+<div class="mobile-order-bar">
+    <div>
+        <div class="mob-total-label">Total</div>
+        <div class="mob-total-value" id="mobTotal" aria-live="polite">Rs @(product.price* startQty)</div>
+    </div>
+    <button type="button" id="mobileSubmitBtn" disabled onclick="document.getElementById('orderForm').requestSubmit()">Place Order</button>
+</div>
+
+@* Remove this script tag if _UserLayout.cshtml already includes bootstrap.bundle.min.js *@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<script>
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    (function handleResultPopups() {
+        var allProductsUrl = '@Url.Action("Allproducts", "User")';
+        var addPaymentDetailsUrl = '@Url.Action("Addpaymentdetails", "User")';
+
+        var successModalEl = document.getElementById('orderSuccessModal');
+        if (successModalEl) {
+            var successModal = new bootstrap.Modal(successModalEl);
+            successModal.show();
+            if (typeof confetti === 'function' && !prefersReducedMotion) {
+                confetti({ particleCount: 100, spread: 75, origin: { y: 0.4 }, colors: ['#88d200', '#6fa800', '#d4f09b', '#ffffff'] });
+            }
+            document.getElementById('orderSuccessOkBtn').addEventListener('click', function () {
+                window.location.href = allProductsUrl;
+            });
+        }
+
+        var paymentModalEl = document.getElementById('paymentInfoModal');
+        if (paymentModalEl) {
+            var paymentModal = new bootstrap.Modal(paymentModalEl);
+            paymentModal.show();
+            var fill = document.getElementById('redirectProgressFill');
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () { fill.style.width = '100%'; });
+            });
+            setTimeout(function () { window.location.href = addPaymentDetailsUrl; }, 2000);
+        }
+    })();
+
+    const productImages = @Html.Raw("[" + string.Join(",", images.Select(i => "\"" + imgUrl(i).Replace("\"", "\\\"") + "\"")) + "]");
+    let currentIndex = 0;
+    const mainImage = document.getElementById('mainImage');
+
+    function showImage(index) {
+        if (productImages.length === 0) { return; }
+        currentIndex = (index + productImages.length) % productImages.length;
+        mainImage.classList.remove('loaded');
+        mainImage.src = productImages[currentIndex];
+        document.querySelectorAll('.thumbnail').forEach((t, i) => t.classList.toggle('active', i === currentIndex));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        function debounce(fn, delay) {
+            let timer;
+            return function (...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); };
+        }
+
+        function animateNumber(el, from, to, duration) {
+            if (prefersReducedMotion || from === to) { el.innerText = 'Rs ' + to.toLocaleString(); return; }
+            const start = performance.now();
+            function tick(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = Math.round(from + (to - from) * eased);
+                el.innerText = 'Rs ' + value.toLocaleString();
+                if (progress < 1) { requestAnimationFrame(tick); }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        const form = document.getElementById('orderForm');
+        if (!form) { return; } // out-of-stock branch has no form
+
+        const qty = document.getElementById('Quantity');
+        const qtyStepper = document.getElementById('qtyStepper');
+        const qtyError = document.getElementById('qtyError');
+        const qtyMinus = document.getElementById('qtyMinus');
+        const qtyPlus = document.getElementById('qtyPlus');
+        const stockWarning = document.getElementById('stockWarning');
+        const stockWarningText = document.getElementById('stockWarningText');
+
+        const paymentSelect = document.getElementById('Payment');
+        const paymentOptions = document.querySelectorAll('.payment-option');
+        const codNote = document.getElementById('codNote');
+        const cardNote = document.getElementById('cardNote');
+
+        const address = document.getElementById('ShippingAddress');
+        const addressError = document.getElementById('addressError');
+        const addressSuccess = document.getElementById('addressSuccess');
+        const deliveryEstimate = document.getElementById('deliveryEstimate');
+        const deliveryEstimateText = document.getElementById('deliveryEstimateText');
+
+        const phone = document.getElementById('ContactPhone');
+        const phoneError = document.getElementById('phoneError');
+        const phoneSuccess = document.getElementById('phoneSuccess');
+
+        const termsCheck = document.getElementById('termsCheck');
+        const termsError = document.getElementById('termsError');
+        const termsToggle = document.getElementById('termsToggle');
+        const termsListWrap = document.getElementById('termsListWrap');
+
+        const submitBtn = document.getElementById('submitBtn');
+        const mobileSubmitBtn = document.getElementById('mobileSubmitBtn');
+        const formProgress = document.getElementById('formProgress');
+        const validationToast = document.getElementById('validationToast');
+
+        const summaryQty = document.getElementById('summaryQty');
+        const summaryPayment = document.getElementById('summaryPayment');
+        const subtotalQtyInline = document.getElementById('subtotalQtyInline');
+        const subtotalLine = document.getElementById('subtotalLine');
+        const totalSpan = document.getElementById('total');
+        const mobTotal = document.getElementById('mobTotal');
+
+        const unitPrice = @product.price;
+        const maxQty = @product.quantity;
+
+        let lastTotal = unitPrice * @startQty;
+
+        const state = { quantity: false, address: false, phone: false, terms: false };
+        let wasValid = false;
+        let toastTimer;
+
+        termsToggle.addEventListener('click', function () {
+            const open = termsListWrap.classList.toggle('open');
+            termsToggle.classList.toggle('open', open);
+            termsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            termsToggle.innerHTML = (open ? 'Hide full terms ' : 'View full terms ') + '<i class="fa-solid fa-chevron-down"></i>';
+        });
+
+        function setPayment(value, label) {
+            paymentSelect.value = value;
+            summaryPayment.innerText = label;
+            paymentOptions.forEach(function (opt) {
+                const active = opt.dataset.value === value;
+                opt.classList.toggle('active', active);
+                opt.setAttribute('aria-checked', active ? 'true' : 'false');
+            });
+            codNote.classList.toggle('show', value === 'Cash on Delivery');
+            cardNote.classList.toggle('show', value === 'Card');
+        }
+
+        paymentOptions.forEach(function (opt) {
+            opt.addEventListener('click', function () { setPayment(opt.dataset.value, opt.textContent.trim()); });
+            opt.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPayment(opt.dataset.value, opt.textContent.trim()); }
+            });
+        });
+
+        function validateQuantity() {
+            let q = parseInt(qty.value, 10);
+            if (isNaN(q) || q < 1) { q = 1; }
+            if (q > maxQty) { q = maxQty; }
+            qty.value = q;
+
+            const valid = q >= 1 && q <= maxQty;
+            qtyStepper.classList.remove('is-invalid', 'is-valid');
+            qtyStepper.classList.add(valid ? 'is-valid' : 'is-invalid');
+            qtyError.classList.toggle('show', !valid);
+
+            if (maxQty > 0 && maxQty <= 5) {
+                stockWarningText.innerText = 'Only ' + maxQty + ' left in stock — order soon!';
+                stockWarning.classList.add('show');
+            } else {
+                stockWarning.classList.remove('show');
+            }
+
+            state.quantity = valid;
+            summaryQty.innerText = q;
+            updateTotal();
+            updateFormState();
+        }
+
+        function formatPhoneDisplay() {
+            const digits = phone.value.replace(/\D/g, '').slice(0, 11);
+            let formatted = digits;
+            if (digits.length > 4) { formatted = digits.slice(0, 4) + ' ' + digits.slice(4); }
+            phone.value = formatted;
+        }
+
+        function validatePhone() {
+            const raw = phone.value.replace(/\D/g, '');
+            const pattern = /^03\d{9}$/;
+            const valid = pattern.test(raw);
+
+            phone.classList.remove('is-valid', 'is-invalid');
+            phoneError.classList.remove('show');
+            phoneSuccess.classList.remove('show');
+
+            if (raw.length > 0) {
+                if (valid) { phone.classList.add('is-valid'); phoneSuccess.classList.add('show'); }
+                else { phone.classList.add('is-invalid'); phoneError.classList.add('show'); }
+            }
+
+            state.phone = valid;
+            updateFormState();
+        }
+
+        const debouncedPhoneValidate = debounce(validatePhone, 180);
+
+        phone.addEventListener('keydown', function (e) {
+            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+            if (allowedKeys.includes(e.key)) { return; }
+            if (!/^[0-9]$/.test(e.key)) { e.preventDefault(); return; }
+            const rawLength = phone.value.replace(/\D/g, '').length;
+            const selectionLength = (phone.selectionEnd || 0) - (phone.selectionStart || 0);
+            if (rawLength >= 11 && selectionLength === 0) { e.preventDefault(); }
+        });
+
+        phone.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            phone.value = pasted.replace(/\D/g, '').slice(0, 11);
+            formatPhoneDisplay();
+            validatePhone();
+        });
+
+        phone.addEventListener('input', function () { formatPhoneDisplay(); debouncedPhoneValidate(); });
+        phone.addEventListener('blur', validatePhone);
+
+        function updateDeliveryEstimate(valid) {
+            if (!valid) { deliveryEstimate.style.display = 'none'; return; }
+            const days = 4 + Math.floor(Math.random() * 3);
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            const formatted = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            deliveryEstimateText.innerText = 'Estimated delivery by ' + formatted;
+            deliveryEstimate.style.display = 'flex';
+        }
+
+        function validateAddress() {
+            const trimmed = address.value.trim();
+            const valid = trimmed.length >= 10;
+
+            address.classList.remove('is-valid', 'is-invalid');
+            addressError.classList.remove('show');
+            addressSuccess.classList.remove('show');
+
+            if (trimmed.length > 0) {
+                if (valid) { address.classList.add('is-valid'); addressSuccess.classList.add('show'); }
+                else { address.classList.add('is-invalid'); addressError.classList.add('show'); }
+            }
+
+            state.address = valid;
+            updateDeliveryEstimate(valid);
+            updateFormState();
+        }
+
+        const debouncedAddressValidate = debounce(validateAddress, 180);
+        address.addEventListener('input', debouncedAddressValidate);
+        address.addEventListener('blur', validateAddress);
+
+        termsCheck.addEventListener('change', function () {
+            const valid = this.checked;
+            this.classList.toggle('is-invalid', !valid);
+            termsError.classList.toggle('show', !valid);
+            state.terms = valid;
+            updateFormState();
+        });
+
+        qtyMinus.addEventListener('click', function () {
+            qty.value = Math.max(1, (parseInt(qty.value, 10) || 1) - 1);
+            validateQuantity();
+        });
+        qtyPlus.addEventListener('click', function () {
+            qty.value = Math.min(maxQty, (parseInt(qty.value, 10) || 1) + 1);
+            validateQuantity();
+        });
+        qty.addEventListener('input', validateQuantity);
+        qty.addEventListener('blur', validateQuantity);
+
+        function updateTotal() {
+            const q = parseInt(qty.value, 10) || 1;
+            const total = q * unitPrice;
+            subtotalQtyInline.innerText = q;
+            subtotalLine.innerText = 'Rs ' + total.toLocaleString();
+            mobTotal.innerText = 'Rs ' + total.toLocaleString();
+            animateNumber(totalSpan, lastTotal, total, 350);
+            lastTotal = total;
+        }
+
+        function showValidationToast() {
+            validationToast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => validationToast.classList.remove('show'), 3000);
+        }
+
+        function updateFormState() {
+            const completed = Object.values(state).filter(Boolean).length;
+            const total = Object.keys(state).length;
+            formProgress.innerHTML = completed === total
+                ? '<span class="done"><i class="fa-solid fa-circle-check me-1"></i>All set — ready to place your order!</span>'
+                : completed + ' of ' + total + ' fields complete';
+
+            const allValid = Object.values(state).every(Boolean);
+            submitBtn.disabled = !allValid;
+            mobileSubmitBtn.disabled = !allValid;
+
+            if (allValid && !wasValid) { showValidationToast(); }
+            wasValid = allValid;
+        }
+
+        form.addEventListener('submit', function (event) {
+            validateQuantity();
+            validatePhone();
+            validateAddress();
+
+            if (!termsCheck.checked) {
+                termsCheck.classList.add('is-invalid');
+                termsError.classList.add('show');
+                state.terms = false;
+            }
+
+            const allValid = Object.values(state).every(Boolean);
+            if (!allValid) { event.preventDefault(); updateFormState(); return; }
+
+            phone.value = phone.value.replace(/\D/g, '');
+
+            submitBtn.querySelector('.btn-text').style.display = 'none';
+            submitBtn.querySelector('.btn-loader').style.display = 'flex';
+            submitBtn.disabled = true;
+            mobileSubmitBtn.disabled = true;
+        });
+
+        validateQuantity();
+        updateTotal();
+        updateFormState();
+    });
+</script>

@@ -319,29 +319,21 @@
             overflow-y: auto;
             max-height: 520px;
             padding-bottom: 6px;
-            scrollbar-width: thin;
-            scrollbar-color: #88d200 #eef6de;
+            cursor: grab;
+            /* scrollbar hidden - Firefox / IE / Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            user-select: none;
         }
 
+            /* scrollbar hidden - Chrome / Safari / Opera */
             .products-page .table-responsive-cust::-webkit-scrollbar {
-                height: 10px;
-                width: 10px;
+                display: none;
             }
 
-            .products-page .table-responsive-cust::-webkit-scrollbar-track {
-                background: #eef6de;
-                border-radius: 20px;
+            .products-page .table-responsive-cust.grabbing {
+                cursor: grabbing;
             }
-
-            .products-page .table-responsive-cust::-webkit-scrollbar-thumb {
-                background: linear-gradient(90deg, #88d200, #6fa800);
-                border-radius: 20px;
-                border: 2px solid #eef6de;
-            }
-
-                .products-page .table-responsive-cust::-webkit-scrollbar-thumb:hover {
-                    background: #6fa800;
-                }
 
         .products-page .table-green-white {
             border-collapse: separate;
@@ -349,6 +341,7 @@
             width: 100%;
             min-width: 700px;
             margin-bottom: 0;
+            table-layout: fixed;
         }
 
             .products-page .table-green-white thead th {
@@ -365,11 +358,13 @@
                 top: 0;
                 z-index: 2;
                 text-align: center;
+                vertical-align: middle;
             }
 
                 .products-page .table-green-white thead th:first-child {
                     border-radius: 20px 0 0 20px;
                     padding-left: 26px;
+                    text-align: left;
                 }
 
                 .products-page .table-green-white thead th:last-child {
@@ -469,6 +464,7 @@
         .products-page .table-green-white tbody td:first-child {
             padding-left: 26px;
             border-radius: 18px 0 0 18px;
+            text-align: left;
         }
 
         .products-page .table-green-white tbody td:last-child {
@@ -479,7 +475,7 @@
     .products-page .name-cell {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 10px;
     }
 
@@ -563,22 +559,25 @@
     /* action buttons */
     .products-page .actions-wrap {
         display: flex;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        gap: 6px;
+        row-gap: 8px;
+        width: 100%;
     }
 
     .products-page .btn-action {
         border-radius: 60px;
-        padding: 8px 16px;
+        padding: 7px 12px;
         font-weight: 600;
-        font-size: 0.74rem;
-        letter-spacing: 0.25px;
+        font-size: 0.72rem;
+        letter-spacing: 0.2px;
         transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
         border: 1px solid transparent;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         text-decoration: none;
         line-height: 1;
         cursor: pointer;
@@ -945,6 +944,7 @@
 
         .products-page .actions-wrap {
             gap: 4px;
+            row-gap: 6px;
         }
 
         .products-page .table-green-white tbody td:first-child {
@@ -1065,8 +1065,15 @@
             </div>
 
             <!-- table -->
-            <div class="table-responsive-cust">
+            <div class="table-responsive-cust" id="tableScrollWrap">
                 <table class="table table-green-white">
+                    <colgroup>
+                        <col style="width: 26%;" />
+                        <col style="width: 13%;" />
+                        <col style="width: 13%;" />
+                        <col style="width: 15%;" />
+                        <col style="width: 33%;" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th class="sortable" onclick="sortTable(0, this)"><i class="fas fa-tag fa-fw-lead"></i> @Html.DisplayNameFor(model => model.Name) <i class="fas fa-sort sort-icon"></i></th>
@@ -1140,7 +1147,7 @@
             <!-- footer -->
             <div class="table-footer">
                 <span>
-                    <i class="fas fa-arrow-right"></i> hover rows · click header to sort · green theme
+                    <i class="fas fa-arrow-right"></i> drag to scroll · click header to sort · green theme
                 </span>
                 <span class="pill">
                     <i class="fas fa-box-open"></i> @Model.Count() products
@@ -1185,6 +1192,14 @@
             </div>
         </div>
     </div>
+
+    <!-- hidden form used to actually POST the delete. This matches the [HttpPost] +
+         [ValidateAntiForgeryToken] on the DeleteProduct action — a plain link/redirect
+         (GET) can never satisfy that action, which is why "page not found" was happening. -->
+    <form id="deleteForm" asp-action="DeleteProduct" asp-controller="Admin" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteFormId" />
+    </form>
 </div> <!-- end products-page -->
 
 <script>
@@ -1269,7 +1284,10 @@
             }
 
             setTimeout(() => {
-                window.location.href = '@Url.Action("Deletelogic", "Admin")/' + idToDelete;
+                // Submit the hidden form as a real POST (with anti-forgery token)
+                // instead of navigating the browser to a GET URL.
+                document.getElementById('deleteFormId').value = idToDelete;
+                document.getElementById('deleteForm').submit();
             }, 900);
         }
     });
@@ -1304,4 +1322,60 @@
             setTimeout(() => { toast.style.display = 'none'; }, 500);
         }, 4000);
     }
+
+    // ===== Drag-to-scroll (grab / grabbing cursor) for the table wrapper =====
+    (function () {
+        const wrap = document.getElementById('tableScrollWrap');
+        if (!wrap) return;
+
+        let isDown = false;
+        let startX, startY, scrollLeftStart, scrollTopStart;
+        let didDrag = false;
+
+        wrap.addEventListener('mousedown', (e) => {
+            isDown = true;
+            didDrag = false;
+            wrap.classList.add('grabbing');
+            startX = e.pageX - wrap.offsetLeft;
+            startY = e.pageY - wrap.offsetTop;
+            scrollLeftStart = wrap.scrollLeft;
+            scrollTopStart = wrap.scrollTop;
+        });
+
+        wrap.addEventListener('mouseleave', () => {
+            isDown = false;
+            wrap.classList.remove('grabbing');
+        });
+
+        wrap.addEventListener('mouseup', () => {
+            isDown = false;
+            wrap.classList.remove('grabbing');
+        });
+
+        wrap.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - wrap.offsetLeft;
+            const y = e.pageY - wrap.offsetTop;
+            const walkX = x - startX;
+            const walkY = y - startY;
+
+            if (Math.abs(walkX) > 3 || Math.abs(walkY) > 3) {
+                didDrag = true;
+            }
+
+            wrap.scrollLeft = scrollLeftStart - walkX;
+            wrap.scrollTop = scrollTopStart - walkY;
+        });
+
+        // Prevent accidental row clicks (edit/details/delete links) from firing
+        // right after a drag gesture.
+        wrap.addEventListener('click', (e) => {
+            if (didDrag) {
+                e.preventDefault();
+                e.stopPropagation();
+                didDrag = false;
+            }
+        }, true);
+    })();
 </script>

@@ -1,4 +1,4 @@
-@model IEnumerable<Art_Gallery.Models.AuctionDetails>
+@model IEnumerable<Art_Gallery.Models.ProductReview>
 
 @{
     ViewData["Title"] = "Index";
@@ -13,10 +13,10 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.ProductId)
+                @Html.DisplayNameFor(model => model.Ratings)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Product)
+                @Html.DisplayNameFor(model => model.ReviewMessage)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.UserId)
@@ -25,10 +25,10 @@
                 @Html.DisplayNameFor(model => model.User)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.bidamount)
+                @Html.DisplayNameFor(model => model.ProductId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.bidstatus)
+                @Html.DisplayNameFor(model => model.Product)
             </th>
             <th></th>
         </tr>
@@ -37,10 +37,10 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(model => item.ProductId)
+                @Html.DisplayFor(model => item.Ratings)
             </td>
             <td>
-                @Html.DisplayFor(model => item.Product)
+                @Html.DisplayFor(model => item.ReviewMessage)
             </td>
             <td>
                 @Html.DisplayFor(model => item.UserId)
@@ -49,10 +49,10 @@
                 @Html.DisplayFor(model => item.User)
             </td>
             <td>
-                @Html.DisplayFor(model => item.bidamount)
+                @Html.DisplayFor(model => item.ProductId)
             </td>
             <td>
-                @Html.DisplayFor(model => item.bidstatus)
+                @Html.DisplayFor(model => item.Product)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

@@ -122,8 +122,13 @@
         }
 
     @@keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
     }
 
     .progress-steps {
@@ -178,8 +183,15 @@
     }
 
     @@keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(14px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .page-title {
@@ -221,8 +233,15 @@
         }
 
     @@keyframes bannerIn {
-        from { opacity: 0; transform: translateY(-6px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .validation-banner-title {
@@ -250,8 +269,13 @@
     }
 
     @@keyframes pulseRing {
-        0%, 100% { box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14); }
-        50% { box-shadow: 0 0 0 7px rgba(230, 57, 70, 0.05); }
+        0%, 100% {
+            box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14);
+        }
+
+        50% {
+            box-shadow: 0 0 0 7px rgba(230, 57, 70, 0.05);
+        }
     }
 
     .validation-banner-count {
@@ -334,14 +358,31 @@
         transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
-        .section:nth-of-type(1) { animation-delay: 0.05s; }
-        .section:nth-of-type(2) { animation-delay: 0.15s; }
-        .section:nth-of-type(3) { animation-delay: 0.25s; }
-        .section:nth-of-type(4) { animation-delay: 0.35s; }
-        .section:nth-of-type(5) { animation-delay: 0.45s; }
+        .section:nth-of-type(1) {
+            animation-delay: 0.05s;
+        }
+
+        .section:nth-of-type(2) {
+            animation-delay: 0.15s;
+        }
+
+        .section:nth-of-type(3) {
+            animation-delay: 0.25s;
+        }
+
+        .section:nth-of-type(4) {
+            animation-delay: 0.35s;
+        }
+
+        .section:nth-of-type(5) {
+            animation-delay: 0.45s;
+        }
 
     @@keyframes sectionIn {
-        to { opacity: 1; transform: translateY(0); }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .section-header {
@@ -356,7 +397,9 @@
         transition: background 0.2s ease;
     }
 
-        .section-header:hover { background: var(--ultra-light-green); }
+        .section-header:hover {
+            background: var(--ultra-light-green);
+        }
 
     .section-label {
         display: flex;
@@ -387,18 +430,26 @@
         box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.08);
     }
 
-        .section.has-error .section-label .num { background: var(--danger-red); }
+        .section.has-error .section-label .num {
+            background: var(--danger-red);
+        }
 
-    .section.complete { border-color: var(--primary-green); }
+    .section.complete {
+        border-color: var(--primary-green);
+    }
 
         .section.complete .section-label .num {
             background: var(--primary-green);
             transform: scale(1.05);
         }
 
-            .section.complete .section-label .num::after { content: "✓"; }
+            .section.complete .section-label .num::after {
+                content: "✓";
+            }
 
-    .section:not(.complete) .section-label .num::after { content: attr(data-step); }
+    .section:not(.complete) .section-label .num::after {
+        content: attr(data-step);
+    }
 
     .chevron {
         transition: transform 0.3s ease;
@@ -406,7 +457,9 @@
         font-size: 0.8rem;
     }
 
-    .section.collapsed .chevron { transform: rotate(-90deg); }
+    .section.collapsed .chevron {
+        transform: rotate(-90deg);
+    }
 
     .section-body {
         padding: 20px 20px 6px;
@@ -430,7 +483,9 @@
     }
 
     @@media (min-width: 640px) {
-        .two-col { grid-template-columns: 1fr 1fr; }
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
     .form-group {
@@ -459,8 +514,13 @@
         transition: color 0.2s ease;
     }
 
-        .char-counter.warn { color: var(--warn-amber); }
-        .char-counter.limit { color: var(--danger-red); }
+        .char-counter.warn {
+            color: var(--warn-amber);
+        }
+
+        .char-counter.limit {
+            color: var(--danger-red);
+        }
 
     .form-control {
         border: 1.5px solid #e5e7eb;
@@ -472,7 +532,9 @@
         background-color: #fafafa;
     }
 
-        .form-control:hover { border-color: var(--light-green); }
+        .form-control:hover {
+            border-color: var(--light-green);
+        }
 
         .form-control:focus {
             border-color: var(--primary-green);
@@ -501,11 +563,18 @@
         }
 
     @@keyframes shake {
-        25% { transform: translateX(-4px); }
-        75% { transform: translateX(4px); }
+        25% {
+            transform: translateX(-4px);
+        }
+
+        75% {
+            transform: translateX(4px);
+        }
     }
 
-    .input-wrap { position: relative; }
+    .input-wrap {
+        position: relative;
+    }
 
     .status-icon {
         position: absolute;
@@ -525,8 +594,14 @@
         pointer-events: none;
     }
 
-        .status-icon.show { transform: translateY(-50%) scale(1); }
-        .status-icon.valid { background: var(--primary-green); }
+        .status-icon.show {
+            transform: translateY(-50%) scale(1);
+        }
+
+        .status-icon.valid {
+            background: var(--primary-green);
+        }
+
         .status-icon.invalid {
             background: var(--danger-red);
             box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.14);
@@ -589,7 +664,10 @@
             border-left: 3px solid var(--danger-red);
         }
 
-    .text-danger { color: var(--danger-red) !important; font-size: 0.82rem; }
+    .text-danger {
+        color: var(--danger-red) !important;
+        font-size: 0.82rem;
+    }
 
     .form-text.text-muted {
         font-size: 0.8rem;
@@ -636,7 +714,9 @@
             margin-bottom: 4px;
         }
 
-    #SaleTypeSelect { display: none; }
+    #SaleTypeSelect {
+        display: none;
+    }
 
     #priceSection, #auctionSection {
         background-color: var(--ultra-light-green);
@@ -668,7 +748,9 @@
     }
 
     @@media (min-width: 640px) {
-        .image-slot-grid { grid-template-columns: repeat(3, 1fr); }
+        .image-slot-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
     }
 
     .image-slot {
@@ -723,7 +805,9 @@
         transition: background-color 0.2s ease;
     }
 
-        .btn-replace:hover { background-color: var(--ultra-light-green); }
+        .btn-replace:hover {
+            background-color: var(--ultra-light-green);
+        }
 
     .image-slot-hint {
         display: block;
@@ -761,7 +845,9 @@
             box-shadow: 0 8px 20px rgba(111, 168, 0, 0.35);
         }
 
-        .btn-primary:not(:disabled):active { transform: translateY(0); }
+        .btn-primary:not(:disabled):active {
+            transform: translateY(0);
+        }
 
         .btn-primary:disabled {
             background: #d1d5db;
@@ -779,7 +865,10 @@
     }
 
     @@keyframes rippleAnim {
-        to { transform: scale(3); opacity: 0; }
+        to {
+            transform: scale(3);
+            opacity: 0;
+        }
     }
 
     .btn-hint {
@@ -790,7 +879,10 @@
         transition: color 0.3s ease;
     }
 
-        .btn-hint.ready { color: var(--dark-green); font-weight: 600; }
+        .btn-hint.ready {
+            color: var(--dark-green);
+            font-weight: 600;
+        }
 
     .back-link {
         display: inline-block;
@@ -820,9 +912,17 @@
     }
 
     @@media (max-width: 991px) {
-        .mobile-submit-bar { display: block; }
-        .desktop-submit { display: none; }
-        .page-wrapper { margin-bottom: 90px; }
+        .mobile-submit-bar {
+            display: block;
+        }
+
+        .desktop-submit {
+            display: none;
+        }
+
+        .page-wrapper {
+            margin-bottom: 90px;
+        }
     }
 
     .preview-card {
@@ -852,7 +952,9 @@
         object-fit: cover;
     }
 
-    .preview-card-body { padding: 16px 18px 20px; }
+    .preview-card-body {
+        padding: 16px 18px 20px;
+    }
 
     .preview-card-name {
         font-weight: 700;
@@ -875,7 +977,11 @@
         align-items: center;
     }
 
-    .preview-price { font-weight: 800; color: var(--dark-green); font-size: 1.1rem; }
+    .preview-price {
+        font-weight: 800;
+        color: var(--dark-green);
+        font-size: 1.1rem;
+    }
 
     .preview-badge {
         font-size: 0.68rem;
@@ -888,7 +994,10 @@
         letter-spacing: 0.04em;
     }
 
-        .preview-badge.auction { background: #fff7e6; color: #b45309; }
+        .preview-badge.auction {
+            background: #fff7e6;
+            color: #b45309;
+        }
 
     .preview-card-meta {
         display: flex;
@@ -906,7 +1015,11 @@
         color: var(--text-dark);
     }
 
-    .preview-card-thumbs { display: flex; gap: 6px; margin-top: 12px; }
+    .preview-card-thumbs {
+        display: flex;
+        gap: 6px;
+        margin-top: 12px;
+    }
 
         .preview-card-thumbs img {
             width: 32px;
@@ -940,10 +1053,22 @@
         animation: toastIn 0.35s ease forwards, toastOut 0.35s ease forwards 3.2s;
     }
 
-        .toast.success-toast { border-left-color: var(--primary-green); }
+        .toast.success-toast {
+            border-left-color: var(--primary-green);
+        }
 
-    @@keyframes toastIn { to { transform: translateX(0); } }
-    @@keyframes toastOut { to { transform: translateX(120%); opacity: 0; } }
+    @@keyframes toastIn {
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes toastOut {
+        to {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+    }
 
     .success-overlay {
         position: fixed;
@@ -959,7 +1084,10 @@
         overflow: hidden;
     }
 
-        .success-overlay.show { opacity: 1; pointer-events: all; }
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
 
     .success-box {
         background: #fff;
@@ -973,7 +1101,9 @@
         z-index: 2;
     }
 
-    .success-overlay.show .success-box { transform: scale(1); }
+    .success-overlay.show .success-box {
+        transform: scale(1);
+    }
 
     .checkmark-circle {
         width: 80px;
@@ -986,7 +1116,10 @@
         margin: 0 auto 18px;
     }
 
-        .checkmark-circle svg { width: 44px; height: 44px; }
+        .checkmark-circle svg {
+            width: 44px;
+            height: 44px;
+        }
 
         .checkmark-circle path {
             stroke: var(--primary-green);
@@ -999,10 +1132,23 @@
             animation: drawCheck 0.5s ease forwards 0.2s;
         }
 
-    @@keyframes drawCheck { to { stroke-dashoffset: 0; } }
+    @@keyframes drawCheck {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
 
-    .success-box h3 { color: var(--dark-green); font-weight: 700; margin-bottom: 8px; }
-    .success-box p { color: #6b7280; font-size: 0.92rem; line-height: 1.5; }
+    .success-box h3 {
+        color: var(--dark-green);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .success-box p {
+        color: #6b7280;
+        font-size: 0.92rem;
+        line-height: 1.5;
+    }
 
     .confetti-piece {
         position: absolute;
@@ -1014,7 +1160,10 @@
     }
 
     @@keyframes confettiFall {
-        to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; }
+        to {
+            transform: translateY(110vh) rotate(540deg);
+            opacity: 0.3;
+        }
     }
 
     @@media (prefers-reduced-motion: reduce) {
@@ -1116,10 +1265,10 @@
                         <div class="image-slot-grid">
                             @{
                                 var slots = new[] {
-                                    new { Num = 1, Name = "Image1", Src = Model.Image1 },
-                                    new { Num = 2, Name = "Image2", Src = Model.Image2 },
-                                    new { Num = 3, Name = "Image3", Src = Model.Image3 }
-                                };
+                                                        new { Num = 1, Name = "Image1", Src = Model.Image1 },
+                                                        new { Num = 2, Name = "Image2", Src = Model.Image2 },
+                                                        new { Num = 3, Name = "Image3", Src = Model.Image3 }
+                                                        };
                             }
                             @foreach (var slot in slots)
                             {
@@ -1175,7 +1324,10 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <!-- Quantity: only applies to Fixed Price (Buy Now) listings.
+                             Hidden + non-required automatically when Auction is selected
+                             via toggleSaleType() below. -->
+                        <div class="form-group" id="quantityGroup">
                             <label asp-for="quantity" class="control-label"></label>
                             <div class="input-wrap">
                                 <input asp-for="quantity" class="form-control" data-group="pricing" data-label="Quantity" type="number" min="1" step="1" required />
@@ -1455,6 +1607,8 @@
         const auctionSection = document.getElementById("auctionSection");
         const priceInput = priceSection.querySelector("input[name='price']");
         const bidPriceInput = auctionSection.querySelector("input[name='BidPrice']");
+        const quantityGroup = document.getElementById("quantityGroup");
+        const quantityInput = quantityGroup.querySelector("input[name='quantity']");
 
         function setSaleType(value) {
             saleTypeSelect.value = value;
@@ -1481,6 +1635,13 @@
                 bidStartInput.setAttribute("required", "required");
                 bidEndInput.setAttribute("required", "required");
                 bidPriceInput.setAttribute("required", "required");
+
+                // Quantity doesn't apply to an auction listing (single item) —
+                // hide it and drop it from validation, same as the other Add/Edit forms.
+                quantityGroup.style.display = "none";
+                quantityInput.removeAttribute("required");
+                quantityInput.value = "";
+                clearFieldValidation(quantityInput);
             } else {
                 priceSection.style.display = "block";
                 auctionSection.style.display = "none";
@@ -1490,6 +1651,10 @@
                 bidPriceInput.removeAttribute("required");
                 [bidStartInput, bidEndInput, bidPriceInput].forEach(clearFieldValidation);
                 updateCountdown();
+
+                // Buy Now (Fixed Price) — quantity applies again.
+                quantityGroup.style.display = "block";
+                quantityInput.setAttribute("required", "required");
             }
         }
         // Initialize based on the product's CURRENT sale type (server-rendered), not a hardcoded default

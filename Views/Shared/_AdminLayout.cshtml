@@ -1,7 +1,21 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@using Art_Gallery.Data
+@using Microsoft.EntityFrameworkCore
+@inject Art_GalleryContext SidebarDb
 @{
+    var displayName = User?.Identity?.Name;
+    if (string.IsNullOrWhiteSpace(displayName))
+    {
+        displayName = "Admin";
+    }
+    var avatarInitial = displayName.Trim().Substring(0, 1).ToUpperInvariant();
+
+    // Small live counts for the sidebar "Quick Overview" widget. Kept to two
+    // lightweight COUNT queries so it's cheap to run on every page.
+    var pendingProductsCount = await SidebarDb.products.CountAsync(p => p.Status == "Pending");
+    var pendingOrdersCount = await SidebarDb.orders.CountAsync(o => o.Status == "Pending");
 }
 <!DOCTYPE html>
 <html lang="en"
@@ -51,6 +65,673 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="~/Admin/assets/js/config.js"></script>
+
+    <!-- ============================================================
+         SIDEBAR — GREEN THEME ENHANCEMENT
+         Fixes low-contrast menu text/icons from the stock template,
+         adds clear hover/active states, a scrollable menu body and
+         a fixed profile + logout footer (mirrors the storefront's
+         account dropdown pattern).
+         ============================================================ -->
+    <style>
+        #layout-menu {
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #16240a 0%, #0f1a06 100%) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+            /* Brand */
+            #layout-menu .app-brand-text {
+                color: #ffffff !important;
+                letter-spacing: .3px;
+            }
+
+            #layout-menu .app-brand-link:hover .app-brand-text {
+                color: #d4f09b !important;
+            }
+
+            /* Section headers, e.g. "ART MANAGEMENT" */
+            #layout-menu .menu-header-text {
+                color: #8fae5c !important;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                opacity: .95;
+            }
+
+            /* Scrollable menu body, footer stays pinned — scrollbar hidden,
+                       content still scrolls with mouse wheel / trackpad / touch */
+            #layout-menu .menu-inner {
+                flex: 1 1 auto;
+                overflow-y: auto;
+                padding-bottom: 8px;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE / legacy Edge */
+            }
+
+                #layout-menu .menu-inner::-webkit-scrollbar {
+                    display: none; /* Chrome / Safari / Edge */
+                }
+
+            /* Top-level + sub links — force legible text/icon color */
+            #layout-menu .menu-link,
+            #layout-menu .menu-link div,
+            #layout-menu .menu-link i {
+                color: rgba(255, 255, 255, 0.85) !important;
+                transition: color .18s ease, background .18s ease, padding-left .18s ease, transform .18s ease;
+            }
+
+            #layout-menu .menu-link {
+                margin: 2px 10px;
+                border-radius: 10px;
+            }
+
+                /* Icon chips — gives each item a small colored badge instead of a
+                       bare glyph floating in the dark, which is what made the old
+                       version feel flat/low-effort */
+                #layout-menu .menu-link .menu-icon {
+                    width: 26px;
+                    height: 26px;
+                    display: inline-flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.06);
+                    font-size: 14px;
+                    margin-right: 4px;
+                    flex-shrink: 0;
+                    transition: background .18s ease, color .18s ease, transform .18s ease;
+                }
+
+                #layout-menu .menu-item.active > .menu-link,
+                #layout-menu .menu-item.active > .menu-link div,
+                #layout-menu .menu-link:hover,
+                #layout-menu .menu-link:hover div {
+                    color: #ffffff !important;
+                }
+
+            #layout-menu .menu-item.active > .menu-link {
+                background: linear-gradient(90deg, rgba(136, 210, 0, 0.32), rgba(136, 210, 0, 0.05)) !important;
+                box-shadow: inset 3px 0 0 #88d200;
+            }
+
+                #layout-menu .menu-item.active > .menu-link .menu-icon {
+                    background: #88d200;
+                    color: #12220a !important;
+                }
+
+            #layout-menu .menu-link:hover {
+                background: rgba(255, 255, 255, 0.05) !important;
+            }
+
+                #layout-menu .menu-link:hover .menu-icon {
+                    background: rgba(136, 210, 0, 0.35);
+                    color: #ffffff !important;
+                    transform: scale(1.06);
+                }
+
+            /* Sub-menu items */
+            #layout-menu .menu-sub {
+                padding: 2px 0 6px;
+            }
+
+                #layout-menu .menu-sub .menu-link {
+                    color: rgba(255, 255, 255, 0.66) !important;
+                    font-size: 13.3px;
+                    margin: 1px 10px 1px 26px;
+                    padding-top: 7px;
+                    padding-bottom: 7px;
+                }
+
+                    #layout-menu .menu-sub .menu-link .menu-icon {
+                        width: 22px;
+                        height: 22px;
+                        font-size: 12.5px;
+                        background: transparent;
+                    }
+
+                    #layout-menu .menu-sub .menu-link:hover {
+                        color: #d4f09b !important;
+                        background: rgba(136, 210, 0, 0.1) !important;
+                    }
+
+                #layout-menu .menu-sub .menu-item.active > .menu-link {
+                    color: #d4f09b !important;
+                    font-weight: 500;
+                    background: rgba(136, 210, 0, 0.08) !important;
+                }
+
+            /* Caret */
+            #layout-menu .menu-toggle::after {
+                filter: brightness(2.2);
+                opacity: .6;
+                transition: opacity .18s ease;
+            }
+
+            #layout-menu .menu-link:hover::after {
+                opacity: 1;
+            }
+
+            /* Section headers get a little more breathing room */
+            #layout-menu .menu-header {
+                margin-top: 14px;
+                padding-left: 20px !important;
+            }
+
+                #layout-menu .menu-header:first-child {
+                    margin-top: 4px;
+                }
+
+        /* ---- Quick Overview widget: live pending counts, pinned under brand ---- */
+        .menu-quick-stats {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 4px 12px 12px;
+        }
+
+        .quick-stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background .18s ease, border-color .18s ease, transform .18s ease;
+        }
+
+            .quick-stat-chip:hover {
+                background: rgba(136, 210, 0, 0.12);
+                border-color: rgba(136, 210, 0, 0.3);
+                transform: translateX(2px);
+            }
+
+            .quick-stat-chip i {
+                width: 26px;
+                height: 26px;
+                border-radius: 8px;
+                background: rgba(136, 210, 0, 0.18);
+                color: #d4f09b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+
+        .quick-stat-label {
+            flex: 1 1 auto;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 12.5px;
+            font-weight: 500;
+        }
+
+        .quick-stat-value {
+            min-width: 22px;
+            padding: 2px 7px;
+            border-radius: 20px;
+            background: #88d200;
+            color: #12220a;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+            .quick-stat-value.is-zero {
+                background: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.55);
+            }
+
+        /* ---- Sidebar footer: profile chip (links to My Profile) ---- */
+        .menu-footer {
+            flex-shrink: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.18);
+        }
+
+        .menu-footer-user {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 11px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            transition: background .18s ease;
+        }
+
+            .menu-footer-user:hover {
+                background: rgba(255, 255, 255, 0.06);
+            }
+
+        .menu-footer-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .menu-footer-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4f09b, #6fa800);
+            color: #1c2e00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+            flex-shrink: 0;
+            order: 2;
+            border: 2px solid rgba(255, 255, 255, .4);
+        }
+
+        .menu-footer-name {
+            color: #fff;
+            font-size: 13.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .menu-footer-sub {
+            color: #9fc46b;
+            font-size: 11.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .menu-footer-sub i {
+                font-size: 12px;
+            }
+
+        /* ============================================================
+                   TOP NAVBAR — GREEN THEME ENHANCEMENT
+                   ============================================================ */
+        #layout-navbar {
+            background: #ffffff !important;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(15, 26, 6, 0.07) !important;
+            border: 1px solid rgba(136, 210, 0, 0.14);
+            padding-top: 8px;
+            padding-bottom: 8px;
+            margin-top: 12px;
+            position: sticky !important;
+            top: 12px;
+            z-index: 1030;
+            transition: box-shadow .25s ease, border-color .25s ease;
+        }
+
+            #layout-navbar.navbar-scrolled {
+                box-shadow: 0 10px 28px rgba(15, 26, 6, 0.14) !important;
+                border-color: rgba(136, 210, 0, 0.28);
+            }
+
+        .navbar-page-title {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+            padding-left: 4px;
+            border-left: 3px solid #88d200;
+            padding-left: 12px;
+        }
+
+            .navbar-page-title .title-eyebrow {
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #8fae5c;
+            }
+
+            .navbar-page-title .title-main {
+                font-size: 15px;
+                font-weight: 600;
+                color: #1c2e00;
+                line-height: 1.2;
+            }
+
+        /* Let the middle of the navbar actually claim the free space so the
+                   search bar can grow, instead of hugging the icons on the right */
+        #layout-navbar .navbar-nav-right {
+            flex: 1 1 auto;
+            display: flex;
+        }
+
+        .navbar-search-wrap {
+            position: relative;
+            flex: 1 1 auto;
+            max-width: 560px;
+            margin-right: 18px;
+        }
+
+        /* Live search results panel */
+        .navbar-search-results {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 14px;
+            border-top: 3px solid #88d200;
+            box-shadow: 0 20px 48px rgba(15, 26, 6, 0.18);
+            max-height: 420px;
+            overflow-y: auto;
+            z-index: 1040;
+            padding: 6px 0;
+            display: none;
+        }
+
+            .navbar-search-results.show {
+                display: block;
+                animation: searchPanelIn .16s ease;
+            }
+
+        @@keyframes searchPanelIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px) scale(.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .search-group-label {
+            padding: 8px 16px 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            color: #8fae5c;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 16px;
+            color: #333 !important;
+            font-size: 13.5px;
+            text-decoration: none;
+            transition: background .15s ease, padding-left .15s ease, color .15s ease;
+        }
+
+            .search-result-item:hover,
+            .search-result-item.is-active {
+                background: #f0fae6;
+                color: #4d7a00 !important;
+                padding-left: 20px;
+            }
+
+            .search-result-item .search-result-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                background: rgba(136, 210, 0, 0.14);
+                color: #6fa800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+
+            .search-result-item .search-result-text {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .search-result-item .search-result-title {
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .search-result-item .search-result-sub {
+                font-size: 11.5px;
+                color: #8a9c72;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+        .search-empty-state,
+        .search-loading-state {
+            padding: 22px 16px;
+            text-align: center;
+            color: #8a9c72;
+            font-size: 13px;
+        }
+
+            .search-loading-state i {
+                display: inline-block;
+                margin-right: 6px;
+                animation: searchSpin .8s linear infinite;
+            }
+
+        @@keyframes searchSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Search pill */
+        #layout-navbar .navbar-search-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f3f8ea;
+            border-radius: 30px;
+            padding: 9px 10px 9px 18px;
+            border: 1px solid transparent;
+            transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+            width: 100%;
+        }
+
+            #layout-navbar .navbar-search-pill:focus-within {
+                background: #ffffff;
+                border-color: rgba(136, 210, 0, 0.4);
+                box-shadow: 0 0 0 3px rgba(136, 210, 0, 0.16);
+            }
+
+            #layout-navbar .navbar-search-pill i {
+                color: #6fa800;
+                font-size: 16px;
+                flex-shrink: 0;
+            }
+
+            #layout-navbar .navbar-search-pill input {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                font-size: 13.5px;
+                color: #1c2e00;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+                #layout-navbar .navbar-search-pill input::placeholder {
+                    color: #8a9c72;
+                }
+
+        /* Keyboard-shortcut hint chip, sits inside the pill on the right */
+        #layout-navbar .navbar-search-kbd {
+            flex-shrink: 0;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6fa800;
+            background: #ffffff;
+            border: 1px solid rgba(136, 210, 0, 0.35);
+            border-radius: 6px;
+            padding: 2px 7px;
+            line-height: 1.4;
+        }
+
+        /* "Quick Add" split button — creates a product/category on the spot
+                   without leaving whatever page you're on */
+        .navbar-quick-add {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 30px;
+            background: linear-gradient(90deg, #6fa800, #88d200);
+            color: #ffffff !important;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(136, 210, 0, .38);
+            transition: box-shadow .2s ease, transform .2s ease;
+            margin-right: 14px;
+            white-space: nowrap;
+        }
+
+            .navbar-quick-add:hover {
+                box-shadow: 0 6px 20px rgba(136, 210, 0, .55);
+                transform: translateY(-1px);
+                color: #ffffff !important;
+            }
+
+            .navbar-quick-add i {
+                font-size: 17px;
+            }
+
+        .navbar-quick-add {
+            animation: quickAddPulse 2.8s ease-in-out infinite;
+        }
+
+            .navbar-quick-add:hover {
+                animation-play-state: paused;
+            }
+
+        @@keyframes quickAddPulse {
+            0%, 100% {
+                box-shadow: 0 4px 14px rgba(136, 210, 0, .38);
+            }
+
+            50% {
+                box-shadow: 0 4px 22px rgba(136, 210, 0, .62);
+            }
+        }
+
+        /* Every Bootstrap dropdown (Quick Add, account menu) eases in instead
+                   of snapping open */
+        .dropdown-menu.show {
+            animation: dropdownFadeIn .18s ease;
+        }
+
+        @@keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px) scale(.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Avatar — dynamic initial instead of a stock photo */
+        .navbar-avatar-initial {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #d4f09b, #6fa800);
+            color: #1c2e00;
+            font-weight: 700;
+            font-size: 15px;
+            border: 2px solid #88d200;
+            transition: box-shadow .2s ease;
+        }
+
+        .navbar-avatar-initial-lg {
+            width: 44px;
+            height: 44px;
+            font-size: 17px;
+        }
+
+        #layout-navbar .dropdown-user .nav-link:hover .navbar-avatar-initial {
+            box-shadow: 0 0 0 3px rgba(136, 210, 0, 0.25);
+        }
+
+        /* Dropdown menu styling to match sidebar accent */
+        #layout-navbar .dropdown-menu {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 20px 48px rgba(15, 26, 6, 0.18);
+            padding: 8px 0;
+            margin-top: 14px !important;
+            border-top: 3px solid #88d200;
+            overflow: hidden;
+        }
+
+            #layout-navbar .dropdown-menu .dropdown-item {
+                padding: 10px 16px;
+                font-size: 13.5px;
+                color: #333 !important;
+                transition: background .18s ease, padding-left .18s ease, color .18s ease;
+            }
+
+                #layout-navbar .dropdown-menu .dropdown-item:hover {
+                    background: #f0fae6;
+                    color: #4d7a00 !important;
+                    padding-left: 20px;
+                }
+
+                #layout-navbar .dropdown-menu .dropdown-item i {
+                    color: #6fa800;
+                }
+
+                #layout-navbar .dropdown-menu .dropdown-item:first-child {
+                    background: linear-gradient(135deg, #f0fae6, #e3f5c8);
+                    border-radius: 14px 14px 0 0;
+                    padding: 14px 16px;
+                }
+
+                    #layout-navbar .dropdown-menu .dropdown-item:first-child:hover {
+                        padding-left: 16px;
+                    }
+
+        #layout-navbar .dropdown-divider {
+            margin: 6px 0;
+        }
+
+        #layout-navbar form .dropdown-item {
+            width: 100%;
+            text-align: left;
+            color: #c23a4d !important;
+        }
+
+            #layout-navbar form .dropdown-item i {
+                color: #c23a4d;
+            }
+
+            #layout-navbar form .dropdown-item:hover {
+                background: #fdecef !important;
+                color: #c23a4d !important;
+            }
+    </style>
 </head>
 
 <body>
@@ -61,7 +742,7 @@
 
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
                 <div class="app-brand demo">
-                    <a href="index.html" class="app-brand-link">
+                    <a asp-controller="Admin" asp-action="Index" class="app-brand-link">
                         <span class="app-brand-logo demo">
                             <i class="bx bxs-palette" style="font-size: 28px; color: #88d200;"></i>
                         </span>
@@ -73,20 +754,31 @@
                     </a>
                 </div>
 
+                <!-- Quick Overview: live pending counts, always visible, not
+                     part of the scrolling menu list -->
+                <div class="menu-quick-stats">
+                    <a asp-controller="Admin" asp-action="Productrequest" class="quick-stat-chip">
+                        <i class="bx bx-package"></i>
+                        <span class="quick-stat-label">Pending Products</span>
+                        <span class="quick-stat-value @(pendingProductsCount == 0 ? "is-zero" : "")">@pendingProductsCount</span>
+                    </a>
+                    <a asp-controller="Admin" asp-action="Adminproductsorders" class="quick-stat-chip">
+                        <i class="bx bx-cart"></i>
+                        <span class="quick-stat-label">Pending Orders</span>
+                        <span class="quick-stat-value @(pendingOrdersCount == 0 ? "is-zero" : "")">@pendingOrdersCount</span>
+                    </a>
+                </div>
+
                 <div class="menu-inner-shadow"></div>
 
                 <ul class="menu-inner py-1">
                     <!-- Dashboard -->
                     <li class="menu-item active">
-                        <a href="index.html" class="menu-link">
+                        <a asp-controller="Admin" asp-action="Index" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-home-circle"></i>
                             <div data-i18n="Analytics">Dashboard</div>
                         </a>
                     </li>
-
-
-
-
 
                     <!-- Artwork Management -->
                     <li class="menu-header small text-uppercase">
@@ -125,25 +817,15 @@
                         </ul>
                     </li>
 
-
-                    <!-- Artists -->
+                    <!-- People -->
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">PEOPLE</span>
                     </li>
                     <li class="menu-item">
-                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <a asp-controller="Admin" asp-action="Adminproductsorders" class="menu-link">
                             <i class="menu-icon tf-icons bx bxs-brush"></i>
-                            <div data-i18n="Artists">Orders</div>
+                            <div data-i18n="Orders">Orders</div>
                         </a>
-                        <ul class="menu-sub">
-                         
-                            <li class="menu-item">
-                                <a asp-action="adminproductsorders" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-user-plus"></i>
-                                    <div data-i18n="Add Artist">Orders</div>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -160,11 +842,15 @@
                         </ul>
                     </li>
 
-
-
                     <!-- Sales -->
                     <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Sales</span>
+                        <span class="menu-header-text">SALES</span>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="Admin" asp-action="Allrejectedorders" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-x-circle"></i>
+                            <div data-i18n="Rejected Orders">Rejected Orders</div>
+                        </a>
                     </li>
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -173,21 +859,9 @@
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
-                                <a href="/Admin/Allcontacts" class="menu-link">
+                                <a asp-controller="Admin" asp-action="Allcontacts" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-envelope-open"></i>
                                     <div data-i18n="All Orders">All Contacts</div>
-                                </a>
-                            </li>
-                            <li class="menu-item">
-                                <a href="" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-time-five"></i>
-                                    <div data-i18n="Pending Orders">Pending Orders</div>
-                                </a>
-                            </li>
-                            <li class="menu-item">
-                                <a href="" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-check-circle"></i>
-                                    <div data-i18n="Completed Orders">Completed Orders</div>
                                 </a>
                             </li>
                         </ul>
@@ -199,13 +873,13 @@
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
-                                <a asp-action="Allpaymentdetails" asp-controller="admin" class="menu-link">
+                                <a asp-action="Allpaymentdetails" asp-controller="Admin" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-credit-card"></i>
                                     <div data-i18n="Payments">Payment Details</div>
                                 </a>
                             </li>
                             <li class="menu-item">
-                                <a asp-action="allorderspayments" asp-controller="admin" class="menu-link">
+                                <a asp-action="Allorderspayments" asp-controller="Admin" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-credit-card"></i>
                                     <div data-i18n="Payments"> Orders Payments </div>
                                 </a>
@@ -213,9 +887,9 @@
                         </ul>
                     </li>
 
-                    <!-- Showcase -->
+                    <!-- Products -->
                     <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Products</span>
+                        <span class="menu-header-text">PRODUCTS</span>
                     </li>
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -224,15 +898,21 @@
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
-                                <a asp-action="productrequest" asp-controller="admin" class="menu-link">
+                                <a asp-action="Productrequest" asp-controller="Admin" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-list-check"></i>
                                     <div data-i18n="Gallery Images">All Product Requests</div>
                                 </a>
                             </li>
                             <li class="menu-item">
-                                <a asp-controller="admin" asp-action="allproducts" class="menu-link">
+                                <a asp-controller="Admin" asp-action="Allproducts" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-images"></i>
                                     <div data-i18n="Add Image">All Products</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="Allrejectedproducts" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-block"></i>
+                                    <div data-i18n="Rejected Products">Rejected Products</div>
                                 </a>
                             </li>
                         </ul>
@@ -244,37 +924,125 @@
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
-                                <a asp-action="auctiondetails" class="menu-link">
+                                <a asp-controller="Admin" asp-action="Auctiondetails" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-calendar"></i>
                                     <div data-i18n="All Exhibitions">All Auctions</div>
                                 </a>
                             </li>
+                        </ul>
+                    </li>
+
+                    <!-- Feedback & Reviews -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">FEEDBACK &amp; REVIEWS</span>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="Admin" asp-action="Allproductsreviews" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-star"></i>
+                            <div data-i18n="Reviews">Product Reviews</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="Admin" asp-action="Allusersfeedbacks" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-comment-detail"></i>
+                            <div data-i18n="Feedbacks">User Feedbacks</div>
+                        </a>
+                    </li>
+
+                    <!-- My Selling (admin's own seller-side products/orders/auctions) -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">MY SELLING</span>
+                    </li>
+                    <li class="menu-item">
+                        <a asp-controller="Admin" asp-action="Usersellerprofile" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-store"></i>
+                            <div data-i18n="Seller Dashboard">Seller Dashboard</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons bx bx-package"></i>
+                            <div data-i18n="My Listings">My Listings</div>
+                        </a>
+                        <ul class="menu-sub">
                             <li class="menu-item">
-                                <a href="" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
-                                    <div data-i18n="Add Exhibitions">Add Exhibitions</div>
+                                <a asp-controller="Admin" asp-action="Mybuynowproducts" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+                                    <div data-i18n="Buy Now Products">My Buy Now Products</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="Myauctionsproducts" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-calendar-star"></i>
+                                    <div data-i18n="Auction Products">My Auction Products</div>
                                 </a>
                             </li>
                         </ul>
                     </li>
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons bx bx-star"></i>
-                            <div data-i18n="Reviews">Reviews</div>
+                            <i class="menu-icon tf-icons bx bx-inbox"></i>
+                            <div data-i18n="Orders Received">Orders Received</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
-                                <a href="" class="menu-link">
-                                    <i class="menu-icon tf-icons bx bx-comment-detail"></i>
-                                    <div data-i18n="Customer Reviews">Customer Reviews</div>
+                                <a asp-controller="Admin" asp-action="Myproductsorders" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-cart-alt"></i>
+                                    <div data-i18n="Orders on My Products">Orders on My Products</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="Myauctionproductsbids" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-gavel"></i>
+                                    <div data-i18n="Bids on My Auctions">Bids on My Auctions</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="Myallproductspayments" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-wallet"></i>
+                                    <div data-i18n="My Payments">My Payments</div>
                                 </a>
                             </li>
                         </ul>
                     </li>
 
-
-
+                    <!-- My Account -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">MY ACCOUNT</span>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons bx bx-id-card"></i>
+                            <div data-i18n="Account">Account</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="Myprofile" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-user-circle"></i>
+                                    <div data-i18n="My Profile">My Profile</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-controller="Admin" asp-action="ChangePassword" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-lock-alt"></i>
+                                    <div data-i18n="Change Password">Change Password</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
+
+                <!-- Sidebar footer: profile chip, links to My Profile. Logout
+                     lives in the top navbar's user dropdown only. -->
+                <div class="menu-footer">
+                    <a asp-controller="Admin" asp-action="Myprofile" class="menu-footer-user">
+                        <div class="menu-footer-text">
+                            <span class="menu-footer-name">@displayName</span>
+                            <span class="menu-footer-sub"><i class="bx bx-user-circle"></i> View profile</span>
+                        </div>
+                        <div class="menu-footer-avatar">@avatarInitial</div>
+                    </a>
+                </div>
             </aside>
             <!-- / Menu -->
             <!-- Layout container -->
@@ -289,39 +1057,70 @@
                         </a>
                     </div>
 
-                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-page-title d-none d-md-flex">
+                        <span class="title-eyebrow">Art Gallery Admin</span>
+                        <span class="title-main">@(ViewData["Title"] as string ?? "Dashboard")</span>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center ms-auto" id="navbar-collapse">
                         <!-- Search -->
-                        <div class="navbar-nav align-items-center">
-                            <div class="nav-item d-flex align-items-center">
-                                <i class="bx bx-search fs-4 lh-0"></i>
+                        <div class="navbar-nav align-items-center d-none d-sm-flex navbar-search-wrap">
+                            <div class="nav-item navbar-search-pill">
+                                <i class="bx bx-search"></i>
                                 <input type="text"
-                                       class="form-control border-0 shadow-none"
-                                       placeholder="Search..."
+                                       class="form-control"
+                                       placeholder="Search orders, products, customers..."
                                        aria-label="Search..." />
+                                <kbd class="navbar-search-kbd">Ctrl K</kbd>
                             </div>
                         </div>
                         <!-- /Search -->
 
-                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                        <ul class="navbar-nav flex-row align-items-center ms-2">
+                            <!-- Quick Add -->
+                            <li class="nav-item dropdown">
+                                <a href="javascript:void(0);" class="navbar-quick-add dropdown-toggle" data-bs-toggle="dropdown" title="Quick create">
+                                    <i class="bx bx-plus"></i>
+                                    <span class="d-none d-lg-inline">Quick Add</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a asp-controller="Admin" asp-action="Addproduct" class="dropdown-item">
+                                            <i class="bx bx-image-add me-2"></i>New Product
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Admin" asp-action="AddCategory" class="dropdown-item">
+                                            <i class="bx bx-plus-circle me-2"></i>New Category
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Admin" asp-action="Addsubcategories" class="dropdown-item">
+                                            <i class="bx bx-list-plus me-2"></i>New SubCategory
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
                             <!-- Place this tag where you want the button to render. -->
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="~/Admin/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                        <span class="navbar-avatar-initial">@avatarInitial</span>
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a asp-controller="Admin" asp-action="Myprofile" class="dropdown-item">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="~/Admin/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                        <span class="navbar-avatar-initial navbar-avatar-initial-lg">@avatarInitial</span>
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <span class="fw-semibold d-block">John Doe</span>
+                                                    <span class="fw-semibold d-block">@displayName</span>
                                                     <small class="text-muted">Admin</small>
                                                 </div>
                                             </div>
@@ -331,23 +1130,22 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a asp-controller="Admin" asp-action="Myprofile" class="dropdown-item">
                                             <i class="bx bx-user me-2"></i>
                                             <span class="align-middle">My Profile</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a asp-controller="Admin" asp-action="ChangePassword" class="dropdown-item">
                                             <i class="bx bx-cog me-2"></i>
                                             <span class="align-middle">Settings</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a asp-action="Allpaymentdetails" asp-controller="Admin" class="dropdown-item">
                                             <span class="d-flex align-items-center align-middle">
                                                 <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
                                                 <span class="flex-grow-1 align-middle">Billing</span>
-                                                <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
                                             </span>
                                         </a>
                                     </li>
@@ -355,10 +1153,12 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="auth-login-basic.html">
-                                            <i class="bx bx-power-off me-2"></i>
-                                            <span class="align-middle">Log Out</span>
-                                        </a>
+                                        <form id="topLogoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bx bx-power-off me-2"></i>
+                                                <span class="align-middle">Log Out</span>
+                                            </button>
+                                        </form>
                                     </li>
                                 </ul>
                             </li>
@@ -425,6 +1225,180 @@
 
     <!-- Page JS -->
     <script src="~/Admin/assets/js/dashboards-analytics.js"></script>
+
+    <script>
+        (function () {
+            var navbar = document.getElementById('layout-navbar');
+            var scrollHost = document.querySelector('.layout-page') || window;
+            function toggleShadow() {
+                var scrollTop = scrollHost === window ? window.scrollY : scrollHost.scrollTop;
+                navbar.classList.toggle('navbar-scrolled', scrollTop > 8);
+            }
+            scrollHost.addEventListener('scroll', toggleShadow);
+            toggleShadow();
+        })();
+    </script>
+
+    <script>
+        // ================================================================
+        // NAVBAR LIVE SEARCH
+        // Calls Admin/GlobalSearch (JSON) and renders a grouped, clickable
+        // results panel under the search pill. Ctrl/Cmd+K focuses it,
+        // arrow keys move through results, Enter opens the highlighted one,
+        // Escape closes it.
+        // ================================================================
+        (function () {
+            var wrap = document.querySelector('.navbar-search-wrap');
+            var input = document.querySelector('.navbar-search-pill input');
+            if (!wrap || !input) return;
+
+            var panel = document.createElement('div');
+            panel.className = 'navbar-search-results';
+            wrap.appendChild(panel);
+
+            var debounceTimer = null;
+            var activeController = null;
+            var activeIndex = -1;
+
+            var GROUPS = [
+                { key: 'products', label: 'Products', icon: 'bx-image' },
+                { key: 'customers', label: 'Customers', icon: 'bx-user' },
+                { key: 'orders', label: 'Orders', icon: 'bx-cart' },
+                { key: 'categories', label: 'Categories', icon: 'bx-category-alt' }
+            ];
+
+            function escapeHtml(value) {
+                var div = document.createElement('div');
+                div.textContent = value === null || value === undefined ? '' : String(value);
+                return div.innerHTML;
+            }
+
+            function openPanel() {
+                panel.classList.add('show');
+            }
+
+            function closePanel() {
+                panel.classList.remove('show');
+                activeIndex = -1;
+            }
+
+            function showLoading() {
+                panel.innerHTML = '<div class="search-loading-state"><i class="bx bx-loader-alt"></i>Searching…</div>';
+                openPanel();
+            }
+
+            function showEmpty() {
+                panel.innerHTML = '<div class="search-empty-state">No matches found</div>';
+            }
+
+            function render(data) {
+                var html = '';
+                var total = 0;
+
+                GROUPS.forEach(function (group) {
+                    var items = (data && data[group.key]) || [];
+                    if (items.length === 0) return;
+                    total += items.length;
+                    html += '<div class="search-group-label">' + group.label + '</div>';
+                    items.forEach(function (item) {
+                        html += '<a class="search-result-item" href="' + escapeHtml(item.url) + '">' +
+                            '<span class="search-result-icon"><i class="bx ' + group.icon + '"></i></span>' +
+                            '<span class="search-result-text">' +
+                            '<span class="search-result-title">' + escapeHtml(item.label) + '</span>' +
+                            (item.sub ? '<span class="search-result-sub">' + escapeHtml(item.sub) + '</span>' : '') +
+                            '</span></a>';
+                    });
+                });
+
+                if (total === 0) {
+                    showEmpty();
+                    return;
+                }
+
+                panel.innerHTML = html;
+                activeIndex = -1;
+            }
+
+            function runSearch(term) {
+                showLoading();
+                if (activeController) activeController.abort();
+                activeController = new AbortController();
+
+                fetch('/Admin/GlobalSearch?term=' + encodeURIComponent(term), { signal: activeController.signal })
+                    .then(function (response) { return response.json(); })
+                    .then(render)
+                    .catch(function (err) {
+                        if (err.name !== 'AbortError') {
+                            panel.innerHTML = '<div class="search-empty-state">Something went wrong. Try again.</div>';
+                        }
+                    });
+            }
+
+            input.addEventListener('input', function () {
+                var term = input.value.trim();
+                clearTimeout(debounceTimer);
+
+                if (term.length < 2) {
+                    closePanel();
+                    return;
+                }
+
+                debounceTimer = setTimeout(function () { runSearch(term); }, 250);
+            });
+
+            input.addEventListener('focus', function () {
+                if (input.value.trim().length >= 2 && panel.innerHTML.trim() !== '') {
+                    openPanel();
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!wrap.contains(e.target)) closePanel();
+            });
+
+            input.addEventListener('keydown', function (e) {
+                var items = panel.querySelectorAll('.search-result-item');
+
+                if (e.key === 'Escape') {
+                    closePanel();
+                    input.blur();
+                    return;
+                }
+
+                if (e.key === 'ArrowDown' && items.length) {
+                    e.preventDefault();
+                    activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                    items.forEach(function (el, i) { el.classList.toggle('is-active', i === activeIndex); });
+                    items[activeIndex].scrollIntoView({ block: 'nearest' });
+                    return;
+                }
+
+                if (e.key === 'ArrowUp' && items.length) {
+                    e.preventDefault();
+                    activeIndex = Math.max(activeIndex - 1, 0);
+                    items.forEach(function (el, i) { el.classList.toggle('is-active', i === activeIndex); });
+                    items[activeIndex].scrollIntoView({ block: 'nearest' });
+                    return;
+                }
+
+                if (e.key === 'Enter') {
+                    var target = activeIndex >= 0 && items[activeIndex] ? items[activeIndex] : items[0];
+                    if (target) {
+                        e.preventDefault();
+                        window.location.href = target.getAttribute('href');
+                    }
+                }
+            });
+
+            // Ctrl/Cmd+K focuses the navbar search from anywhere on the page
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    input.focus();
+                }
+            });
+        })();
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

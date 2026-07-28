@@ -576,20 +576,6 @@
             box-shadow: 0 12px 24px rgba(240, 165, 0, 0.25);
         }
 
-    .requests-page .btn-delete {
-        background: transparent;
-        color: #a51b1b;
-        border: 1.5px solid #f0c8c8;
-    }
-
-        .requests-page .btn-delete:hover {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-            transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.25);
-        }
-
     /* footer */
     .requests-page .table-footer {
         display: flex;
@@ -623,7 +609,7 @@
                 color: white;
             }
 
-    /* ===== ACTION CONFIRM MODAL (shared by accept / reject / delete) ===== */
+    /* ===== ACTION CONFIRM MODAL (shared by accept / reject) ===== */
     .requests-page .action-modal-overlay {
         position: fixed;
         top: 0;
@@ -705,11 +691,6 @@
         color: #f0a500;
     }
 
-    .requests-page .action-modal.mode-delete .modal-icon {
-        background: linear-gradient(135deg, #fff5f5, #ffe8e8);
-        color: #dc3545;
-    }
-
     .requests-page .action-modal h3 {
         color: #1a1a2e;
         font-weight: 700;
@@ -739,11 +720,6 @@
     .requests-page .action-modal.mode-reject .name-highlight {
         color: #a5720b;
         background: #fff8e6;
-    }
-
-    .requests-page .action-modal.mode-delete .name-highlight {
-        color: #dc3545;
-        background: #fff5f5;
     }
 
     .requests-page .action-modal .modal-actions {
@@ -800,16 +776,6 @@
             box-shadow: 0 8px 25px rgba(240, 165, 0, 0.4);
         }
 
-    .requests-page .action-modal.mode-delete .btn-confirm {
-        background: linear-gradient(135deg, #dc3545, #b02a37);
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-    }
-
-        .requests-page .action-modal.mode-delete .btn-confirm:hover {
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
-        }
-
     /* ===== SUCCESS TOAST ===== */
     .requests-page .toast-container-custom {
         position: fixed;
@@ -842,10 +808,6 @@
             border-left-color: #f0a500;
         }
 
-        .requests-page .toast-success.tone-delete {
-            border-left-color: #dc3545;
-        }
-
     @@keyframes slideInRightReq {
         from {
             transform: translateX(120%) scale(0.9);
@@ -871,11 +833,6 @@
     .requests-page .toast-success.tone-reject i {
         color: #f0a500;
         background: linear-gradient(135deg, #fff8e6, #ffe8b8);
-    }
-
-    .requests-page .toast-success.tone-delete i {
-        color: #dc3545;
-        background: linear-gradient(135deg, #fff5f5, #ffe0e0);
     }
 
     @@keyframes checkBounceReq {
@@ -925,22 +882,6 @@
         to {
             transform: translateX(120%) scale(0.9);
             opacity: 0;
-        }
-    }
-
-    .requests-page .fade-out {
-        animation: fadeOutReq 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
-    }
-
-    @@keyframes fadeOutReq {
-        0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-
-        100% {
-            opacity: 0;
-            transform: scale(0.8) translateY(-20px);
         }
     }
 
@@ -1059,14 +1000,14 @@
                     <div class="stat-icon"><i class="fas fa-check"></i></div>
                     <div>
                         <div class="stat-value">@Model.Count(p => p.Status == "Available")</div>
-                        <div class="stat-label">Approved</div>
+                        <div class="stat-label">Published</div>
                     </div>
                 </div>
                 <div class="stat-card rejected">
                     <div class="stat-icon"><i class="fas fa-xmark"></i></div>
                     <div>
                         <div class="stat-value">@Model.Count(p => p.Status == "Rejected")</div>
-                        <div class="stat-label">Rejected</div>
+                        <div class="stat-label">Declined</div>
                     </div>
                 </div>
             </div>
@@ -1152,12 +1093,6 @@
                                                 onclick="openActionModal('reject', 'form-reject-@item.Id', '@safeName')">
                                             <i class="fas fa-ban"></i> Reject
                                         </button>
-
-                                        <form id="form-delete-@item.Id" asp-action="Deleterequestlogic" asp-route-id="@item.Id" method="post" class="m-0" style="display:contents;"></form>
-                                        <button type="button" class="btn btn-action btn-delete"
-                                                onclick="openActionModal('delete', 'form-delete-@item.Id', '@safeName')">
-                                            <i class="fas fa-trash-alt"></i> Delete
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -1235,16 +1170,6 @@
             toastTitle: 'Rejected',
             toastMessage: 'The product request has been rejected.',
             tone: 'tone-reject'
-        },
-        delete: {
-            icon: 'fas fa-trash-alt',
-            title: 'Delete Request?',
-            message: 'Are you sure you want to permanently delete',
-            confirmIcon: 'fas fa-trash-alt',
-            confirmText: 'Yes, Delete',
-            toastTitle: 'Deleted!',
-            toastMessage: 'The request was removed successfully.',
-            tone: 'tone-delete'
         }
     };
 
@@ -1280,18 +1205,13 @@
         const mode = this.dataset.mode;
         const cfg = modalConfig[mode];
         const form = document.getElementById(pendingFormId);
-        const row = form ? form.closest('tr') : null;
 
         closeActionModal();
         showSuccessToast(cfg.toastTitle, cfg.toastMessage, cfg.tone);
 
-        if (row && mode === 'delete') {
-            row.classList.add('fade-out');
-        }
-
         setTimeout(() => {
             if (form) form.submit();
-        }, mode === 'delete' ? 700 : 300);
+        }, 300);
     });
 
     document.getElementById('actionModalOverlay').addEventListener('click', function (e) {

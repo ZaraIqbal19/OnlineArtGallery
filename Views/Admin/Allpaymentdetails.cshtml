@@ -457,21 +457,6 @@
         color: #6fa800;
     }
 
-    .payments-page .toggle-card-btn {
-        border: none;
-        background: transparent;
-        color: #9fbf6a;
-        cursor: pointer;
-        font-size: 0.78rem;
-        padding: 2px 4px;
-        transition: color 0.2s, transform 0.2s;
-    }
-
-        .payments-page .toggle-card-btn:hover {
-            color: #6fa800;
-            transform: scale(1.15);
-        }
-
     .payments-page .info-pill {
         background: #f0fae6;
         color: #4c7800;
@@ -1049,18 +1034,12 @@
                         @foreach (var item in Model)
                         {
                             rowIndex++;
-                            string fullCard = item.CardNumber.ToString();
-                            string last4 = fullCard.Length >= 4 ? fullCard.Substring(fullCard.Length - 4) : fullCard;
-                            string masked = fullCard.Length > 4 ? new string('•', fullCard.Length - 4) + last4 : fullCard;
                             bool expired = item.DateofExpiry < today;
                             <tr style="--i: @rowIndex;" data-payment-id="@item.Id" data-card-title="@item.CardTitle" data-user-name="@(item.User != null ? item.User.UserName : "")">
                                 <td>
                                     <div class="card-cell">
                                         <div class="card-icon-wrap"><i class="fas fa-credit-card"></i></div>
-                                        <span class="card-number-masked" data-full="@fullCard" data-masked="@masked">@masked</span>
-                                        <button type="button" class="toggle-card-btn" title="Show/hide full number" onclick="toggleCardNumber(this)">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
+                                        <span class="card-number-masked">@item.CardNumber</span>
                                     </div>
                                 </td>
                                 <td><span class="info-pill">@Html.DisplayFor(modelItem => item.CardTitle)</span></td>
@@ -1202,25 +1181,6 @@
         });
 
         rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
-    }
-
-    // Toggle masked / full card number
-    function toggleCardNumber(btn) {
-        const span = btn.previousElementSibling;
-        const icon = btn.querySelector('i');
-        const showing = span.dataset.showing === 'true';
-
-        if (showing) {
-            span.textContent = span.dataset.masked;
-            span.dataset.showing = 'false';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        } else {
-            span.textContent = span.dataset.full;
-            span.dataset.showing = 'true';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        }
     }
 
     function openDeleteModal(paymentId, cardTitle) {

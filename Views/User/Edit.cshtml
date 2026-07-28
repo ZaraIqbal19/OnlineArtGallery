@@ -21,7 +21,7 @@
         --warn-amber: #d97706;
         --text-dark: #374151;
         --text-muted: #9ca3af;
-        --page-top-offset: 190px;
+        --page-top-offset: 50px;
     }
 
     * {
@@ -998,6 +998,13 @@
             color: #b45309;
         }
 
+    .preview-card-stock {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
     .preview-card-thumbs {
         display: flex;
         gap: 6px;
@@ -1304,7 +1311,10 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <!-- Quantity: only applies to Fixed Price (Buy Now) listings.
+                             Hidden + non-required automatically when Auction is selected
+                             via toggleSaleType() below. -->
+                        <div class="form-group" id="quantityGroup">
                             <label asp-for="quantity" class="control-label"></label>
                             <div class="input-wrap">
                                 <input asp-for="quantity" class="form-control" data-group="pricing" data-label="Quantity" type="number" min="1" step="1" required />
@@ -1414,6 +1424,7 @@
                     <span class="preview-price" id="previewPrice">—</span>
                     <span class="preview-badge" id="previewBadge">Fixed Price</span>
                 </div>
+                <div class="preview-card-stock" id="previewStock"></div>
                 <div class="preview-card-thumbs" id="previewThumbs"></div>
             </div>
         </div>
@@ -1557,6 +1568,8 @@
         const auctionSection = document.getElementById("auctionSection");
         const priceInput = priceSection.querySelector("input[name='price']");
         const bidPriceInput = auctionSection.querySelector("input[name='BidPrice']");
+        const quantityGroup = document.getElementById("quantityGroup");
+        const quantityInput = quantityGroup.querySelector("input[name='quantity']");
 
         function setSaleType(value) {
             saleTypeSelect.value = value;
@@ -1583,6 +1596,13 @@
                 bidStartInput.setAttribute("required", "required");
                 bidEndInput.setAttribute("required", "required");
                 bidPriceInput.setAttribute("required", "required");
+
+                // Quantity doesn't apply to an auction listing (single item) —
+                // hide it and drop it from validation, same as the Add Product form.
+                quantityGroup.style.display = "none";
+                quantityInput.removeAttribute("required");
+                quantityInput.value = "";
+                clearFieldValidation(quantityInput);
             } else {
                 priceSection.style.display = "block";
                 auctionSection.style.display = "none";
@@ -1592,6 +1612,10 @@
                 bidPriceInput.removeAttribute("required");
                 [bidStartInput, bidEndInput, bidPriceInput].forEach(clearFieldValidation);
                 updateCountdown();
+
+                // Buy Now (Fixed Price) — quantity applies again.
+                quantityGroup.style.display = "block";
+                quantityInput.setAttribute("required", "required");
             }
         }
         // Initialize based on the product's CURRENT sale type (server-rendered), not a hardcoded default
@@ -1795,9 +1819,21 @@
                 priceEl.textContent = !isNaN(num) ? `$${num.toFixed(2)}` : "—";
             }
 
+            // Quantity only applies to Fixed Price listings — reflect it in the
+            // preview so edits to the stock count are visible immediately.
+            const stockEl = document.getElementById("previewStock");
+            if (isAuction) {
+                stockEl.textContent = "";
+            } else {
+                const qty = parseInt(quantityInput.value, 10);
+                stockEl.textContent = Number.isFinite(qty) && qty > 0
+                    ? `${qty} in stock`
+                    : "";
+            }
+
             // Sync the sidebar card's main image + thumbnail strip from whatever
             // is currently shown in the 3 image slots (original photo, or a
-            // freshly-selected replacement). This is what wasn't wired up before.
+            // freshly-selected replacement).
             const mainImageEl = document.getElementById("previewImage");
             const slot1Bg = document.getElementById("preview-1").style.backgroundImage;
             if (slot1Bg) mainImageEl.style.backgroundImage = slot1Bg;

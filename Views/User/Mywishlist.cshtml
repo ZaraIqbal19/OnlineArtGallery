@@ -1548,8 +1548,8 @@
                         <div class="product-card__icons">
                             @if (isAvailable)
                             {
-                                <a asp-action="Viewproductdetails" asp-route-id="@item.ProductId" class="icon-btn" title="View details" aria-label="View product details">
-                                    <i class="bi bi-eye"></i>
+                                <a asp-action="PlaceOrderFromWishlist" asp-route-id="@item.Id" class="btn-action btn-buy">
+                                    <i class="bi bi-bag-check"></i> Buy Now
                                 </a>
                             }
                         </div>
@@ -1593,7 +1593,7 @@
                     <div class="product-card__footer">
                         @if (isAvailable)
                         {
-                            <a asp-action="buynowlogic" asp-route-id="@item.Id" class="btn-action btn-buy">
+                            <a asp-action="PlaceOrderFromWishlist" asp-route-id="@item.Id" class="btn-action btn-buy">
                                 <i class="bi bi-bag-check"></i> Buy Now
                             </a>
                         }

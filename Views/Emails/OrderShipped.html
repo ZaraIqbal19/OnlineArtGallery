@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Order Shipped</title>
+</head>
+
+<body style="margin:0;padding:0;background:#f0fae6;font-family:'Segoe UI',Arial,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 15px;">
+
+        <tr>
+            <td align="center">
+
+                <table width="700" cellpadding="0" cellspacing="0"
+                       style="background:#ffffff;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 20px 50px rgba(0,0,0,.08);">
+
+                    <!-- Header -->
+
+                    <tr>
+
+                        <td align="center"
+                            style="background:linear-gradient(135deg,#88d200,#6fa800);
+padding:50px;">
+
+                            <div style="font-size:70px;">
+                                🚚
+                            </div>
+
+                            <h1 style="margin:15px 0 10px;color:white;font-size:38px;">
+                                Your Order Has Been Shipped!
+                            </h1>
+
+                            <p style="margin:0;color:#eefbd9;font-size:18px;">
+                                Your artwork is now on its way.
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+                    <!-- Body -->
+
+                    <tr>
+
+                        <td style="padding:50px;">
+
+                            <h2 style="margin-top:0;color:#6fa800;">
+                                Hello {{Username}},
+                            </h2>
+
+                            <p style="font-size:17px;line-height:32px;color:#555;">
+
+                                Exciting news!
+
+                                Your order has left our facility and is now on its way to your delivery address.
+
+                                Our team has carefully packaged your artwork to ensure it arrives safely.
+
+                            </p>
+
+                            <!-- Shipment Details -->
+
+                            <table width="100%" cellpadding="18" cellspacing="0"
+                                   style="margin:35px 0;
+background:#f8fdf3;
+border:1px solid #d4f09b;
+border-radius:12px;">
+
+                                <tr>
+
+                                    <td>
+
+                                        <h3 style="margin:0;color:#6fa800;">
+                                            📦 Shipment Details
+                                        </h3>
+
+                                        <hr style="border:none;border-top:1px solid #d4f09b;margin:18px 0;">
+
+                                        <p style="margin:10px 0;color:#555;font-size:16px;">
+                                            <strong>Order Number:</strong> {{OrderNumber}}
+                                        </p>
+
+                                        <p style="margin:10px 0;color:#555;font-size:16px;">
+                                            <strong>Tracking Number:</strong> {{TrackingNumber}}
+                                        </p>
+
+                                        <p style="margin:10px 0;color:#555;font-size:16px;">
+                                            <strong>Estimated Delivery:</strong> {{EstimatedDelivery}}
+                                        </p>
+
+                                        <p style="margin:10px 0;color:#555;font-size:16px;">
+                                            <strong>Status:</strong>
+
+                                            <span style="background:#88d200;
+color:white;
+padding:6px 15px;
+border-radius:30px;
+font-size:14px;">
+
+                                                Shipped
+
+                                            </span>
+
+                                        </p>
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                            <!-- Information -->
+
+                            <div style="background:#f0fae6;
+padding:25px;
+border-left:6px solid #88d200;
+border-radius:10px;">
+
+                                <h3 style="margin-top:0;color:#6fa800;">
+                                    📍 Delivery Information
+                                </h3>
+
+                                <p style="margin:0;color:#555;line-height:30px;">
+
+                                    ✔ Your package is currently in transit.
+
+                                    <br><br>
+
+                                    ✔ Please keep your phone available for delivery updates.
+
+                                    <br><br>
+
+                                    ✔ Ensure someone is available to receive the package.
+
+                                    <br><br>
+
+                                    ✔ Inspect your artwork upon arrival.
+
+                                </p>
+
+                            </div>
+
+                            <!-- Button -->
+
+                            <div style="text-align:center;margin:45px 0;">
+
+                                <a href="{{WebsiteUrl}}"
+                                   style="display:inline-block;
+background:#88d200;
+color:white;
+text-decoration:none;
+padding:16px 42px;
+border-radius:50px;
+font-size:17px;
+font-weight:bold;">
+
+                                    Track My Order
+
+                                </a>
+
+                            </div>
+
+                            <!-- Footer Message -->
+
+                            <p style="font-size:15px;
+color:#777;
+line-height:28px;">
+
+                                We appreciate your trust in <strong>ArtGallery</strong>.
+
+                                We hope your artwork reaches you safely and brings lasting inspiration to your collection.
+
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+                    <!-- Footer -->
+
+                    <tr>
+
+                        <td align="center"
+                            style="background:#6fa800;
+padding:35px;
+color:white;">
+
+                            <h2 style="margin:0;">
+                                🎨 ArtGallery
+                            </h2>
+
+                            <p style="margin:12px 0;">
+                                Discover • Collect • Inspire
+                            </p>
+
+                            <p style="margin:18px 0 0;font-size:13px;color:#eefbd9;">
+                                © 2026 ArtGallery. All Rights Reserved.
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</body>
+
+</html>
