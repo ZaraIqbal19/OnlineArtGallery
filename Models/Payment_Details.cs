@@ -7,7 +7,7 @@ namespace Art_Gallery.Models
     {
         public int Id { get; set; }
 
-        public string CardNumber { get; set; }
+        public int CardNumber { get; set; }
         public string CardTitle { get; set; }
         public int CVVCode { get; set; }
         public DateOnly DateofExpiry { get; set; }

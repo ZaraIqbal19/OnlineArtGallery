@@ -17,6 +17,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Art_Gallery.Controllers
 {
+    
     public class AdminController : Controller
     {
         Art_GalleryContext bridge;
@@ -30,7 +31,7 @@ namespace Art_Gallery.Controllers
             _passwordHasher = passwordHasher;
         }
 
-
+        [Authorize]
 public IActionResult Index()
     {
         var now = DateTime.Now;
@@ -283,15 +284,16 @@ public IActionResult Index()
 
         return View();
     }
-    // all user work started from here 
+        // all user work started from here 
 
-    // function to display all user on AllCustomers page
-    public IActionResult AllCustomers()
+        // function to display all user on AllCustomers page
+        [Authorize]
+        public IActionResult AllCustomers()
         {
             return View(bridge.Users.ToList());
         }
 
-
+        [Authorize]
         public IActionResult Customerdetails(string id)
         {
             var user = bridge.Users.FirstOrDefault(u => u.Id == id);
@@ -555,7 +557,7 @@ public IActionResult Index()
 
 
 
-
+        [Authorize]
         public async Task<IActionResult> Deletecustomerlogic(string id)
         {
             var user = bridge.Users.Find(id);
@@ -679,7 +681,7 @@ public IActionResult Index()
         {
             return View();
         }
-
+        [Authorize]
         //function to add category in database
         public IActionResult AddCategorylogic(Category cat, IFormFile CategoryImageFile)
         {
@@ -711,7 +713,7 @@ public IActionResult Index()
 
 
         //function to display all categories on All categories page 
-
+        [Authorize]
         public IActionResult Allcategories()
         {
             return View(bridge.categories.ToList());
@@ -720,7 +722,7 @@ public IActionResult Index()
 
 
 
-
+        [Authorize]
         //function to open  edit category page with values in input fields 
         public IActionResult Editcategory(int id)
         {
@@ -729,6 +731,7 @@ public IActionResult Index()
         }
 
         // function to save the edited values in the database
+        [Authorize]
         public   IActionResult EditcategoryLogic(int id, string Name, IFormFile CategoryImageFile)
         {
             var category = bridge.categories.FirstOrDefault(c => c.Id == id);
@@ -758,10 +761,10 @@ public IActionResult Index()
 
             return RedirectToAction("Allcategories");
         }
-  
+
 
         //function to delete a category completely from the database 
-
+        [Authorize]
         public IActionResult Deletecategorylogic(int id)
         {
             var category = bridge.categories.Find(id);
@@ -826,7 +829,7 @@ public IActionResult Index()
 
 
         // funtion to fetch all subcategories with categories on Allsubcategories page
-
+        [Authorize]
         public IActionResult Allsubcategories()
         {
             var data = bridge.subCategories
@@ -838,6 +841,7 @@ public IActionResult Index()
 
 
         //function to open Editsubcategory page with values in the input fields
+        [Authorize]
         public IActionResult Editsubcategory(int id)
         {
          var subcategory = bridge.subCategories
@@ -846,7 +850,8 @@ public IActionResult Index()
                             return View(subcategory);
         
         }
-       // function to save the subcategory updated values int the database  
+        // function to save the subcategory updated values int the database  
+        [Authorize]
         public IActionResult Editsubcategorylogic(int id, int CategoryId, string Name, IFormFile SubCategoryImageFile)
         {
             var subCategory = bridge.subCategories.FirstOrDefault(c => c.Id == id);
@@ -879,7 +884,7 @@ public IActionResult Index()
 
 
         // function to delete a sub category completely from the database
-
+        [Authorize]
         public IActionResult Deletesubcategorylogic(int id)
         {
             var subcategory = bridge.subCategories.Find(id);
@@ -904,7 +909,7 @@ public IActionResult Index()
 
 
         //function to open addproduct page with categories and subcategories  
-
+        [Authorize]
         public IActionResult Addproduct()
         {
             ViewBag.Categories = bridge.categories.ToList();
@@ -913,7 +918,7 @@ public IActionResult Index()
         }
 
         // function to add a product in the products table
-
+        [Authorize]
         public IActionResult Addproductlogic(
     string Name, string Description,
     List<IFormFile> Images,
@@ -1004,7 +1009,7 @@ public IActionResult Index()
 
 
         //function to display all product on allproducts page
-
+        [Authorize]
         public IActionResult Allproducts()
         {
             var products = bridge.products
@@ -1016,6 +1021,7 @@ public IActionResult Index()
         }
 
         //function to view a specific product detailed information
+        [Authorize]
         public IActionResult Viewproductdetails(int id)
         {
             var productdetails = bridge.products
@@ -1050,7 +1056,7 @@ public IActionResult Index()
         }
 
         // function to save updated values in the products table
-
+        [Authorize]
         public IActionResult Editproductlogic(
     int Id, string Name, string Description,
     float price, int quantity, string AvailableForBid,
@@ -1173,7 +1179,7 @@ public IActionResult Index()
         }
 
         // function to fetch all the products from product table with pending status
-
+        [Authorize]
         public IActionResult Productrequest()
         {
 
@@ -1189,7 +1195,7 @@ public IActionResult Index()
         }
 
         // function to approve a product. approving a product  will change its status from pending to available making it visible  on the all products page 
-
+        [Authorize]
         public async Task<IActionResult> Acceptrequestlogic(int id)
         {
             var Product = bridge.products.Find(id);
@@ -1220,7 +1226,7 @@ public IActionResult Index()
             return RedirectToAction("Productrequest");
         }
         // function to reject a project,rejecting a product will change its status from pending to rejecting making it never visible on all products page 
-
+        [Authorize]
         public async Task<IActionResult> Rejectrequestlogic(int id)
         {
             var Product = bridge.products.Find(id);
@@ -1276,7 +1282,7 @@ public IActionResult Index()
 
 
         //function to display a detailed a information of a bid
-
+        [Authorize]
         public IActionResult ViewAuctiondetails(int id)
         {
             var auctionid = bridge.auctionDetails.Find(id);
@@ -1299,7 +1305,7 @@ public IActionResult Index()
         }
 
         //function to permanentely a bid from the auctiondetails table
-
+        [Authorize]
         public IActionResult Deleteauctiondetaillogic(int id)
 
 
@@ -1322,7 +1328,7 @@ public IActionResult Index()
 
 
         //function to display alll payments details on Allpaymentdetails page
-
+        [Authorize]
         public IActionResult Allpaymentdetails()
 
         {
@@ -1335,7 +1341,7 @@ public IActionResult Index()
         }
 
         //function to delete a user payment details completely from the paymentdetails table
-
+        [Authorize]
         public IActionResult Deletepaymentdetailslogic(int id)
         {
 
@@ -1353,7 +1359,7 @@ public IActionResult Index()
 
 
         // function to display all products orders on Adminproductsorders page
-
+        [Authorize]
         public IActionResult Adminproductsorders()
         {
             var orders = bridge.orders.Include(o => o.User)
@@ -1363,7 +1369,7 @@ public IActionResult Index()
         }
 
         // function to display a detailed information related to order on Adminorderdetails page
-
+        [Authorize]
         public IActionResult Adminorderdetails(int id)
         {
 
@@ -1379,7 +1385,7 @@ public IActionResult Index()
         }
 
         // function to permanently delete an order and its payments details if exists 
-
+        [Authorize]
         public IActionResult Adminorderdeletelogic(int id)
         {
             var order = bridge.orders
@@ -1414,7 +1420,7 @@ public IActionResult Index()
 
 
         //function to display all orders paymnet details on Allorderspayments page 
-
+        [Authorize]
         public IActionResult Allorderspayments()
 
 
@@ -1429,7 +1435,7 @@ public IActionResult Index()
         }
 
         //function to permanently a order payment details
-
+        [Authorize]
         public IActionResult Orderpaymentdeletelogic(int id)
         {
 
@@ -1450,6 +1456,7 @@ public IActionResult Index()
         // user contact messages work started from here 
 
         //function to display all users contact messages in Allcontacts page
+        [Authorize]
         public IActionResult Allcontacts()
         {
             var contacts = bridge.contacts.Include(c => c.User).ToList();
@@ -1458,7 +1465,7 @@ public IActionResult Index()
 
 
         //function to delete a user contact message completely from the database
-
+        [Authorize]
         public IActionResult Deletecontactlogic(int Id)
         {
             var Contactid = bridge.contacts.Find(Id);

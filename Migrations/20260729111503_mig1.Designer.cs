@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Art_Gallery.Migrations
 {
     [DbContext(typeof(Art_GalleryContext))]
-    [Migration("20260725111434_mig1")]
+    [Migration("20260729111503_mig1")]
     partial class mig1
     {
         /// <inheritdoc />
